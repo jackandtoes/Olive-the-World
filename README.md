@@ -10,7 +10,7 @@
 
 <!-- ABOUT THE PROJECT -->
 ## About The Project
-Very brief summary of the game.
+You will travel as an olive trying to become the best chef in the world!
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ### Built With
@@ -23,8 +23,7 @@ Very brief summary of the game.
 <!-- GETTING STARTED -->
 ## Getting Started
 
-This is an example of how you may give instructions on setting up your project locally.
-To get a local copy up and running follow these simple example steps.
+Coming soon!
 
 ### Installation
 
@@ -62,7 +61,7 @@ See the [open issues](https://github.com/github_username/repo_name/issues) for a
 
 <!-- CONTACT -->
 ## Contact
-Zachary Ciappa - zachary.ciappa@ocvts.org
+Zachary Ciappa - zacharyciappa@gmail.com
 
 Elysee Lucia Jacinto - elyseelucia.jacinto@ocvts.org
 
