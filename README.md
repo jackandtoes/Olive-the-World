@@ -45,7 +45,7 @@ Zachary Ciappa - zacharyciappa@gmail.com
 
 Elysee Lucia Jacinto - elyseelucia.jacinto@ocvts.org
 
-Sabrina Shi - sabrina.shi@ocvts.org
+Sabrina Shi - ssabrina1277@gmail.com
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
