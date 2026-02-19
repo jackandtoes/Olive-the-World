@@ -43,7 +43,7 @@ See the [open issues](https://github.com/jackandtoes/Olive-the-World/issues) for
 ## Contact
 Zachary Ciappa - zacharyciappa@gmail.com
 
-Elysee Lucia Jacinto - elyseelucia.jacinto@ocvts.org
+Elysee Lucia Jacinto - ellajacinto30@gmail.com
 
 Sabrina Shi - ssabrina1277@gmail.com
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
