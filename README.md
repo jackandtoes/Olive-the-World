@@ -2,11 +2,9 @@
 <br />
 <div align="center">
   <a href="[https://github.com/github_username/repo_name](https://github.com/jackandtoes/Olive-the-World)">
-    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRkFotXRc9IAp1jH78sqi-bhrOuLWr5DccbFw&s" alt="Logo" width="80" height="80">
+    <img src="https://github.com/jackandtoes/Olive-the-World/blob/main/assets/olive_logo.png?raw=true" alt="Logo" width="600" height="600">
   </a>
 </div>
-
-<h3 align="center">Olive the World!</h3>
 
 <!-- ABOUT THE PROJECT -->
 ## About The Project
