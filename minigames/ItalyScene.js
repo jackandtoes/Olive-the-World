@@ -1,10 +1,10 @@
-class Game {
+class ItalyScene extends Phaser.Scene {
   constructor(width, height){
+    super('ItalyScene'); 
     this.width = width;
     this.height = height;
     this.tileMapData = this.generateTilemap(width, height);
   }
-
   generateTilemap(width, height){
     const map = [];
     for(let y=0; y<height; y++){
@@ -38,7 +38,7 @@ class Minigame extends Phaser.Scene {
   }
   create(){
     this.tileSize = 50;
-    this.gameLogic = new Game(8,8);
+    this.gameLogic = new ItalyScene(8,8);
     this.drawGrid();
     this.addPipes();
   }
@@ -93,7 +93,7 @@ class Minigame extends Phaser.Scene {
            'bent'
           );
 
-          rect.setDisplaySize(this.tileSize - 4, this.tileSize - 4); // scale to fit tile
+          rect.setDisplaySize(this.tileSize - 4, this.tileSize - 4);
           rect.setInteractive();
           rect.setInteractive();
 
@@ -170,8 +170,6 @@ const config = {
   scene: [Minigame]
 };
 
-let xlocations = [2, 4, 5, 7, 9];
-        let ylocations = [3, 6, 9, 8, 10]
 
 
 new Phaser.Game(config);
