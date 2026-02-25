@@ -26,12 +26,7 @@ class ItalyScene extends Phaser.Scene {
   getTileAtPos(x, y){
     return this.tileMapData[y][x];
   }
-}
 
-class ItalyScence extends Phaser.Scene {
-  constructor(){
-    super("ItalyScene");
-  }
   preload() {
     this.load.image('bent', 'assets/pasta_corner_new.png');
     this.load.image('straight', 'assets/straight_pasta.png');
