@@ -28,9 +28,9 @@ class ItalyScene extends Phaser.Scene {
   }
 }
 
-class Minigame extends Phaser.Scene {
+class ItalyScence extends Phaser.Scene {
   constructor(){
-    super("Minigame");
+    super("ItalyScene");
   }
   preload() {
     this.load.image('bent', 'assets/pasta_corner_new.png');
@@ -167,7 +167,7 @@ const config = {
   width: 8*50,
   height: 8*50,
   backgroundColor: "#222222",
-  scene: [Minigame]
+  scene: [ItalyScene]
 };
 
 
