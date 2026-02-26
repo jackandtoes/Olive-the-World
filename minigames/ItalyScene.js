@@ -1,175 +1,122 @@
 class ItalyScene extends Phaser.Scene {
-  constructor(width, height){
-    super('ItalyScene'); 
-    this.width = width;
-    this.height = height;
-    this.tileMapData = this.generateTilemap(width, height);
+  constructor() {
+    super("ItalyScene");
   }
-  generateTilemap(width, height){
+
+  create() {
+    const width = this.scale.width;
+    const height = this.scale.height;
+
+    // Background
+    this.add.rectangle(width/2, height/2, width, height, 0xf5deb3);
+
+    // Grid settings
+    this.GRID_SIZE = 50;
+    this.COLS = 8;
+    this.ROWS = 8;
+
+    // Create tile data
+    this.tileMapData = this.generateTilemap(this.COLS, this.ROWS);
+
+    // Group for everything in board
+    this.boardContainer = this.add.container(
+      (width - this.COLS * this.GRID_SIZE) / 2,
+      (height - this.ROWS * this.GRID_SIZE) / 2
+    );
+
+    this.drawGrid();
+    this.addPipes();
+
+    // ESC to return to map
+    this.input.keyboard.on("keydown-ESC", () => {
+      this.scene.start("MapScene");
+    });
+  }
+
+  generateTilemap(width, height) {
     const map = [];
-    for(let y=0; y<height; y++){
+    for (let y = 0; y < height; y++) {
       const row = [];
-      for(let x=0; x<width; x++){
+      for (let x = 0; x < width; x++) {
         row.push({
-          type: '0',       
+          type: "0",
           isLit: false,
-          rotationIndex: 0 
+          rotationIndex: 0
         });
       }
       map.push(row);
     }
-    map[0][0].type = 'S';
-    map[height-1][width-1].type = 'E'; // end
+
+    map[0][0].type = "S";
+    map[height - 1][width - 1].type = "E";
     return map;
   }
 
-  getTileAtPos(x, y){
-    return this.tileMapData[y][x];
-  }
-}
+  drawGrid() {
+    for (let y = 0; y < this.ROWS; y++) {
+      for (let x = 0; x < this.COLS; x++) {
+        const tile = this.tileMapData[y][x];
 
-class ItalyScence extends Phaser.Scene {
-  constructor(){
-    super("ItalyScene");
-  }
-  preload() {
-    this.load.image('bent', 'assets/pasta_corner_new.png');
-    this.load.image('straight', 'assets/straight_pasta.png');
-  }
-  create(){
-    this.tileSize = 50;
-    this.gameLogic = new ItalyScene(8,8);
-    this.drawGrid();
-    this.addPipes();
-  }
-
-  drawGrid(){
-    if(this.tilesGroup) this.tilesGroup.clear(true, true);
-
-    this.tilesGroup = this.add.group();
-    const data = this.gameLogic.tileMapData;
-
-    for(let y=0; y<data.length; y++){
-      for(let x=0; x<data[y].length; x++){
-        const tile = data[y][x];
-
-
-        let color = 0x666666; // normal
-        if(tile.type === 'S') color = 0x00ff00; // start
-        if(tile.type === 'E') color = 0xff0000; // end
-        if(tile.isLit) color = 0xffff00; // lit
+        let color = 0x666666;
+        if (tile.type === "S") color = 0x00ff00;
+        if (tile.type === "E") color = 0xff0000;
 
         const rect = this.add.rectangle(
-          x*this.tileSize + this.tileSize/2,
-          y*this.tileSize + this.tileSize/2,
-          this.tileSize-2,
-          this.tileSize-2,
+          x * this.GRID_SIZE,
+          y * this.GRID_SIZE,
+          this.GRID_SIZE - 2,
+          this.GRID_SIZE - 2,
           color
-        );
+        ).setOrigin(0);
 
-        rect.setStrokeStyle(1, 0xffffff);
-
-        this.tilesGroup.add(rect);
+        this.boardContainer.add(rect);
       }
-  
     }
   }
 
-  addPipes(){
-    this.tilesGroup = this.add.group();
-    const data = this.gameLogic.tileMapData;
+  addPipes() {
+    // Bent pipes
+    let bentX = [2,2,3,6,2,1];
+    let bentY = [4,5,3,4,0,6];
 
-    let x_stuff=[2,2,3,6,2,1]
-    let y_stuff=[4,5,3,4,0,6]
+    for (let i = 0; i < bentX.length; i++) {
+      this.createPipe(bentX[i], bentY[i], 0xffa500);
+    }
 
-    for(let i = 0; i<x_stuff.length; i++){
-      let x= x_stuff[i];
-      let y = y_stuff[i];
-      const tile = data[y][x];
+    // Straight pipes
+    let straightX = [1,2,2,2,1,3];
+    let straightY = [4,1,3,2,0,4];
 
-          const rect = this.add.image(
-            x*this.tileSize + this.tileSize/2,
-            y*this.tileSize + this.tileSize/2,
-           'bent'
-          );
-
-          rect.setDisplaySize(this.tileSize - 4, this.tileSize - 4);
-          rect.setInteractive();
-          rect.setInteractive();
-
-          rect.rotation = Phaser.Math.DegToRad(tile.rotationIndex * 90);
-
-          rect.on('pointerdown', () => {
-            tile.rotationIndex = (tile.rotationIndex + 1) % 4;
-            this.tweens.add({
-              targets: rect,
-              rotation: Phaser.Math.DegToRad(tile.rotationIndex * 90),
-              duration: 300
-            });
-            const rotationText = this.add.text(
-            x*this.tileSize + this.tileSize/2,
-            y*this.tileSize + this.tileSize/2,
-            tile.rotationIndex.toString(), 
-            { fontSize: '16px', color: '#ffffff' }
-  );
-          });
-
-
-          this.tilesGroup.add(rect);
-   }
-
-    let x_stuff1=[1,2,2,2,1,3]
-    let y_stuff2=[4,1,3,2,0,4]
-
-    for(let i = 0; i<x_stuff.length; i++){
-      let x= x_stuff1[i];
-      let y = y_stuff2[i];
-      const tile = data[y][x];
-
-          const rect = this.add.image(
-            x*this.tileSize + this.tileSize/2,
-            y*this.tileSize + this.tileSize/2,
-           'straight'
-          );
-
-          rect.setDisplaySize(this.tileSize - 4, this.tileSize - 4); // scale to fit tile
-          rect.setInteractive();
-          rect.setInteractive();
-
-          rect.rotation = Phaser.Math.DegToRad(tile.rotationIndex * 90);
-
-          rect.on('pointerdown', () => {
-            tile.rotationIndex = (tile.rotationIndex + 1) % 4;
-            this.tweens.add({
-              targets: rect,
-              rotation: Phaser.Math.DegToRad(tile.rotationIndex * 90),
-              duration: 300
-            });
-            const rotationText = this.add.text(
-            x*this.tileSize + this.tileSize/2,
-            y*this.tileSize + this.tileSize/2,
-            tile.rotationIndex.toString(), 
-            { fontSize: '16px', color: '#ffffff' }
-  );
-          });
-
-
-          this.tilesGroup.add(rect);
-   }
+    for (let i = 0; i < straightX.length; i++) {
+      this.createPipe(straightX[i], straightY[i], 0xffffff);
+    }
   }
-  
 
+  createPipe(gridX, gridY, color) {
+    const tile = this.tileMapData[gridY][gridX];
 
+    const pipe = this.add.rectangle(
+      gridX * this.GRID_SIZE + this.GRID_SIZE/2,
+      gridY * this.GRID_SIZE + this.GRID_SIZE/2,
+      this.GRID_SIZE - 10,
+      this.GRID_SIZE - 10,
+      color
+    );
+
+    pipe.setInteractive();
+
+    pipe.rotation = Phaser.Math.DegToRad(tile.rotationIndex * 90);
+
+    pipe.on("pointerdown", () => {
+      tile.rotationIndex = (tile.rotationIndex + 1) % 4;
+
+      this.tweens.add({
+        targets: pipe,
+        rotation: Phaser.Math.DegToRad(tile.rotationIndex * 90),
+        duration: 200
+      });
+    });
+
+    this.boardContainer.add(pipe);
+  }
 }
-
-const config = {
-  type: Phaser.AUTO,
-  width: 8*50,
-  height: 8*50,
-  backgroundColor: "#222222",
-  scene: [ItalyScene]
-};
-
-
-
-new Phaser.Game(config);
