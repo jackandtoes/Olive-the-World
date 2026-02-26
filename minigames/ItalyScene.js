@@ -3,6 +3,11 @@ class ItalyScene extends Phaser.Scene {
     super("ItalyScene");
   }
 
+  preload() {
+    this.load.image('bent', 'assets/pasta_corner_new.png');
+    this.load.image('straight', 'assets/straight_pasta.png');
+  }
+
   create() {
     const width = this.scale.width;
     const height = this.scale.height;
@@ -80,7 +85,7 @@ class ItalyScene extends Phaser.Scene {
     let bentY = [4,5,3,4,0,6];
 
     for (let i = 0; i < bentX.length; i++) {
-      this.createPipe(bentX[i], bentY[i], 0xffa500);
+      this.createPipe(bentX[i], bentY[i], 'bent');
     }
 
     // Straight pipes
@@ -88,21 +93,22 @@ class ItalyScene extends Phaser.Scene {
     let straightY = [4,1,3,2,0,4];
 
     for (let i = 0; i < straightX.length; i++) {
-      this.createPipe(straightX[i], straightY[i], 0xffffff);
+      this.createPipe(straightX[i], straightY[i], 'straight');
     }
   }
 
-  createPipe(gridX, gridY, color) {
+  createPipe(gridX, gridY, textureKey) {
     const tile = this.tileMapData[gridY][gridX];
 
-    const pipe = this.add.rectangle(
+    const pipe = this.add.image(
       gridX * this.GRID_SIZE + this.GRID_SIZE/2,
       gridY * this.GRID_SIZE + this.GRID_SIZE/2,
-      this.GRID_SIZE - 10,
-      this.GRID_SIZE - 10,
-      color
+      textureKey
     );
 
+    pipe.setDisplaySize(
+    this.GRID_SIZE,
+    this.GRID_SIZE);
     pipe.setInteractive();
 
     pipe.rotation = Phaser.Math.DegToRad(tile.rotationIndex * 90);
@@ -111,10 +117,10 @@ class ItalyScene extends Phaser.Scene {
       tile.rotationIndex = (tile.rotationIndex + 1) % 4;
 
       this.tweens.add({
-        targets: pipe,
-        rotation: Phaser.Math.DegToRad(tile.rotationIndex * 90),
-        duration: 200
-      });
+      targets: pipe,
+      rotation: pipe.rotation + Phaser.Math.DegToRad(90),
+      duration: 200
+    });
     });
 
     this.boardContainer.add(pipe);
