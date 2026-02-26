@@ -2,11 +2,9 @@
 <br />
 <div align="center">
   <a href="[https://github.com/github_username/repo_name](https://github.com/jackandtoes/Olive-the-World)">
-    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRkFotXRc9IAp1jH78sqi-bhrOuLWr5DccbFw&s" alt="Logo" width="80" height="80">
+    <img src="https://github.com/jackandtoes/Olive-the-World/blob/main/assets/olive_logo.png?raw=true" alt="Logo" width="600" height="600">
   </a>
 </div>
-
-<h3 align="center">Olive the World!</h3>
 
 <!-- ABOUT THE PROJECT -->
 ## About The Project
@@ -25,26 +23,6 @@ You will travel as an olive trying to become the best chef in the world!
 
 Coming soon!
 
-### Installation
-
-1. Get a free API Key at [https://example.com](https://example.com)
-2. Clone the repo
-   ```sh
-   git clone https://github.com/github_username/repo_name.git
-   ```
-3. Install NPM packages
-   ```sh
-   npm install
-   ```
-4. Enter your API in `config.js`
-   ```js
-   const API_KEY = 'ENTER YOUR API';
-   ```
-5. Change git remote url to avoid accidental pushes to base project
-   ```sh
-   git remote set-url origin github_username/repo_name
-   git remote -v # confirm the changes
-   ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -55,7 +33,7 @@ Coming soon!
 - [ ] Philippines
 - [ ] Mexico
 
-See the [open issues](https://github.com/github_username/repo_name/issues) for a full list of proposed features (and known issues).
+See the [open issues](https://github.com/jackandtoes/Olive-the-World/issues) for a full list of proposed features (and known issues).
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
@@ -63,9 +41,9 @@ See the [open issues](https://github.com/github_username/repo_name/issues) for a
 ## Contact
 Zachary Ciappa - zacharyciappa@gmail.com
 
-Elysee Lucia Jacinto - elyseelucia.jacinto@ocvts.org
+Elysee Lucia Jacinto - ellajacinto30@gmail.com
 
-Sabrina Shi - sabrina.shi@ocvts.org
+Sabrina Shi - ssabrina1277@gmail.com
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
