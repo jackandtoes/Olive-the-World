@@ -6,6 +6,8 @@ class ItalyScene extends Phaser.Scene {
   preload() {
     this.load.image('bent', 'assets/pasta_corner_new.png');
     this.load.image('straight', 'assets/straight_pasta.png');
+    this.load.image('crossed', 'assets/crossed_pasta.png');
+    this.load.image('t_shape', 'assets/t-shaped_pasta.png');
   }
 
   create() {
@@ -80,22 +82,38 @@ class ItalyScene extends Phaser.Scene {
   }
 
   addPipes() {
-    // Bent pipes
-    let bentX = [2,2,3,6,2,1];
-    let bentY = [4,5,3,4,0,6];
+
+    let bentX = [2,2,3,6,2,1,4,3,5,3];
+    let bentY = [4,5,3,4,0,6,4,5,5,7];
 
     for (let i = 0; i < bentX.length; i++) {
       this.createPipe(bentX[i], bentY[i], 'bent');
     }
 
-    // Straight pipes
-    let straightX = [1,2,2,2,1,3];
-    let straightY = [4,1,3,2,0,4];
+    let straightX = [1,2,2,2,1,3,4,6,3,5];
+    let straightY = [4,1,3,2,0,4,6,7,6,6];
 
     for (let i = 0; i < straightX.length; i++) {
       this.createPipe(straightX[i], straightY[i], 'straight');
     }
+
+    let crossedX = [2, 4];
+    let crossedY = [7, 5];
+
+    for (let i=0; i < crossedX.length; i++) {
+      this.createPipe(crossedX[i], crossedY[i], 'crossed')
+    }
+
+    let t_shapeX = [4,4,7,5];
+    let t_shapeY = [2,7,1,7];
+
+    for (let i=0; i < t_shapeX.length; i++) {
+      this.createPipe(t_shapeX[i], t_shapeY[i], 't_shape')
+    }
+
   }
+
+    
 
   createPipe(gridX, gridY, textureKey) {
     const tile = this.tileMapData[gridY][gridX];
