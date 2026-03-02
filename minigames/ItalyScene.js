@@ -3,6 +3,13 @@ class ItalyScene extends Phaser.Scene {
     super("ItalyScene");
   }
 
+  preload() {
+    this.load.image('bent', 'assets/pasta_corner_new.png');
+    this.load.image('straight', 'assets/straight_pasta.png');
+    this.load.image('crossed', 'assets/crossed_pasta.png');
+    this.load.image('t_shape', 'assets/t-shaped_pasta.png');
+  }
+
   create() {
     const width = this.scale.width;
     const height = this.scale.height;
@@ -75,34 +82,51 @@ class ItalyScene extends Phaser.Scene {
   }
 
   addPipes() {
-    // Bent pipes
-    let bentX = [2,2,3,6,2,1];
-    let bentY = [4,5,3,4,0,6];
+
+    let bentX = [2,2,3,6,2,1,4,3,5,3];
+    let bentY = [4,5,3,4,0,6,4,5,5,7];
 
     for (let i = 0; i < bentX.length; i++) {
-      this.createPipe(bentX[i], bentY[i], 0xffa500);
+      this.createPipe(bentX[i], bentY[i], 'bent');
     }
 
-    // Straight pipes
-    let straightX = [1,2,2,2,1,3];
-    let straightY = [4,1,3,2,0,4];
+    let straightX = [1,2,2,2,1,3,4,6,3,5];
+    let straightY = [4,1,3,2,0,4,6,7,6,6];
 
     for (let i = 0; i < straightX.length; i++) {
-      this.createPipe(straightX[i], straightY[i], 0xffffff);
+      this.createPipe(straightX[i], straightY[i], 'straight');
     }
+
+    let crossedX = [2, 4];
+    let crossedY = [7, 5];
+
+    for (let i=0; i < crossedX.length; i++) {
+      this.createPipe(crossedX[i], crossedY[i], 'crossed')
+    }
+
+    let t_shapeX = [4,4,7,5];
+    let t_shapeY = [2,7,1,7];
+
+    for (let i=0; i < t_shapeX.length; i++) {
+      this.createPipe(t_shapeX[i], t_shapeY[i], 't_shape')
+    }
+
   }
 
-  createPipe(gridX, gridY, color) {
+    
+
+  createPipe(gridX, gridY, textureKey) {
     const tile = this.tileMapData[gridY][gridX];
 
-    const pipe = this.add.rectangle(
+    const pipe = this.add.image(
       gridX * this.GRID_SIZE + this.GRID_SIZE/2,
       gridY * this.GRID_SIZE + this.GRID_SIZE/2,
-      this.GRID_SIZE - 10,
-      this.GRID_SIZE - 10,
-      color
+      textureKey
     );
 
+    pipe.setDisplaySize(
+    this.GRID_SIZE,
+    this.GRID_SIZE);
     pipe.setInteractive();
 
     pipe.rotation = Phaser.Math.DegToRad(tile.rotationIndex * 90);
@@ -111,10 +135,10 @@ class ItalyScene extends Phaser.Scene {
       tile.rotationIndex = (tile.rotationIndex + 1) % 4;
 
       this.tweens.add({
-        targets: pipe,
-        rotation: Phaser.Math.DegToRad(tile.rotationIndex * 90),
-        duration: 200
-      });
+      targets: pipe,
+      rotation: pipe.rotation + Phaser.Math.DegToRad(90),
+      duration: 200
+    });
     });
 
     this.boardContainer.add(pipe);
