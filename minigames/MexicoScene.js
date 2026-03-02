@@ -7,6 +7,7 @@ class MexicoScene extends Phaser.Scene {
         this.levelDuration = 120;
         this.gameOver = false;
         this.pinatas = [];
+        this.chiles = [];
     }
 
     create() {
@@ -15,6 +16,7 @@ class MexicoScene extends Phaser.Scene {
         this.timeLeft = this.levelDuration;
         this.gameOver = false;
         this.pinatas = [];
+        this.chiles = [];
 
         // Use Phaser's scale system, not window.innerWidth
         const width = this.scale.width;
@@ -45,6 +47,17 @@ class MexicoScene extends Phaser.Scene {
             callbackScope: this,
             loop: true
         });
+
+        // Start spawning chiles
+        this.spawnChileTimer = this.time.addEvent({
+            delay: 2500,
+            callback: () => {
+                if (!this.gameOver) this.spawnChile();
+            },
+            callbackScope: this,
+            loop: true
+        });
+
         // Countdown event for the level timer (ticks every second)
         this.countdownEvent = this.time.addEvent({
             delay: 1000,
@@ -53,6 +66,7 @@ class MexicoScene extends Phaser.Scene {
             loop: true
         });
         this.spawnPinata();
+        this.spawnChile();
     }
 
     spawnPinata() {
@@ -86,6 +100,37 @@ class MexicoScene extends Phaser.Scene {
         this.pinatas.push(pinataData);
     }
 
+    spawnChile() {
+        if (this.gameOver) return;
+
+        const width = this.scale.width;
+        const height = this.scale.height;
+
+        // Use game width, not window width
+        const startX = Phaser.Math.Between(40, width - 40);
+        const endX = Phaser.Math.Between(width - 40, 40);
+        // Adjust peak for 600px height
+        const peakY = Phaser.Math.Between(height * 0.3, height * 0.5); 
+        const startY = height + 50; // Start just below screen
+
+        const chile = this.add.rectangle(startX, startY, 40, 40, 0xB22222);
+        chile.setInteractive();
+        chile.on('pointerdown', () => this.onChileClicked(chile));
+
+        const chileData = {
+            el: chile,
+            startX,
+            endX,
+            startY,
+            peakY,
+            startTime: Date.now(),
+            duration: 3000,
+            clicked: false
+        };
+
+        this.chiles.push(chileData);
+    }
+
     onPinataClicked(pinataEl) {
         if (this.gameOver) return;
 
@@ -105,6 +150,31 @@ class MexicoScene extends Phaser.Scene {
                     const removeIndex = this.pinatas.findIndex(p => p.el === pinataEl);
                     if (removeIndex !== -1) {
                         this.pinatas.splice(removeIndex, 1);
+                    }
+                }
+            });
+        }
+    }
+
+    onChileClicked(chileEl) {
+        if (this.gameOver) return;
+
+        const index = this.chiles.findIndex(p => p.el === chileEl);
+        if (index !== -1 && !this.chiles[index].clicked) {
+            this.chiles[index].clicked = true;
+            this.score -= 1;
+            this.scoreText.setText('Score: ' + this.score);
+
+            this.tweens.add({
+                targets: chileEl,
+                y: -50,
+                alpha: 0,
+                duration: 500,
+                onComplete: () => {
+                    chileEl.destroy();
+                    const removeIndex = this.chiles.findIndex(p => p.el === chileEl);
+                    if (removeIndex !== -1) {
+                        this.chiles.splice(removeIndex, 1);
                     }
                 }
             });
@@ -133,6 +203,26 @@ class MexicoScene extends Phaser.Scene {
                 const x = pinataData.startX + (pinataData.endX - pinataData.startX) * t;
                 const y = pinataData.startY - (4 * t * (1 - t)) * (pinataData.startY - pinataData.peakY);
                 pinataData.el.setPosition(x, y);
+            }
+        }
+
+        for (let i = this.chiles.length - 1; i >= 0; i--) {
+            const chileData = this.chiles[i];
+
+            if (chileData.clicked) continue;
+
+            const elapsed = now - chileData.startTime;
+            const t = elapsed / chileData.duration;
+
+            if (t > 1) {
+                // Chile missed: simply remove the chile (no lives in timer mode)
+                chileData.el.destroy();
+                this.chiles.splice(i, 1);
+            } else {
+                // Parabolic movement
+                const x = chileData.startX + (chileData.endX - chileData.startX) * t;
+                const y = chileData.startY - (4 * t * (1 - t)) * (chileData.startY - chileData.peakY);
+                chileData.el.setPosition(x, y);
             }
         }
     }
