@@ -1,13 +1,12 @@
 // 1. Rename class to match what main.js expects
 class MexicoScene extends Phaser.Scene {
     constructor() {
-        // 2. Use the specific key 'MexicoScene'
         super('MexicoScene');
         this.score = 0;
-        this.timeLeft = 120; // seconds (2 minutes)
+        this.timeLeft = 120;
         this.levelDuration = 120;
         this.gameOver = false;
-        this.toasts = [];
+        this.pinatas = [];
     }
 
     create() {
@@ -15,7 +14,7 @@ class MexicoScene extends Phaser.Scene {
         this.score = 0;
         this.timeLeft = this.levelDuration;
         this.gameOver = false;
-        this.toasts = [];
+        this.pinatas = [];
 
         // Use Phaser's scale system, not window.innerWidth
         const width = this.scale.width;
@@ -37,11 +36,11 @@ class MexicoScene extends Phaser.Scene {
             this.scene.start('MapScene');
         });
 
-        // Start spawning toasts
+        // Start spawning pinatas
         this.spawnTimer = this.time.addEvent({
             delay: 2000,
             callback: () => {
-                if (!this.gameOver) this.spawnToast();
+                if (!this.gameOver) this.spawnPinata();
             },
             callbackScope: this,
             loop: true
@@ -53,10 +52,10 @@ class MexicoScene extends Phaser.Scene {
             callbackScope: this,
             loop: true
         });
-        this.spawnToast();
+        this.spawnPinata();
     }
 
-    spawnToast() {
+    spawnPinata() {
         if (this.gameOver) return;
 
         const width = this.scale.width;
@@ -69,12 +68,12 @@ class MexicoScene extends Phaser.Scene {
         const peakY = Phaser.Math.Between(height * 0.3, height * 0.5); 
         const startY = height + 50; // Start just below screen
 
-        const toast = this.add.rectangle(startX, startY, 40, 40, 0xDEB887);
-        toast.setInteractive();
-        toast.on('pointerdown', () => this.onToastClicked(toast));
+        const pinata = this.add.rectangle(startX, startY, 40, 40, 0xDEB887);
+        pinata.setInteractive();
+        pinata.on('pointerdown', () => this.onPinataClicked(pinata));
 
-        const toastData = {
-            el: toast,
+        const pinataData = {
+            el: pinata,
             startX,
             endX,
             startY,
@@ -84,28 +83,28 @@ class MexicoScene extends Phaser.Scene {
             clicked: false
         };
 
-        this.toasts.push(toastData);
+        this.pinatas.push(pinataData);
     }
 
-    onToastClicked(toastEl) {
+    onPinataClicked(pinataEl) {
         if (this.gameOver) return;
 
-        const index = this.toasts.findIndex(t => t.el === toastEl);
-        if (index !== -1 && !this.toasts[index].clicked) {
-            this.toasts[index].clicked = true;
+        const index = this.pinatas.findIndex(p => p.el === pinataEl);
+        if (index !== -1 && !this.pinatas[index].clicked) {
+            this.pinatas[index].clicked = true;
             this.score += 1;
             this.scoreText.setText('Score: ' + this.score);
 
             this.tweens.add({
-                targets: toastEl,
+                targets: pinataEl,
                 y: -50,
                 alpha: 0,
                 duration: 500,
                 onComplete: () => {
-                    toastEl.destroy();
-                    const removeIndex = this.toasts.findIndex(t => t.el === toastEl);
+                    pinataEl.destroy();
+                    const removeIndex = this.pinatas.findIndex(p => p.el === pinataEl);
                     if (removeIndex !== -1) {
-                        this.toasts.splice(removeIndex, 1);
+                        this.pinatas.splice(removeIndex, 1);
                     }
                 }
             });
@@ -117,23 +116,23 @@ class MexicoScene extends Phaser.Scene {
 
         const now = Date.now();
 
-        for (let i = this.toasts.length - 1; i >= 0; i--) {
-            const toastData = this.toasts[i];
+        for (let i = this.pinatas.length - 1; i >= 0; i--) {
+            const pinataData = this.pinatas[i];
 
-            if (toastData.clicked) continue;
+            if (pinataData.clicked) continue;
 
-            const elapsed = now - toastData.startTime;
-            const t = elapsed / toastData.duration;
+            const elapsed = now - pinataData.startTime;
+            const t = elapsed / pinataData.duration;
 
             if (t > 1) {
-                // Toast missed: simply remove the toast (no lives in timer mode)
-                toastData.el.destroy();
-                this.toasts.splice(i, 1);
+                // Pinata missed: simply remove the pinata (no lives in timer mode)
+                pinataData.el.destroy();
+                this.pinatas.splice(i, 1);
             } else {
                 // Parabolic movement
-                const x = toastData.startX + (toastData.endX - toastData.startX) * t;
-                const y = toastData.startY - (4 * t * (1 - t)) * (toastData.startY - toastData.peakY);
-                toastData.el.setPosition(x, y);
+                const x = pinataData.startX + (pinataData.endX - pinataData.startX) * t;
+                const y = pinataData.startY - (4 * t * (1 - t)) * (pinataData.startY - pinataData.peakY);
+                pinataData.el.setPosition(x, y);
             }
         }
     }
