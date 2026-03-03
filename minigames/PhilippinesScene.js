@@ -3,21 +3,24 @@ class PhilippinesScene extends Phaser.Scene {
     super("PhilippinesScene");
   }
 
+
   init(data) { // levels
     this.currentLevel = data.level || 1;
     this.maxLevel = 5;    
     this.levelConfig = {
-      1: { ingredient: "Pork", color: 0xff6b6b, needed: 5 },
-      2: { ingredient: "Water Chestnuts", color: 0xf9f9f9, needed: 6 },
-      3: { ingredient: "Carrots", color: 0xff8c42, needed: 7 },
-      4: { ingredient: "Spring Roll Wrapper", color: 0xffd93d, needed: 8 },
-      5: { ingredient: "Green Onions", color: 0x6bcf7f, needed: 9 }
+      1: { ingredient: "Pork", color: 0xff6b6b, needed: 3 },
+      2: { ingredient: "Water Chestnuts", color: 0xf9f9f9, needed: 4 },
+      3: { ingredient: "Carrots", color: 0xff8c42, needed: 5 },
+      4: { ingredient: "Spring Roll Wrapper", color: 0xffd93d, needed: 6 },
+      5: { ingredient: "Green Onions", color: 0x6bcf7f, needed: 7 }
     };
   }
+
 
   create() {
     const width = this.scale.width;
     const height = this.scale.height;
+
 
     this.ROWS = 20;
     this.GAME_ROWS = 19;
@@ -28,6 +31,7 @@ class PhilippinesScene extends Phaser.Scene {
     this.offsetY = (height - this.gameHeight) / 2;
     this.add.rectangle(width/2, height/2, width, height, 0x87ceeb);
     this.gameContainer = this.add.container(this.offsetX, this.offsetY);
+
 
     this.config = this.levelConfig[this.currentLevel];
     this.collected = 0;
@@ -46,6 +50,7 @@ class PhilippinesScene extends Phaser.Scene {
       this.scene.start("MapScene");
     });
   }
+
 
   createBoard() {
     const safeRows = [0, 4, 8, 12, 16];
@@ -72,6 +77,7 @@ class PhilippinesScene extends Phaser.Scene {
     this.safeRows = safeRows;
   }
 
+
   createPlayer() {
     const startX = (Math.ceil(this.gameWidth / this.GRID_SIZE) / 2) * this.GRID_SIZE;
     const startY = (this.ROWS - 1) * this.GRID_SIZE; // bottom row
@@ -85,6 +91,7 @@ class PhilippinesScene extends Phaser.Scene {
     this.playerGridY = this.ROWS - 1;
     this.playerOnLog = null; // track which log olive is on
   }
+
 
   createLevelObjects() {
     const cols = Math.ceil(this.gameWidth / this.GRID_SIZE);
@@ -107,6 +114,7 @@ class PhilippinesScene extends Phaser.Scene {
     this.spawnIngredients();
   }
 
+
   createVehicleLane(row, direction) {
     const cols = Math.ceil(this.gameWidth / this.GRID_SIZE);
     const numVehicles = Phaser.Math.Between(2, 4);
@@ -118,6 +126,7 @@ class PhilippinesScene extends Phaser.Scene {
       this.obstacles.push(vehicle);
     }
   }
+
 
   createVehicle(col, row, direction) {
     const x = col * this.GRID_SIZE + this.GRID_SIZE/2;
@@ -138,15 +147,16 @@ class PhilippinesScene extends Phaser.Scene {
       gridX: col,
       gridY: row,
       direction: direction,
-      speed: Phaser.Math.Between(1, 3) * 0.5,
+      speed: 1.2,
       width: type.width,
       type: type.name
     };
   }
 
+
   createWaterLane(row, direction) {
     const cols = Math.ceil(this.gameWidth / this.GRID_SIZE);
-    const numLogs = Phaser.Math.Between(2, 3);
+    const numLogs = Phaser.Math.Between(3, 5);
     const spacing = Math.floor(cols / numLogs);
    
     for (let i = 0; i < numLogs; i++) {
@@ -156,30 +166,35 @@ class PhilippinesScene extends Phaser.Scene {
     }
   }
 
+
   createLog(col, row, direction) {
     const x = col * this.GRID_SIZE + this.GRID_SIZE/2;
     const y = row * this.GRID_SIZE + this.GRID_SIZE/2;
-   
-    const log = this.add.rectangle(x, y, this.GRID_SIZE * 2 - 4, this.GRID_SIZE - 4, 0x8b4513);
+    const logWidth = Phaser.Math.Between(2, 4);
+
+
+    const log = this.add.rectangle(x, y, this.GRID_SIZE * logWidth - 4, this.GRID_SIZE - 4, 0x8b4513);
     this.gameContainer.add(log);
+
 
     return {
       sprite: log,
       gridX: col,
       gridY: row,
       direction: direction,
-      speed: Phaser.Math.Between(1, 2) * 0.5,
-      width: 2,
+      speed: 1.5,
+      width: logWidth,
       type: "log",
       isSafe: true
     };
   }
 
+
   spawnIngredients() {
     const cols = Math.ceil(this.gameWidth / this.GRID_SIZE);
     let spawned = 0;
    
-    while (spawned < this.config.needed) {
+    while (spawned < this.config.needed + 2) {
       const col = Phaser.Math.Between(0, cols - 1);
       const row = Phaser.Math.Between(2, this.GAME_ROWS - 2); // spawn in game area only
      
@@ -209,6 +224,7 @@ class PhilippinesScene extends Phaser.Scene {
     }
   }
 
+
   createUI() {
     const width = this.scale.width;
    
@@ -220,6 +236,7 @@ class PhilippinesScene extends Phaser.Scene {
       padding: { x: 10, y: 5 }
     });
 
+
     // ingredient counter
     this.ingredientText = this.add.text(20, 60,
       `${this.config.ingredient}: ${this.collected}/${this.config.needed}`, {
@@ -229,14 +246,16 @@ class PhilippinesScene extends Phaser.Scene {
       padding: { x: 10, y: 5 }
     });
 
+
     // directions
-    this.add.text(width/2, 20, "Use arrow keys to move | Collect ingredients | Avoid hazards!", {
+    this.add.text(width/2, 20, "Use arrow keys to move", {
       fontSize: "20px",
       fill: "#000",
       backgroundColor: "#ffffff",
       padding: { x: 10, y: 5 }
     }).setOrigin(0.5, 0);
   }
+
 
   update(time, delta) {
     this.updateObstacles(delta);
@@ -246,6 +265,7 @@ class PhilippinesScene extends Phaser.Scene {
       this.movePlayerWithLog(delta);
     }
   }
+
 
   updateObstacles(delta) {
     const cols = Math.ceil(this.gameWidth / this.GRID_SIZE);
@@ -260,6 +280,7 @@ class PhilippinesScene extends Phaser.Scene {
     });
   }
 
+
   movePlayerWithLog(delta) {
     if (this.playerOnLog && !this.canMove) return;
    
@@ -271,6 +292,7 @@ class PhilippinesScene extends Phaser.Scene {
     const logLeft = log.gridX - log.width/2;
     const logRight = log.gridX + log.width/2;
 
+
     // death menu
     if (this.playerGridX < logLeft || this.playerGridX > logRight) {
       this.die("Fell off the log!");
@@ -280,6 +302,7 @@ class PhilippinesScene extends Phaser.Scene {
       this.die("Pushed off screen!");
     }
   }
+
 
   handleInput() {
     if (!this.canMove) return;
@@ -321,6 +344,7 @@ class PhilippinesScene extends Phaser.Scene {
       }
     }
   }
+
 
   checkCollisions() {
     const playerRow = this.playerGridY;
@@ -375,7 +399,7 @@ class PhilippinesScene extends Phaser.Scene {
           ingredient.gridX, ingredient.gridY
         );
        
-        if (distance < 0.5) {
+        if (distance < 0.4) {
           ingredient.collected = true;
           ingredient.sprite.destroy();
           this.collected++;
@@ -384,6 +408,7 @@ class PhilippinesScene extends Phaser.Scene {
       }
     });
   }
+
 
   checkWinCondition() { // reached top row (row 0)
     if (this.playerGridY === 0) {
@@ -395,6 +420,7 @@ class PhilippinesScene extends Phaser.Scene {
     }
   }
 
+
   die(message) {
     this.canMove = false;
     this.playerOnLog = null;
@@ -403,6 +429,7 @@ class PhilippinesScene extends Phaser.Scene {
       this.showGameOver(message);
     });
   }
+
 
   levelComplete() {
     this.canMove = false;
@@ -414,6 +441,7 @@ class PhilippinesScene extends Phaser.Scene {
       this.showLevelComplete();
     }
   }
+
 
   showGameOver(message) {
     const width = this.scale.width;
@@ -441,6 +469,7 @@ class PhilippinesScene extends Phaser.Scene {
       this.scene.restart({ level: this.currentLevel });
     });
 
+
     const mapBtn = this.add.text(width/2, height/2 + 130, "Back to Map", {
       fontSize: "28px",
       fill: "#ffff00"
@@ -449,6 +478,7 @@ class PhilippinesScene extends Phaser.Scene {
       this.scene.start("MapScene");
     });
   }
+
 
   showLevelComplete() {
     const width = this.scale.width;
@@ -464,6 +494,7 @@ class PhilippinesScene extends Phaser.Scene {
       fill: "#ffffff"
     }).setOrigin(0.5);
 
+
     const nextBtn = this.add.text(width/2, height/2 + 50, "Next Level", {
       fontSize: "32px",
       fill: "#00ff00"
@@ -471,6 +502,7 @@ class PhilippinesScene extends Phaser.Scene {
     nextBtn.on("pointerdown", () => {
       this.scene.restart({ level: this.currentLevel + 1 });
     });
+
 
     const mapBtn = this.add.text(width/2, height/2 + 110, "Back to Map", {
       fontSize: "28px",
@@ -480,6 +512,7 @@ class PhilippinesScene extends Phaser.Scene {
       this.scene.start("MapScene");
     });
   }
+
 
   showVictory() {
     const width = this.scale.width;
@@ -507,6 +540,7 @@ class PhilippinesScene extends Phaser.Scene {
       this.scene.restart({ level: 1 });
     });
 
+
     const mapBtn = this.add.text(width/2, height/2 + 130, "Back to Map", {
       fontSize: "28px",
       fill: "#ffff00"
@@ -516,3 +550,4 @@ class PhilippinesScene extends Phaser.Scene {
     });
   }
 }
+
