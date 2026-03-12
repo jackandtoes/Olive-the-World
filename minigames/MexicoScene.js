@@ -83,7 +83,8 @@ class MexicoScene extends Phaser.Scene {
             peakY,
             startTime: Date.now(),
             duration: 3000,
-            clicked: false
+            clicked: false,
+            angle: Phaser.Math.Between(-5, 5) // Random initial angle for rotation
         };
 
         this.pinatas.push(pinataData);
@@ -114,7 +115,8 @@ class MexicoScene extends Phaser.Scene {
             peakY,
             startTime: Date.now(),
             duration: 3000,
-            clicked: false
+            clicked: false,
+            angle: Phaser.Math.Between(-5, 5)
         };
 
         this.chiles.push(chileData);
@@ -145,7 +147,8 @@ class MexicoScene extends Phaser.Scene {
             peakY,
             startTime: Date.now(),
             duration: 3000,
-            clicked: false
+            clicked: false,
+            angle: Phaser.Math.Between(-5, 5)
         };
 
         this.goldenPinatas.push(goldenPinataData);
@@ -253,6 +256,8 @@ class MexicoScene extends Phaser.Scene {
 
         for (let i = this.pinatas.length - 1; i >= 0; i--) {
             const pinataData = this.pinatas[i];
+            
+            pinataData.el.angle += pinataData.angle; // Rotate the pinata for visual effect
 
             if (pinataData.clicked) continue;
 
@@ -276,6 +281,8 @@ class MexicoScene extends Phaser.Scene {
 
             if (chileData.clicked) continue;
 
+            chileData.el.angle += chileData.angle;
+
             const elapsed = now - chileData.startTime;
             const t = elapsed / chileData.duration;
 
@@ -295,6 +302,8 @@ class MexicoScene extends Phaser.Scene {
             const goldenPinataData = this.goldenPinatas[i];
 
             if (goldenPinataData.clicked) continue;
+
+            goldenPinataData.el.angle += goldenPinataData.angle;
 
             const elapsed = now - goldenPinataData.startTime;
             const t = elapsed / goldenPinataData.duration;
