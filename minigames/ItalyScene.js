@@ -15,7 +15,7 @@ class ItalyScene extends Phaser.Scene {
  create() {
    const width = this.scale.width;
    const height = this.scale.height;
-
+   this.hasWon = false;
 
    this.add.rectangle(width/2, height/2, width, height, 0xf5deb3);
    this.pointerCountAll = 40;
@@ -37,7 +37,6 @@ class ItalyScene extends Phaser.Scene {
 
    this.drawGrid();
    this.addPipes();
-   this.add.text(pointer_count)
    this.input.keyboard.on("keydown-ESC", () => {
      this.scene.start("MapScene");
    });
@@ -154,7 +153,6 @@ class ItalyScene extends Phaser.Scene {
    this.GRID_SIZE,
    this.GRID_SIZE);
    pipe.setInteractive();
-   this.checkWin();
 
    pipe.rotation = Phaser.Math.DegToRad(tile.rotationIndex * 90);
    let pointer_count = 0;
@@ -177,6 +175,9 @@ class ItalyScene extends Phaser.Scene {
    this.boardContainer.add(pipe);
  }
 	checkWin() {
+    if (this.hasWon) {
+  return;
+}
   const pasta_1 = this.tileMapData[0][1];
   const pasta_2 = this.tileMapData[0][2];
   const pasta_3 = this.tileMapData[1][2];
@@ -217,11 +218,27 @@ class ItalyScene extends Phaser.Scene {
    pasta_17.rotationIndex % 2 == 0
  ) 
  {
-   this.pointerText.setText("YOU WIN!");
-   this.add.rectangle(400, 300, 400, 300, 0x6666ff);
-   this.add.text(300, 300, "You passed this level!");
-   this.pointerCountAll = 0;
-   console.log(pasta_3.rotationIndex)
+   {
+   this.hasWon = true;
+
+this.pointerText.setText("YOU WIN!");
+this.add.rectangle(400, 300, 400, 300, 0x6666ff);
+this.add.text(300, 300, "You passed this level!");
+
+
+const play_again = this.add.rectangle(400, 350, 200, 80, 0x000000)
+  .setInteractive();
+
+this.add.text(345, 335, "Play Again", {
+  fontSize: "24px",
+  color: "#ffffff"
+});
+
+play_again.on("pointerdown", () => {
+  this.input.enabled = true;
+  this.scene.restart();
+});
+}
  }
  console.log(pasta_10.rotationIndex);
 }
