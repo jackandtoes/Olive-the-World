@@ -15,6 +15,12 @@ class PhilippinesScene extends Phaser.Scene {
     };
   }
 
+  preload() {
+    this.load.image('log2', 'assets/log2.png');
+    this.load.image('log3', 'assets/log3.png');
+    this.load.image('log4', 'assets/log4.png');
+  }
+
   create() {
     const width = this.scale.width;
     const height = this.scale.height;
@@ -160,7 +166,9 @@ class PhilippinesScene extends Phaser.Scene {
     const y = row * this.GRID_SIZE + this.GRID_SIZE/2;
     const logWidth = Phaser.Math.Between(2, 4);
 
-    const log = this.add.rectangle(x, y, this.GRID_SIZE * logWidth - 4, this.GRID_SIZE - 4, 0x8b4513);
+    const textureKey = `log${logWidth}`; // log2, log3, or log4
+    const log = this.add.image(x, y, textureKey);
+    log.setDisplaySize(this.GRID_SIZE * logWidth - 4, this.GRID_SIZE - 4);
     this.gameContainer.add(log);
 
     return {
