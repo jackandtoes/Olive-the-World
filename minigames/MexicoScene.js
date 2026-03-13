@@ -1,13 +1,14 @@
 // 1. Rename class to match what main.js expects
 class MexicoScene extends Phaser.Scene {
     constructor() {
-        // 2. Use the specific key 'MexicoScene'
         super('MexicoScene');
         this.score = 0;
-        this.timeLeft = 120; // seconds (2 minutes)
+        this.timeLeft = 120;
         this.levelDuration = 120;
         this.gameOver = false;
-        this.toasts = [];
+        this.pinatas = [];
+        this.chiles = [];
+        this.goldenPinatas = [];
     }
 
     create() {
@@ -15,7 +16,9 @@ class MexicoScene extends Phaser.Scene {
         this.score = 0;
         this.timeLeft = this.levelDuration;
         this.gameOver = false;
-        this.toasts = [];
+        this.pinatas = [];
+        this.chiles = [];
+        this.goldenPinatas = [];
 
         // Use Phaser's scale system, not window.innerWidth
         const width = this.scale.width;
@@ -37,15 +40,14 @@ class MexicoScene extends Phaser.Scene {
             this.scene.start('MapScene');
         });
 
-        // Start spawning toasts
-        this.spawnTimer = this.time.addEvent({
-            delay: 2000,
-            callback: () => {
-                if (!this.gameOver) this.spawnToast();
-            },
-            callbackScope: this,
-            loop: true
-        });
+        // Initialize dynamic spawn tracking (spawn rate increases as game progresses)
+        this.lastPinataSpawnTime = 0;
+        this.lastChileSpawnTime = 0;
+        this.lastGoldenPinataSpawnTime = 0;
+        this.pinataSpawnInterval = 2000;  // Starting interval in ms
+        this.chileSpawnInterval = 4000;   // Starting interval in ms
+        this.goldenPinataSpawnInterval = 7000;  // Starting interval in ms
+
         // Countdown event for the level timer (ticks every second)
         this.countdownEvent = this.time.addEvent({
             delay: 1000,
@@ -53,10 +55,10 @@ class MexicoScene extends Phaser.Scene {
             callbackScope: this,
             loop: true
         });
-        this.spawnToast();
+        this.spawnPinata();
     }
 
-    spawnToast() {
+    spawnPinata() {
         if (this.gameOver) return;
 
         const width = this.scale.width;
@@ -69,46 +71,128 @@ class MexicoScene extends Phaser.Scene {
         const peakY = Phaser.Math.Between(height * 0.3, height * 0.5); 
         const startY = height + 50; // Start just below screen
 
-        const toast = this.add.rectangle(startX, startY, 40, 40, 0xDEB887);
-        toast.setInteractive();
-        toast.on('pointerdown', () => this.onToastClicked(toast));
+        const pinata = this.add.rectangle(startX, startY, 40, 40, 0xDEB887);
+        pinata.setInteractive();
+        pinata.on('pointerdown', () => this.onPinataClicked(pinata));
 
-        const toastData = {
-            el: toast,
+        const pinataData = {
+            el: pinata,
             startX,
             endX,
             startY,
             peakY,
             startTime: Date.now(),
             duration: 3000,
-            clicked: false
+            clicked: false,
+            angle: Phaser.Math.Between(-5, 5) // Random initial angle for rotation
         };
 
-        this.toasts.push(toastData);
+        this.pinatas.push(pinataData);
     }
 
-    onToastClicked(toastEl) {
+    spawnChile() {
         if (this.gameOver) return;
 
-        const index = this.toasts.findIndex(t => t.el === toastEl);
-        if (index !== -1 && !this.toasts[index].clicked) {
-            this.toasts[index].clicked = true;
+        const width = this.scale.width;
+        const height = this.scale.height;
+
+        // Use game width, not window width
+        const startX = Phaser.Math.Between(40, width - 40);
+        const endX = Phaser.Math.Between(width - 40, 40);
+        // Adjust peak for 600px height
+        const peakY = Phaser.Math.Between(height * 0.3, height * 0.5); 
+        const startY = height + 50; // Start just below screen
+
+        const chile = this.add.rectangle(startX, startY, 40, 40, 0xB22222);
+        chile.setInteractive();
+        chile.on('pointerdown', () => this.onChileClicked(chile));
+
+        const chileData = {
+            el: chile,
+            startX,
+            endX,
+            startY,
+            peakY,
+            startTime: Date.now(),
+            duration: 3000,
+            clicked: false,
+            angle: Phaser.Math.Between(-5, 5)
+        };
+
+        this.chiles.push(chileData);
+    }
+
+    spawnGoldenPinata() {
+        if (this.gameOver) return;
+
+        const width = this.scale.width;
+        const height = this.scale.height;
+
+        // Use game width, not window width
+        const startX = Phaser.Math.Between(40, width - 40);
+        const endX = Phaser.Math.Between(width - 40, 40);
+        // Adjust peak for 600px height
+        const peakY = Phaser.Math.Between(height * 0.3, height * 0.5); 
+        const startY = height + 50; // Start just below screen
+
+        const pinata = this.add.rectangle(startX, startY, 40, 40, 0xFFD700);
+        pinata.setInteractive();
+        pinata.on('pointerdown', () => this.onGoldenPinataClicked(pinata));
+
+        const goldenPinataData = {
+            el: pinata,
+            startX,
+            endX,
+            startY,
+            peakY,
+            startTime: Date.now(),
+            duration: 3000,
+            clicked: false,
+            angle: Phaser.Math.Between(-5, 5)
+        };
+
+        this.goldenPinatas.push(goldenPinataData);
+    }
+
+    onPinataClicked(pinataEl) {
+        if (this.gameOver) return;
+
+        const index = this.pinatas.findIndex(p => p.el === pinataEl);
+        if (index !== -1 && !this.pinatas[index].clicked) {
+            this.pinatas[index].clicked = true;
             this.score += 1;
             this.scoreText.setText('Score: ' + this.score);
 
-            this.tweens.add({
-                targets: toastEl,
-                y: -50,
-                alpha: 0,
-                duration: 500,
-                onComplete: () => {
-                    toastEl.destroy();
-                    const removeIndex = this.toasts.findIndex(t => t.el === toastEl);
-                    if (removeIndex !== -1) {
-                        this.toasts.splice(removeIndex, 1);
-                    }
-                }
-            });
+            pinataEl.destroy();
+            this.pinatas.splice(index, 1);
+        }
+    }
+
+    onChileClicked(chileEl) {
+        if (this.gameOver) return;
+
+        const index = this.chiles.findIndex(p => p.el === chileEl);
+        if (index !== -1 && !this.chiles[index].clicked) {
+            this.chiles[index].clicked = true;
+            this.score -= 1;
+            this.scoreText.setText('Score: ' + this.score);
+
+            chileEl.destroy();
+            this.chiles.splice(index, 1);
+        }
+    }
+
+    onGoldenPinataClicked(goldenPinataEl) {
+        if (this.gameOver) return;
+
+        const index = this.goldenPinatas.findIndex(p => p.el === goldenPinataEl);
+        if (index !== -1 && !this.goldenPinatas[index].clicked) {
+            this.goldenPinatas[index].clicked = true;
+            this.score += 5; 
+            this.scoreText.setText('Score: ' + this.score);
+
+            goldenPinataEl.destroy();
+            this.goldenPinatas.splice(index, 1);
         }
     }
 
@@ -116,26 +200,96 @@ class MexicoScene extends Phaser.Scene {
         if (this.gameOver) return;
 
         const now = Date.now();
+        const elapsedGameTime = this.levelDuration - this.timeLeft;
 
-        for (let i = this.toasts.length - 1; i >= 0; i--) {
-            const toastData = this.toasts[i];
+        // Spawn piñatas with decreasing interval
+        if (now - this.lastPinataSpawnTime > this.pinataSpawnInterval && !this.gameOver) {
+            this.spawnPinata();
+            this.lastPinataSpawnTime = now;
+            // Decrease spawn interval by 5ms per second elapsed (minimum 600ms)
+            this.pinataSpawnInterval = Math.max(650, 2000 - (elapsedGameTime * 20));
+        }
 
-            if (toastData.clicked) continue;
+        // Spawn chiles with decreasing interval (only after 20 seconds)
+        if (elapsedGameTime >= 20 && now - this.lastChileSpawnTime > this.chileSpawnInterval && !this.gameOver) {
+            this.spawnChile();
+            this.lastChileSpawnTime = now;
+            this.chileSpawnInterval = Math.max(800, 4000 - (elapsedGameTime * 20));
+        }
 
-            const elapsed = now - toastData.startTime;
-            const t = elapsed / toastData.duration;
+        // Spawn golden pinatas with decreasing interval (only after 35 seconds)
+        if (elapsedGameTime >= 35 && now - this.lastGoldenPinataSpawnTime > this.goldenPinataSpawnInterval && !this.gameOver) {
+            this.spawnGoldenPinata();
+            this.lastGoldenPinataSpawnTime = now;
+            this.goldenPinataSpawnInterval = Math.max(5000, 5000 - (elapsedGameTime * 15));
+        }
+
+        for (let i = this.pinatas.length - 1; i >= 0; i--) {
+            const pinataData = this.pinatas[i];
+            
+            pinataData.el.angle += pinataData.angle; // Rotate the pinata for visual effect
+
+            if (pinataData.clicked) continue;
+
+            const elapsed = now - pinataData.startTime;
+            const t = elapsed / pinataData.duration;
 
             if (t > 1) {
-                // Toast missed: simply remove the toast (no lives in timer mode)
-                toastData.el.destroy();
-                this.toasts.splice(i, 1);
+                // Pinata missed: simply remove the pinata (no lives in timer mode)
+                pinataData.el.destroy();
+                this.pinatas.splice(i, 1);
             } else {
                 // Parabolic movement
-                const x = toastData.startX + (toastData.endX - toastData.startX) * t;
-                const y = toastData.startY - (4 * t * (1 - t)) * (toastData.startY - toastData.peakY);
-                toastData.el.setPosition(x, y);
+                const x = pinataData.startX + (pinataData.endX - pinataData.startX) * t;
+                const y = pinataData.startY - (4 * t * (1 - t)) * (pinataData.startY - pinataData.peakY);
+                pinataData.el.setPosition(x, y);
             }
         }
+
+        for (let i = this.chiles.length - 1; i >= 0; i--) {
+            const chileData = this.chiles[i];
+
+            if (chileData.clicked) continue;
+
+            chileData.el.angle += chileData.angle;
+
+            const elapsed = now - chileData.startTime;
+            const t = elapsed / chileData.duration;
+
+            if (t > 1) {
+                // Chile missed: simply remove the chile (no lives in timer mode)
+                chileData.el.destroy();
+                this.chiles.splice(i, 1);
+            } else {
+                // Parabolic movement
+                const x = chileData.startX + (chileData.endX - chileData.startX) * t;
+                const y = chileData.startY - (4 * t * (1 - t)) * (chileData.startY - chileData.peakY);
+                chileData.el.setPosition(x, y);
+            }
+        }
+
+        for (let i = this.goldenPinatas.length - 1; i >= 0; i--) {
+            const goldenPinataData = this.goldenPinatas[i];
+
+            if (goldenPinataData.clicked) continue;
+
+            goldenPinataData.el.angle += goldenPinataData.angle;
+
+            const elapsed = now - goldenPinataData.startTime;
+            const t = elapsed / goldenPinataData.duration;
+
+            if (t > 1) {
+                // Golden pinata missed: simply remove the golden pinata (no lives in timer mode)
+                goldenPinataData.el.destroy();
+                this.goldenPinatas.splice(i, 1);
+            } else {
+                // Parabolic movement
+                const x = goldenPinataData.startX + (goldenPinataData.endX - goldenPinataData.startX) * t;
+                const y = goldenPinataData.startY - (4 * t * (1 - t)) * (goldenPinataData.startY - goldenPinataData.peakY);
+                goldenPinataData.el.setPosition(x, y);
+            }
+        } 
+
     }
     onSecondTick() {
         if (this.gameOver) return;
@@ -147,7 +301,6 @@ class MexicoScene extends Phaser.Scene {
     }
     endGame() {
         this.gameOver = true;
-        this.spawnTimer.remove(); // Stop spawning
         if (this.countdownEvent) this.countdownEvent.remove();
         const width = this.scale.width;
         const height = this.scale.height;

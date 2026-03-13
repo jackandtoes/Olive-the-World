@@ -7,11 +7,11 @@ class PhilippinesScene extends Phaser.Scene {
     this.currentLevel = data.level || 1;
     this.maxLevel = 5;    
     this.levelConfig = {
-      1: { ingredient: "Pork", color: 0xff6b6b, needed: 5 },
-      2: { ingredient: "Water Chestnuts", color: 0xf9f9f9, needed: 6 },
-      3: { ingredient: "Carrots", color: 0xff8c42, needed: 7 },
-      4: { ingredient: "Spring Roll Wrapper", color: 0xffd93d, needed: 8 },
-      5: { ingredient: "Green Onions", color: 0x6bcf7f, needed: 9 }
+      1: { ingredient: "Pork", color: 0xff6b6b, needed: 3 },
+      2: { ingredient: "Water Chestnuts", color: 0xf9f9f9, needed: 4 },
+      3: { ingredient: "Carrots", color: 0xff8c42, needed: 5 },
+      4: { ingredient: "Spring Roll Wrapper", color: 0xffd93d, needed: 6 },
+      5: { ingredient: "Green Onions", color: 0x6bcf7f, needed: 7 }
     };
   }
 
@@ -38,7 +38,6 @@ class PhilippinesScene extends Phaser.Scene {
     this.createLevelObjects();
     this.gameContainer.bringToTop(this.player);
     this.createUI();
-
 
     this.cursors = this.input.keyboard.createCursorKeys();
     this.canMove = true;
@@ -138,7 +137,7 @@ class PhilippinesScene extends Phaser.Scene {
       gridX: col,
       gridY: row,
       direction: direction,
-      speed: Phaser.Math.Between(1, 3) * 0.5,
+      speed: 1.2,
       width: type.width,
       type: type.name
     };
@@ -146,7 +145,7 @@ class PhilippinesScene extends Phaser.Scene {
 
   createWaterLane(row, direction) {
     const cols = Math.ceil(this.gameWidth / this.GRID_SIZE);
-    const numLogs = Phaser.Math.Between(2, 3);
+    const numLogs = Phaser.Math.Between(3, 5);
     const spacing = Math.floor(cols / numLogs);
    
     for (let i = 0; i < numLogs; i++) {
@@ -159,8 +158,9 @@ class PhilippinesScene extends Phaser.Scene {
   createLog(col, row, direction) {
     const x = col * this.GRID_SIZE + this.GRID_SIZE/2;
     const y = row * this.GRID_SIZE + this.GRID_SIZE/2;
-   
-    const log = this.add.rectangle(x, y, this.GRID_SIZE * 2 - 4, this.GRID_SIZE - 4, 0x8b4513);
+    const logWidth = Phaser.Math.Between(2, 4);
+
+    const log = this.add.rectangle(x, y, this.GRID_SIZE * logWidth - 4, this.GRID_SIZE - 4, 0x8b4513);
     this.gameContainer.add(log);
 
     return {
@@ -168,8 +168,8 @@ class PhilippinesScene extends Phaser.Scene {
       gridX: col,
       gridY: row,
       direction: direction,
-      speed: Phaser.Math.Between(1, 2) * 0.5,
-      width: 2,
+      speed: 1.5,
+      width: logWidth,
       type: "log",
       isSafe: true
     };
@@ -179,7 +179,7 @@ class PhilippinesScene extends Phaser.Scene {
     const cols = Math.ceil(this.gameWidth / this.GRID_SIZE);
     let spawned = 0;
    
-    while (spawned < this.config.needed) {
+    while (spawned < this.config.needed + 2) {
       const col = Phaser.Math.Between(0, cols - 1);
       const row = Phaser.Math.Between(2, this.GAME_ROWS - 2); // spawn in game area only
      
@@ -230,7 +230,7 @@ class PhilippinesScene extends Phaser.Scene {
     });
 
     // directions
-    this.add.text(width/2, 20, "Use arrow keys to move | Collect ingredients | Avoid hazards!", {
+    this.add.text(width/2, 20, "Use arrow keys to move", {
       fontSize: "20px",
       fill: "#000",
       backgroundColor: "#ffffff",
@@ -375,7 +375,7 @@ class PhilippinesScene extends Phaser.Scene {
           ingredient.gridX, ingredient.gridY
         );
        
-        if (distance < 0.5) {
+        if (distance < 0.4) {
           ingredient.collected = true;
           ingredient.sprite.destroy();
           this.collected++;
