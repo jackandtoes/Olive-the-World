@@ -16,9 +16,9 @@ class PhilippinesScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.image('log2', 'assets/log2.png');
-    this.load.image('log3', 'assets/log3.png');
-    this.load.image('log4', 'assets/log4.png');
+    this.load.image('log2', 'assets/philippines/log2.png');
+    this.load.image('log3', 'assets/philippines/log3.png');
+    this.load.image('log4', 'assets/philippines/log4.png');
   }
 
   create() {
@@ -69,7 +69,10 @@ class PhilippinesScene extends Phaser.Scene {
         } else {
           color = 0x4a90e2; // anything that's not grass or road is water
         }
-        const tile = this.add.rectangle(x, y, this.GRID_SIZE - 2, this.GRID_SIZE - 2, color);
+        //const tile = this.add.rectangle(x, y, this.GRID_SIZE - 2, this.GRID_SIZE - 2, color);
+        const tile = this.add.rectangle(x, y, this.GRID_SIZE, this.GRID_SIZE, color);
+        //const tile = this.add.rectangle(x, y, this.GRID_SIZE -1.5, this.GRID_SIZE -1.5, color);
+
         tile.setOrigin(0, 0);
         this.gameContainer.add(tile);
       }
