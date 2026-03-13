@@ -163,18 +163,8 @@ class MexicoScene extends Phaser.Scene {
             this.score += 1;
             this.scoreText.setText('Score: ' + this.score);
 
-            this.tweens.add({
-                targets: pinataEl,
-                alpha: 0,
-                duration: 500,
-                onComplete: () => {
-                    pinataEl.destroy();
-                    const removeIndex = this.pinatas.findIndex(p => p.el === pinataEl);
-                    if (removeIndex !== -1) {
-                        this.pinatas.splice(removeIndex, 1);
-                    }
-                }
-            });
+            pinataEl.destroy();
+            this.pinatas.splice(index, 1);
         }
     }
 
@@ -187,18 +177,8 @@ class MexicoScene extends Phaser.Scene {
             this.score -= 1;
             this.scoreText.setText('Score: ' + this.score);
 
-            this.tweens.add({
-                targets: chileEl,
-                alpha: 0,
-                duration: 500,
-                onComplete: () => {
-                    chileEl.destroy();
-                    const removeIndex = this.chiles.findIndex(p => p.el === chileEl);
-                    if (removeIndex !== -1) {
-                        this.chiles.splice(removeIndex, 1);
-                    }
-                }
-            });
+            chileEl.destroy();
+            this.chiles.splice(index, 1);
         }
     }
 
@@ -211,18 +191,8 @@ class MexicoScene extends Phaser.Scene {
             this.score += 5; 
             this.scoreText.setText('Score: ' + this.score);
 
-            this.tweens.add({
-                targets: goldenPinataEl,
-                alpha: 0,
-                duration: 500,
-                onComplete: () => {
-                    goldenPinataEl.destroy();
-                    const removeIndex = this.goldenPinatas.findIndex(p => p.el === goldenPinataEl);
-                    if (removeIndex !== -1) {
-                        this.goldenPinatas.splice(removeIndex, 1);
-                    }
-                }
-            });
+            goldenPinataEl.destroy();
+            this.goldenPinatas.splice(index, 1);
         }
     }
 
