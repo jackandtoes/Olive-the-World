@@ -83,7 +83,8 @@ class MexicoScene extends Phaser.Scene {
             peakY,
             startTime: Date.now(),
             duration: 3000,
-            clicked: false
+            clicked: false,
+            angle: Phaser.Math.Between(-5, 5) // Random initial angle for rotation
         };
 
         this.pinatas.push(pinataData);
@@ -114,7 +115,8 @@ class MexicoScene extends Phaser.Scene {
             peakY,
             startTime: Date.now(),
             duration: 3000,
-            clicked: false
+            clicked: false,
+            angle: Phaser.Math.Between(-5, 5)
         };
 
         this.chiles.push(chileData);
@@ -145,7 +147,8 @@ class MexicoScene extends Phaser.Scene {
             peakY,
             startTime: Date.now(),
             duration: 3000,
-            clicked: false
+            clicked: false,
+            angle: Phaser.Math.Between(-5, 5)
         };
 
         this.goldenPinatas.push(goldenPinataData);
@@ -160,18 +163,8 @@ class MexicoScene extends Phaser.Scene {
             this.score += 1;
             this.scoreText.setText('Score: ' + this.score);
 
-            this.tweens.add({
-                targets: pinataEl,
-                alpha: 0,
-                duration: 500,
-                onComplete: () => {
-                    pinataEl.destroy();
-                    const removeIndex = this.pinatas.findIndex(p => p.el === pinataEl);
-                    if (removeIndex !== -1) {
-                        this.pinatas.splice(removeIndex, 1);
-                    }
-                }
-            });
+            pinataEl.destroy();
+            this.pinatas.splice(index, 1);
         }
     }
 
@@ -184,18 +177,8 @@ class MexicoScene extends Phaser.Scene {
             this.score -= 1;
             this.scoreText.setText('Score: ' + this.score);
 
-            this.tweens.add({
-                targets: chileEl,
-                alpha: 0,
-                duration: 500,
-                onComplete: () => {
-                    chileEl.destroy();
-                    const removeIndex = this.chiles.findIndex(p => p.el === chileEl);
-                    if (removeIndex !== -1) {
-                        this.chiles.splice(removeIndex, 1);
-                    }
-                }
-            });
+            chileEl.destroy();
+            this.chiles.splice(index, 1);
         }
     }
 
@@ -208,18 +191,8 @@ class MexicoScene extends Phaser.Scene {
             this.score += 5; 
             this.scoreText.setText('Score: ' + this.score);
 
-            this.tweens.add({
-                targets: goldenPinataEl,
-                alpha: 0,
-                duration: 500,
-                onComplete: () => {
-                    goldenPinataEl.destroy();
-                    const removeIndex = this.goldenPinatas.findIndex(p => p.el === goldenPinataEl);
-                    if (removeIndex !== -1) {
-                        this.goldenPinatas.splice(removeIndex, 1);
-                    }
-                }
-            });
+            goldenPinataEl.destroy();
+            this.goldenPinatas.splice(index, 1);
         }
     }
 
@@ -253,6 +226,8 @@ class MexicoScene extends Phaser.Scene {
 
         for (let i = this.pinatas.length - 1; i >= 0; i--) {
             const pinataData = this.pinatas[i];
+            
+            pinataData.el.angle += pinataData.angle; // Rotate the pinata for visual effect
 
             if (pinataData.clicked) continue;
 
@@ -276,6 +251,8 @@ class MexicoScene extends Phaser.Scene {
 
             if (chileData.clicked) continue;
 
+            chileData.el.angle += chileData.angle;
+
             const elapsed = now - chileData.startTime;
             const t = elapsed / chileData.duration;
 
@@ -295,6 +272,8 @@ class MexicoScene extends Phaser.Scene {
             const goldenPinataData = this.goldenPinatas[i];
 
             if (goldenPinataData.clicked) continue;
+
+            goldenPinataData.el.angle += goldenPinataData.angle;
 
             const elapsed = now - goldenPinataData.startTime;
             const t = elapsed / goldenPinataData.duration;
