@@ -11,6 +11,11 @@ class MexicoScene extends Phaser.Scene {
         this.goldenPinatas = [];
     }
 
+    preload() {
+        this.load.image('pinata', 'assets/mexico/mexico_minigame_pinata.png');
+        this.load.image('goldenPinata', 'assets/mexico/mexico_minigame_goldenPinata.png');
+    }
+    
     create() {
         // RESET STATE: Important because the scene is reused
         this.score = 0;
@@ -71,7 +76,8 @@ class MexicoScene extends Phaser.Scene {
         const peakY = Phaser.Math.Between(height * 0.3, height * 0.5); 
         const startY = height + 50; // Start just below screen
 
-        const pinata = this.add.rectangle(startX, startY, 40, 40, 0xDEB887);
+        const pinata = this.add.image(startX, startY, 'pinata');
+        pinata.setScale(90 / pinata.width, 90 / pinata.height);
         pinata.setInteractive();
         pinata.on('pointerdown', () => this.onPinataClicked(pinata));
 
@@ -84,7 +90,7 @@ class MexicoScene extends Phaser.Scene {
             startTime: Date.now(),
             duration: 3000,
             clicked: false,
-            angle: Phaser.Math.Between(-5, 5) // Random initial angle for rotation
+            angle: Phaser.Math.Between(-3, 3) // Random initial angle for rotation
         };
 
         this.pinatas.push(pinataData);
@@ -103,7 +109,8 @@ class MexicoScene extends Phaser.Scene {
         const peakY = Phaser.Math.Between(height * 0.3, height * 0.5); 
         const startY = height + 50; // Start just below screen
 
-        const chile = this.add.rectangle(startX, startY, 40, 40, 0xB22222);
+        const chile = this.add.image(startX, startY, 'chile');
+        chile.setScale(40 / chile.width, 40 / chile.height); // Scale to 40x40
         chile.setInteractive();
         chile.on('pointerdown', () => this.onChileClicked(chile));
 
@@ -116,7 +123,7 @@ class MexicoScene extends Phaser.Scene {
             startTime: Date.now(),
             duration: 3000,
             clicked: false,
-            angle: Phaser.Math.Between(-5, 5)
+            angle: Phaser.Math.Between(-3, 3)
         };
 
         this.chiles.push(chileData);
@@ -135,12 +142,13 @@ class MexicoScene extends Phaser.Scene {
         const peakY = Phaser.Math.Between(height * 0.3, height * 0.5); 
         const startY = height + 50; // Start just below screen
 
-        const pinata = this.add.rectangle(startX, startY, 40, 40, 0xFFD700);
-        pinata.setInteractive();
-        pinata.on('pointerdown', () => this.onGoldenPinataClicked(pinata));
+        const goldenPinata = this.add.image(startX, startY, 'goldenPinata');
+        goldenPinata.setScale(80 / goldenPinata.width, 80 / goldenPinata.height); // Scale to 90x90
+        goldenPinata.setInteractive();
+        goldenPinata.on('pointerdown', () => this.onGoldenPinataClicked(goldenPinata));
 
         const goldenPinataData = {
-            el: pinata,
+            el: goldenPinata,
             startX,
             endX,
             startY,
@@ -148,7 +156,7 @@ class MexicoScene extends Phaser.Scene {
             startTime: Date.now(),
             duration: 3000,
             clicked: false,
-            angle: Phaser.Math.Between(-5, 5)
+            angle: Phaser.Math.Between(-3, 3)
         };
 
         this.goldenPinatas.push(goldenPinataData);
