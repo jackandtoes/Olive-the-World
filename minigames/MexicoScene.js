@@ -14,6 +14,7 @@ class MexicoScene extends Phaser.Scene {
     preload() {
         this.load.image('pinata', 'assets/mexico/mexico_minigame_pinata.png');
         this.load.image('goldenPinata', 'assets/mexico/mexico_minigame_goldenPinata.png');
+        this.load.image('chile', 'assets/mexico/mexico_minigame_chile.png');
     }
     
     create() {
@@ -110,7 +111,7 @@ class MexicoScene extends Phaser.Scene {
         const startY = height + 50; // Start just below screen
 
         const chile = this.add.image(startX, startY, 'chile');
-        chile.setScale(40 / chile.width, 40 / chile.height); // Scale to 40x40
+        chile.setScale(105 / chile.width, 105 / chile.height); // Scale to 90x90
         chile.setInteractive();
         chile.on('pointerdown', () => this.onChileClicked(chile));
 
@@ -168,11 +169,21 @@ class MexicoScene extends Phaser.Scene {
         const index = this.pinatas.findIndex(p => p.el === pinataEl);
         if (index !== -1 && !this.pinatas[index].clicked) {
             this.pinatas[index].clicked = true;
-            this.score += 1;
+            this.score += 10;
             this.scoreText.setText('Score: ' + this.score);
 
             pinataEl.destroy();
             this.pinatas.splice(index, 1);
+
+            const plusText = this.add.text(pinataEl.x, pinataEl.y, '+10', { fontSize: '24px', fill: '#ffffff' }).setOrigin(0.5);
+            this.tweens.add({
+                targets: plusText,
+                y: pinataEl.y - 50,
+                alpha: 0,
+                duration: 1000,
+                onComplete: () => plusText.destroy()
+            });
+
         }
     }
 
@@ -182,11 +193,20 @@ class MexicoScene extends Phaser.Scene {
         const index = this.chiles.findIndex(p => p.el === chileEl);
         if (index !== -1 && !this.chiles[index].clicked) {
             this.chiles[index].clicked = true;
-            this.score -= 1;
+            this.score -= 20;
             this.scoreText.setText('Score: ' + this.score);
 
             chileEl.destroy();
             this.chiles.splice(index, 1);
+
+            const minusText = this.add.text(chileEl.x, chileEl.y, '-30', { fontSize: '24px', fill: '#ffffff' }).setOrigin(0.5);
+            this.tweens.add({
+                targets: minusText,
+                y: chileEl.y - 50,
+                alpha: 0,
+                duration: 1000,
+                onComplete: () => minusText.destroy()
+            });
         }
     }
 
@@ -196,11 +216,20 @@ class MexicoScene extends Phaser.Scene {
         const index = this.goldenPinatas.findIndex(p => p.el === goldenPinataEl);
         if (index !== -1 && !this.goldenPinatas[index].clicked) {
             this.goldenPinatas[index].clicked = true;
-            this.score += 5; 
+            this.score += 50; 
             this.scoreText.setText('Score: ' + this.score);
 
             goldenPinataEl.destroy();
             this.goldenPinatas.splice(index, 1);
+
+            const plusText = this.add.text(goldenPinataEl.x, goldenPinataEl.y, '+50', { fontSize: '24px', fill: '#ffffff' }).setOrigin(0.5);
+            this.tweens.add({
+                targets: plusText,
+                y: goldenPinataEl.y - 50,
+                alpha: 0,
+                duration: 1000,
+                onComplete: () => plusText.destroy()
+            });
         }
     }
 
@@ -307,6 +336,7 @@ class MexicoScene extends Phaser.Scene {
             this.endGame();
         }
     }
+    
     endGame() {
         this.gameOver = true;
         if (this.countdownEvent) this.countdownEvent.remove();
