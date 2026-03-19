@@ -227,22 +227,17 @@ for (let i = 0; i < level.tX.length; i++) {
    this.GRID_SIZE,
    this.GRID_SIZE);
    pipe.setInteractive();
-// Add this after pipe.setInteractive();
+
 const rotationText = this.add.text(
   pipe.x, 
-  pipe.y, 
-  tile.rotationIndex, // show the rotationIndex
-  { fontSize: "18px", color: "#ffffff", fontStyle: "bold" }
+  pipe.y
 ).setOrigin(0.5);
 
-// Keep a reference so we can update it when rotated
-pipe.rotationText = rotationText;
    pipe.rotation = Phaser.Math.DegToRad(tile.rotationIndex * 90);
    let pointer_count = 0;
    pipe.on("pointerdown", () => {
      if(this.pointerCountAll > 0){
        tile.rotationIndex = (tile.rotationIndex + 1) % 4;
-       pipe.rotationText.setText(tile.rotationIndex);
        pointer_count += 1;
        
        this.pointerCountAll -= 1;
