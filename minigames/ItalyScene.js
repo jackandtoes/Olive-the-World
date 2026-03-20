@@ -306,12 +306,10 @@ const rotationText = this.add.text(
 
       this.pointerText.setText("YOU WIN!");
 
-      this.add.rectangle(400, 300, 400, 300, 0x6666ff);
-      this.add.text(300, 300, "You passed this level!");
 
-      const next_button = this.add.rectangle(400, 350, 200, 80, 0x000000)
+      const next_button = this.add.rectangle(400, 350, 250, 150, 0x000000)
         .setInteractive({ useHandCursor: true });
-
+      this.add.text(300, 300, "You passed this level!");
       this.add.text(340, 335, "Next Level", {
         fontSize: "24px",
         color: "#ffffff"
@@ -398,12 +396,11 @@ console.log(pasta_1.rotationIndex);
 
       this.pointerText.setText("YOU WIN!");
 
-      this.add.rectangle(400, 300, 400, 300, 0x6666ff);
-      this.add.text(300, 300, "You passed this level!");
 
-      const next_button = this.add.rectangle(400, 350, 200, 80, 0x000000)
+
+      const next_button = this.add.rectangle(400, 350, 250, 150, 0x000000)
         .setInteractive({ useHandCursor: true });
-
+      this.add.text(300, 300, "You passed this level!");
       this.add.text(340, 335, "Next Level", {
         fontSize: "24px",
         color: "#ffffff"
