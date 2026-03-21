@@ -5,10 +5,17 @@ class StartScene extends Phaser.Scene {
   constructor() {
     super("StartScene");
   }
+
+  preload() {
+      this.load.image("homeBg", "assets/homescreen.png");
+  }
+
   create() {
     const width = this.scale.width;
     const height = this.scale.height;
-    this.add.rectangle(width/2, height/2, width, height, 0xf5f5dc);
+    const bg = this.add.image(width/2, height/2, "homeBg");
+    const homeScale = Math.max(width / bg.width, height / bg.height);
+    bg.setScale(homeScale);
     this.add.text(width/2, height/2 - 100, "Olive the World!", {
       fontSize: "48px",
       fill: "#000"
@@ -36,8 +43,9 @@ class MapScene extends Phaser.Scene {
   create() {
     const width = this.scale.width;
     const height = this.scale.height;
-    this.add.image(width/2, height/2, "mapBg")
-      .setDisplaySize(width, height);
+    const bg = this.add.image(width/2, height/2, "mapBg");
+    const mapScale = Math.max(width / bg.width, height / bg.height);
+    bg.setScale(mapScale);
     this.player = this.add.circle(width/2, height/2, 18, 0x556b2f);
     this.physics.add.existing(this.player);
     this.player.body.setCollideWorldBounds(true);
