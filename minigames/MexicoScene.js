@@ -343,21 +343,47 @@ class MexicoScene extends Phaser.Scene {
         const width = this.scale.width;
         const height = this.scale.height;
 
-        this.add.rectangle(width/2, height/2, 400, 200, 0x000000, 0.8);
-        
-        this.add.text(width/2, height/2 - 40, 'GAME OVER', 
-            { fontSize: '48px', fill: '#fff' }).setOrigin(0.5);
-            
-        this.add.text(width/2, height/2 + 20, `Final Score: ${this.score}`, 
-            { fontSize: '32px', fill: '#fff' }).setOrigin(0.5);
-
-        const backButton = this.add.text(width/2, height/2 + 70, 'Click to Return', 
-            { fontSize: '24px', fill: '#00ff00' })
-            .setOrigin(0.5)
-            .setInteractive();
-
-        backButton.on('pointerdown', () => {
-            this.scene.start('MapScene');
-        });
+            if (this.score >= 500) {
+                this.add.rectangle(width/2, height/2, 400, 400, 0x000000, 0.8);
+                this.add.text(width/2, height/2 - 40, 'YOU WIN!', 
+                    { fontSize: '48px', fill: '#fff' }).setOrigin(0.5);
+                this.add.text(width/2, height/2 + 20, `Final Score: ${this.score}`, 
+                    { fontSize: '32px', fill: '#fff' }).setOrigin(0.5);
+                const backButton = this.add.text(width/2, height/2 + 70, 'Return to Map', 
+                    { fontSize: '24px', fill: '#00ff00' })
+                    .setOrigin(0.5)
+                    .setInteractive();
+                backButton.on('pointerdown', () => {
+                    this.scene.start('MapScene');
+                });
+                const playButton = this.add.text(width/2, height/2 + 120, 'Play Again', 
+                    { fontSize: '24px', fill: '#00ff00' })
+                    .setOrigin(0.5)
+                    .setInteractive();
+                playButton.on('pointerdown', () => {
+                    this.scene.start('MexicoScene');
+                });
+            }
+            else {
+                this.add.rectangle(width/2, height/2, 400, 400, 0x000000, 0.8);
+                this.add.text(width/2, height/2 - 40, 'YOU LOSE', 
+                    { fontSize: '48px', fill: '#fff' }).setOrigin(0.5);
+                this.add.text(width/2, height/2 + 20, `Final Score: ${this.score}`, 
+                    { fontSize: '32px', fill: '#fff' }).setOrigin(0.5);
+                const backButton = this.add.text(width/2, height/2 + 70, 'Return to Map', 
+                    { fontSize: '24px', fill: '#00ff00' })
+                    .setOrigin(0.5)
+                    .setInteractive();
+                backButton.on('pointerdown', () => {
+                    this.scene.start('MapScene');
+                });
+                const playButton = this.add.text(width/2, height/2 + 120, 'Play Again', 
+                    { fontSize: '24px', fill: '#00ff00' })
+                    .setOrigin(0.5)
+                    .setInteractive();
+                playButton.on('pointerdown', () => {
+                    this.scene.start('MexicoScene');
+                });
+            }
     }
 }
