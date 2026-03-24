@@ -2,7 +2,7 @@
 <br />
 <div align="center">
   <a href="[https://github.com/github_username/repo_name](https://github.com/jackandtoes/Olive-the-World)">
-    <img src="https://github.com/jackandtoes/Olive-the-World/blob/main/assets/olive_logo.png" alt="Logo" width="450" height="450">
+    <img src="https://github.com/jackandtoes/Olive-the-World/blob/main/assets/olive_main_logo.png" alt="Logo" width="400" height="400">
   </a>
 </div>
 
