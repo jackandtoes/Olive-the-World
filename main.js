@@ -41,9 +41,7 @@ class MapScene extends Phaser.Scene {
   init(data) {
     if (!this.registry.has('equippedItems')) {
       this.registry.set('equippedItems', {
-        mexico: null,
-        italy: null,
-        philippines: null
+        hat: null
       });
     }
   }
@@ -58,6 +56,17 @@ class MapScene extends Phaser.Scene {
     const mapScale = Math.max(width / bg.width, height / bg.height);
     bg.setScale(mapScale);
     
+    const storeButton = this.add.text(width/2, 30, "Store", {
+      fontSize: "28px",
+      fill: "#000000",
+      backgroundColor: "#ffc4e3",
+      padding: { x: 20, y: 10 }
+    }).setOrigin(0.5).setInteractive();
+
+    storeButton.on("pointerdown", () => {
+      this.scene.start("Store");
+    });
+
     this.player = this.add.circle(width/2, height/2, 18, 0x556b2f);
     this.physics.add.existing(this.player);
     this.player.body.setCollideWorldBounds(true);
@@ -77,7 +86,7 @@ class MapScene extends Phaser.Scene {
     this.createInfoPanel();
     this.updatePlayerAppearance();
   }
-  createCountry(name, x, y, description, sceneName, storeName) {
+  createCountry(name, x, y, description, sceneName) {
     const landmark = this.add.rectangle(x, y, 50, 50, 0xffcc00);
     this.add.text(x, y - 40, name, {
       fontSize: "18px",
@@ -88,7 +97,6 @@ class MapScene extends Phaser.Scene {
       landmark,
       description,
       sceneName,
-      storeName,
       radius: 60
     });
   }
@@ -116,32 +124,12 @@ class MapScene extends Phaser.Scene {
         this.scene.start(this.currentCountry.sceneName);
       }
     });
-
-    const storeButton = this.add.text(50, 35, "Visit store!", {
-      fontSize: "22px",
-      fill: "#007700"
-    }).setInteractive();
-    storeButton.on("pointerdown", () => {
-      if (this.currentCountry) {
-        this.scene.start(this.currentCountry.storeName, {
-            country: this.currentCountry.name.toLowerCase()
-        });
-      }
-    });
-
-    this.infoPanel.add([bg, this.panelTitle, this.panelText, playButton, storeButton]);
+    this.infoPanel.add([bg, this.panelTitle, this.panelText, playButton]);
   }
 
 updatePlayerAppearance() {
   const equippedItems = this.registry.get('equippedItems');
-  let hasHat = false;
-  for (let country in equippedItems) {
-    if (equippedItems[country]) {
-      hasHat = true;
-      break;
-    }
-  }
-  this.playerHat.setVisible(hasHat);
+  this.playerHat.setVisible(equippedItems.hat !== null);
 }
 
   update() {
@@ -178,44 +166,34 @@ updatePlayerAppearance() {
 }
 
 // ===============================
-// STORE SCENES
+// STORE SCENE
 // ===============================
-class StoreScene extends Phaser.Scene {
-  constructor(sceneKey, countryName, bgColor) {
-    super(sceneKey);
-    this.countryName = countryName;
-    this.bgColor = bgColor;
-  }
-  init(data) {
-    this.country = data.country || this.countryName;
+class Store extends Phaser.Scene {
+  constructor() {
+    super("Store");
   }
 
   create() {
     const width = this.scale.width;
     const height = this.scale.height;
-    this.add.rectangle(width/2, height/2, width, height, this.bgColor);
-    this.add.text(width/2, height/2 - 50, `${this.countryName} Store`, {
-      fontSize: "32px",
+    this.add.rectangle(width/2, height/2, width, height, 0xffeaa7);
+    this.add.text(width/2, 60, "Welcome to the store!", {
+      fontSize: "36px",
       fill: "#000"
     }).setOrigin(0.5);
 
-    this.add.text(width/2, 120, "Click item to wear!", {
-      fontSize: "20 px",
-      fill: "#000"
-    }).setOrigin(0.5);
-
-    const itemSquare = this.add.rectangle(width/2, height/2, 80, 80, 0xff0000)
-    .setStrokeStyle(4, 0x000000)
-    .setInteractive();
-
-    this.add.text(width/2, height/2 + 70, "Hat", {
+      const itemSquare = this.add.rectangle(width/2, height/2, 80, 80, 0xff0000)
+      .setStrokeStyle(4, 0x000000)
+      .setInteractive();
+    
+    this.add.text(width/2, height/2 + 70, "Fancy Hat", {
       fontSize: "18px",
       fill: "#000"
     }).setOrigin(0.5);
-
+    
     const equippedItems = this.registry.get('equippedItems');
-    const isEquipped = equippedItems[this.country] === 'square';
-
+    const isEquipped = equippedItems.hat === 'square';
+    
     this.statusText = this.add.text(width/2, height/2 + 100, 
       isEquipped ? "EQUIPPED" : "Click to equip", {
       fontSize: "16px",
@@ -224,12 +202,13 @@ class StoreScene extends Phaser.Scene {
     
     itemSquare.on("pointerdown", () => {
       const equippedItems = this.registry.get('equippedItems');
-      equippedItems[this.country] = 'square';
+      equippedItems.hat = 'square';
       this.registry.set('equippedItems', equippedItems);
       
       this.statusText.setText("EQUIPPED");
       this.statusText.setColor("#00aa00");
     });
+    
     this.add.text(width/2, height - 50, "Press ESC to return to map", {
       fontSize: "20px",
       fill: "#000"
@@ -238,33 +217,6 @@ class StoreScene extends Phaser.Scene {
     this.input.keyboard.on("keydown-ESC", () => {
       this.scene.start("MapScene");
     });
-  }
-}
-
-// ===============================
-// MEXICO STORE
-// ===============================
-class MexicoStore extends StoreScene {
-  constructor() {
-    super("MexicoStore", "Mexico", 0xffe5b4);
-  }
-}
-
-// ===============================
-// ITALY STORE
-// ===============================
-class ItalyStore extends StoreScene {
-  constructor() {
-    super("ItalyStore", "Italy", 0xffd4d4);
-  }
-}
-
-// ===============================
-// PHILIPPINES STORE
-// ===============================
-class PhilippinesStore extends StoreScene {
-  constructor() {
-    super("PhilippinesStore", "Philippines", 0xffe4c4);
   }
 }
 
@@ -289,9 +241,7 @@ const config = {
     MexicoScene,
     ItalyScene,
     PhilippinesScene,
-    MexicoStore,
-    ItalyStore,
-    PhilippinesStore
+    Store
   ],
   scale: {
     mode: Phaser.Scale.FIT,
