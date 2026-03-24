@@ -11,6 +11,12 @@ class MexicoScene extends Phaser.Scene {
         this.goldenPinatas = [];
     }
 
+    preload() {
+        this.load.image('pinata', 'assets/mexico/mexico_minigame_pinata.png');
+        this.load.image('goldenPinata', 'assets/mexico/mexico_minigame_goldenPinata.png');
+        this.load.image('chile', 'assets/mexico/mexico_minigame_chile.png');
+    }
+    
     create() {
         // RESET STATE: Important because the scene is reused
         this.score = 0;
@@ -71,7 +77,8 @@ class MexicoScene extends Phaser.Scene {
         const peakY = Phaser.Math.Between(height * 0.3, height * 0.5); 
         const startY = height + 50; // Start just below screen
 
-        const pinata = this.add.rectangle(startX, startY, 40, 40, 0xDEB887);
+        const pinata = this.add.image(startX, startY, 'pinata');
+        pinata.setScale(90 / pinata.width, 90 / pinata.height);
         pinata.setInteractive();
         pinata.on('pointerdown', () => this.onPinataClicked(pinata));
 
@@ -84,7 +91,7 @@ class MexicoScene extends Phaser.Scene {
             startTime: Date.now(),
             duration: 3000,
             clicked: false,
-            angle: Phaser.Math.Between(-5, 5) // Random initial angle for rotation
+            angle: Phaser.Math.Between(-3, 3) // Random initial angle for rotation
         };
 
         this.pinatas.push(pinataData);
@@ -103,7 +110,8 @@ class MexicoScene extends Phaser.Scene {
         const peakY = Phaser.Math.Between(height * 0.3, height * 0.5); 
         const startY = height + 50; // Start just below screen
 
-        const chile = this.add.rectangle(startX, startY, 40, 40, 0xB22222);
+        const chile = this.add.image(startX, startY, 'chile');
+        chile.setScale(105 / chile.width, 105 / chile.height); // Scale to 90x90
         chile.setInteractive();
         chile.on('pointerdown', () => this.onChileClicked(chile));
 
@@ -116,7 +124,7 @@ class MexicoScene extends Phaser.Scene {
             startTime: Date.now(),
             duration: 3000,
             clicked: false,
-            angle: Phaser.Math.Between(-5, 5)
+            angle: Phaser.Math.Between(-3, 3)
         };
 
         this.chiles.push(chileData);
@@ -135,12 +143,13 @@ class MexicoScene extends Phaser.Scene {
         const peakY = Phaser.Math.Between(height * 0.3, height * 0.5); 
         const startY = height + 50; // Start just below screen
 
-        const pinata = this.add.rectangle(startX, startY, 40, 40, 0xFFD700);
-        pinata.setInteractive();
-        pinata.on('pointerdown', () => this.onGoldenPinataClicked(pinata));
+        const goldenPinata = this.add.image(startX, startY, 'goldenPinata');
+        goldenPinata.setScale(80 / goldenPinata.width, 80 / goldenPinata.height); // Scale to 90x90
+        goldenPinata.setInteractive();
+        goldenPinata.on('pointerdown', () => this.onGoldenPinataClicked(goldenPinata));
 
         const goldenPinataData = {
-            el: pinata,
+            el: goldenPinata,
             startX,
             endX,
             startY,
@@ -148,7 +157,7 @@ class MexicoScene extends Phaser.Scene {
             startTime: Date.now(),
             duration: 3000,
             clicked: false,
-            angle: Phaser.Math.Between(-5, 5)
+            angle: Phaser.Math.Between(-3, 3)
         };
 
         this.goldenPinatas.push(goldenPinataData);
@@ -160,11 +169,21 @@ class MexicoScene extends Phaser.Scene {
         const index = this.pinatas.findIndex(p => p.el === pinataEl);
         if (index !== -1 && !this.pinatas[index].clicked) {
             this.pinatas[index].clicked = true;
-            this.score += 1;
+            this.score += 10;
             this.scoreText.setText('Score: ' + this.score);
 
             pinataEl.destroy();
             this.pinatas.splice(index, 1);
+
+            const plusText = this.add.text(pinataEl.x, pinataEl.y, '+10', { fontSize: '24px', fill: '#ffffff' }).setOrigin(0.5);
+            this.tweens.add({
+                targets: plusText,
+                y: pinataEl.y - 50,
+                alpha: 0,
+                duration: 1000,
+                onComplete: () => plusText.destroy()
+            });
+
         }
     }
 
@@ -174,11 +193,20 @@ class MexicoScene extends Phaser.Scene {
         const index = this.chiles.findIndex(p => p.el === chileEl);
         if (index !== -1 && !this.chiles[index].clicked) {
             this.chiles[index].clicked = true;
-            this.score -= 1;
+            this.score -= 20;
             this.scoreText.setText('Score: ' + this.score);
 
             chileEl.destroy();
             this.chiles.splice(index, 1);
+
+            const minusText = this.add.text(chileEl.x, chileEl.y, '-30', { fontSize: '24px', fill: '#ffffff' }).setOrigin(0.5);
+            this.tweens.add({
+                targets: minusText,
+                y: chileEl.y - 50,
+                alpha: 0,
+                duration: 1000,
+                onComplete: () => minusText.destroy()
+            });
         }
     }
 
@@ -188,11 +216,20 @@ class MexicoScene extends Phaser.Scene {
         const index = this.goldenPinatas.findIndex(p => p.el === goldenPinataEl);
         if (index !== -1 && !this.goldenPinatas[index].clicked) {
             this.goldenPinatas[index].clicked = true;
-            this.score += 5; 
+            this.score += 50; 
             this.scoreText.setText('Score: ' + this.score);
 
             goldenPinataEl.destroy();
             this.goldenPinatas.splice(index, 1);
+
+            const plusText = this.add.text(goldenPinataEl.x, goldenPinataEl.y, '+50', { fontSize: '24px', fill: '#ffffff' }).setOrigin(0.5);
+            this.tweens.add({
+                targets: plusText,
+                y: goldenPinataEl.y - 50,
+                alpha: 0,
+                duration: 1000,
+                onComplete: () => plusText.destroy()
+            });
         }
     }
 
@@ -299,27 +336,54 @@ class MexicoScene extends Phaser.Scene {
             this.endGame();
         }
     }
+    
     endGame() {
         this.gameOver = true;
         if (this.countdownEvent) this.countdownEvent.remove();
         const width = this.scale.width;
         const height = this.scale.height;
 
-        this.add.rectangle(width/2, height/2, 400, 200, 0x000000, 0.8);
-        
-        this.add.text(width/2, height/2 - 40, 'GAME OVER', 
-            { fontSize: '48px', fill: '#fff' }).setOrigin(0.5);
-            
-        this.add.text(width/2, height/2 + 20, `Final Score: ${this.score}`, 
-            { fontSize: '32px', fill: '#fff' }).setOrigin(0.5);
-
-        const backButton = this.add.text(width/2, height/2 + 70, 'Click to Return', 
-            { fontSize: '24px', fill: '#00ff00' })
-            .setOrigin(0.5)
-            .setInteractive();
-
-        backButton.on('pointerdown', () => {
-            this.scene.start('MapScene');
-        });
+            if (this.score >= 500) {
+                this.add.rectangle(width/2, height/2, 400, 400, 0x000000, 0.8);
+                this.add.text(width/2, height/2 - 40, 'YOU WIN!', 
+                    { fontSize: '48px', fill: '#fff' }).setOrigin(0.5);
+                this.add.text(width/2, height/2 + 20, `Final Score: ${this.score}`, 
+                    { fontSize: '32px', fill: '#fff' }).setOrigin(0.5);
+                const backButton = this.add.text(width/2, height/2 + 70, 'Return to Map', 
+                    { fontSize: '24px', fill: '#00ff00' })
+                    .setOrigin(0.5)
+                    .setInteractive();
+                backButton.on('pointerdown', () => {
+                    this.scene.start('MapScene');
+                });
+                const playButton = this.add.text(width/2, height/2 + 120, 'Play Again', 
+                    { fontSize: '24px', fill: '#00ff00' })
+                    .setOrigin(0.5)
+                    .setInteractive();
+                playButton.on('pointerdown', () => {
+                    this.scene.start('MexicoScene');
+                });
+            }
+            else {
+                this.add.rectangle(width/2, height/2, 400, 400, 0x000000, 0.8);
+                this.add.text(width/2, height/2 - 40, 'YOU LOSE', 
+                    { fontSize: '48px', fill: '#fff' }).setOrigin(0.5);
+                this.add.text(width/2, height/2 + 20, `Final Score: ${this.score}`, 
+                    { fontSize: '32px', fill: '#fff' }).setOrigin(0.5);
+                const backButton = this.add.text(width/2, height/2 + 70, 'Return to Map', 
+                    { fontSize: '24px', fill: '#00ff00' })
+                    .setOrigin(0.5)
+                    .setInteractive();
+                backButton.on('pointerdown', () => {
+                    this.scene.start('MapScene');
+                });
+                const playButton = this.add.text(width/2, height/2 + 120, 'Play Again', 
+                    { fontSize: '24px', fill: '#00ff00' })
+                    .setOrigin(0.5)
+                    .setInteractive();
+                playButton.on('pointerdown', () => {
+                    this.scene.start('MexicoScene');
+                });
+            }
     }
 }
