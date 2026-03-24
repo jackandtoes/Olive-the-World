@@ -5,10 +5,10 @@ class ItalyScene extends Phaser.Scene {
 
 
  preload() {
-   this.load.image('bent', 'assets/pasta_corner_new.png');
-   this.load.image('straight', 'assets/straight_pasta.png');
-   this.load.image('crossed', 'assets/crossed_pasta.png');
-   this.load.image('t_shape', 'assets/t-shaped_pasta.png');
+   this.load.image('bent', 'assets/italy/pasta_corner_new.png');
+   this.load.image('straight', 'assets/italy/straight_pasta.png');
+   this.load.image('crossed', 'assets/italy/crossed_pasta.png');
+   this.load.image('t_shape', 'assets/italy/t-shaped_pasta.png');
  }
 
 

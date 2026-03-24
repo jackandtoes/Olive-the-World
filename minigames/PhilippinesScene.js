@@ -19,6 +19,7 @@ class PhilippinesScene extends Phaser.Scene {
     this.load.image('log2', 'assets/philippines/log2.png');
     this.load.image('log3', 'assets/philippines/log3.png');
     this.load.image('log4', 'assets/philippines/log4.png');
+    this.load.image('grass1', 'assets/philippines/grass1.png');
   }
 
   create() {
@@ -501,7 +502,7 @@ class PhilippinesScene extends Phaser.Scene {
       fontSize: "56px",
       fill: "#ffd700"
     }).setOrigin(0.5);
-    this.add.text(width/2, height/2 - 40, "All Lumpia Ingredients Collected!", {
+    this.add.text(width/2, height/2 - 40, "All Ingredients Collected!", {
       fontSize: "28px",
       fill: "#ffffff"
     }).setOrigin(0.5);
