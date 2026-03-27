@@ -7,23 +7,21 @@ class StartScene extends Phaser.Scene {
   }
 
   preload() {
-      this.load.image("homeBg", "assets/homescreen.png");
+      this.load.image("homeBg", "assets/background.png");
+      this.load.image("startBtn", "assets/start_button.png");
   }
 
   create() {
+    //Sets the background
     const width = this.scale.width;
     const height = this.scale.height;
-    const bg = this.add.image(width/2, height/2, "homeBg");
+    const bgcolor = this.add.rectangle(width/2, height/2, width, height, 0xa0326);
+    const bg = this.add.image(width/2, height/2, "homeBg"); // 800 x 600
     const homeScale = Math.max(width / bg.width, height / bg.height);
     bg.setScale(homeScale);
-    this.add.text(width/2, height/2 - 100, "Olive the World!", {
-      fontSize: "48px",
-      fill: "#000"
-    }).setOrigin(0.5);
-    const startButton = this.add.text(width/2, height/2, "Press Start", {
-      fontSize: "32px",
-      fill: "#000"
-    }).setOrigin(0.5).setInteractive();
+
+    // Start Button
+    const startButton = this.add.image(width/2, height/2 + 150, "startBtn").setInteractive().setScale(0.5);
     startButton.on("pointerdown", () => {
       this.scene.start("MapScene");
     });
