@@ -288,7 +288,7 @@ class PhilippinesScene extends Phaser.Scene {
       this.die("Fell off the log!");
       return;
     }    
-    if (this.playerGridX < -0.5 || this.playerGridX > cols - 0.5) {
+    if (this.playerGridX < 0 || this.playerGridX > cols - 1) {
       this.die("Pushed off screen!");
     }
   }
@@ -298,18 +298,26 @@ class PhilippinesScene extends Phaser.Scene {
     let moved = false;
     let newX = this.playerGridX;
     let newY = this.playerGridY;
-   
+
     if (Phaser.Input.Keyboard.JustDown(this.cursors.up)) {
-      newY--;
+      //newY--;
+      newX = Math.round(this.playerGridX);
+      newY = this.playerGridY - 1;
       moved = true;
     } else if (Phaser.Input.Keyboard.JustDown(this.cursors.down)) {
-      newY++;
+      //newY++;
+      newX = Math.round(this.playerGridX);
+      newY = this.playerGridY + 1;
       moved = true;
     } else if (Phaser.Input.Keyboard.JustDown(this.cursors.left)) {
-      newX--;
+      //newX--;
+      newX = Math.round(this.playerGridX) - 1;
+      newY = this.playerGridY;
       moved = true;
     } else if (Phaser.Input.Keyboard.JustDown(this.cursors.right)) {
-      newX++;
+      newX = Math.round(this.playerGridX) + 1;
+      newY = this.playerGridY;
+      //newX++;
       moved = true;
     }
    
