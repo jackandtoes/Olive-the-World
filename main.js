@@ -25,6 +25,7 @@ class StartScene extends Phaser.Scene {
     startButton.on("pointerdown", () => {
       this.scene.start("MapScene");
     });
+    
   }
 }
 

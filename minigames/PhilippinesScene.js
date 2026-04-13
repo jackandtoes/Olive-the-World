@@ -1,3 +1,17 @@
+const LEVEL_LAYOUTS = {
+  1: ['G', 'G', 'R', 'G', 'R', 'R', 'G', 'R', 'G', 'G'],
+  2: ['G', 'G', 'W', 'G', 'W', 'W', 'G', 'W', 'G', 'G'],
+  3: ['G', 'W', 'R', 'G', 'R', 'W', 'G', 'W', 'R', 'G'],
+  4: ['G', 'W', 'R', 'W', 'G', 'G', 'R', 'W', 'R', 'G'],
+  5: ['G', 'W', 'R', 'R', 'W', 'W', 'R', 'R', 'W', 'G'],
+};
+ 
+const ROW_COLORS = {
+  G: 0x90ee90,
+  W: 0x4a90e2,
+  R: 0x696969,
+};
+
 class PhilippinesScene extends Phaser.Scene {
   constructor() {
     super("PhilippinesScene");
@@ -19,205 +33,168 @@ class PhilippinesScene extends Phaser.Scene {
     this.load.image('log2', 'assets/philippines/log2.png');
     this.load.image('log3', 'assets/philippines/log3.png');
     this.load.image('log4', 'assets/philippines/log4.png');
-    this.load.image('grass1', 'assets/philippines/grass1.png');
   }
 
   create() {
     const width = this.scale.width;
     const height = this.scale.height;
 
-    this.ROWS = 20;
-    this.GAME_ROWS = 19;
-    this.GRID_SIZE = 30;
+    this.ROWS = 10;
+    this.GRID_SIZE = Math.floor(height / this.ROWS);
     this.gameWidth = width;
-    this.gameHeight = this.ROWS * this.GRID_SIZE;
-    this.offsetX = (width - this.gameWidth) / 2;
-    this.offsetY = (height - this.gameHeight) / 2;
-    this.add.rectangle(width/2, height/2, width, height, 0x87ceeb);
-    this.gameContainer = this.add.container(this.offsetX, this.offsetY);
+
+    this.rowLayout = [...LEVEL_LAYOUTS[this.currentLevel]].reverse();
 
     this.config = this.levelConfig[this.currentLevel];
     this.collected = 0;
-    this.createBoard();    
-    this.createPlayer();    
+    this.canMove = true;
     this.obstacles = [];
     this.ingredients = [];
+    this.playerOnLog = null;
+
+    this.gameContainer = this.add.container(0, 0);
+
+    this.createBoard();    
+    this.createPlayer();    
     this.createLevelObjects();
     this.gameContainer.bringToTop(this.player);
     this.createUI();
 
     this.cursors = this.input.keyboard.createCursorKeys();
-    this.canMove = true;
-    this.input.keyboard.on("keydown-ESC", () => {
-      this.scene.start("MapScene");
-    });
+    this.input.keyboard.on('keydown-ESC', () => this.scene.start('MapScene'));
   }
 
   createBoard() {
-    const safeRows = [0, 4, 8, 12, 16];
+    const cols = Math.ceil(this.gameWidth / this.GRID_SIZE);
     for (let row = 0; row < this.ROWS; row++) {
-      for (let col = 0; col < Math.ceil(this.gameWidth / this.GRID_SIZE); col++) {
-        const x = col * this.GRID_SIZE;
-        const y = row * this.GRID_SIZE;
-        // determine row type
-        let color;
-        if (row === this.ROWS - 1) {
-          color = 0x90ee90; // bottom spawn row is always grass
-        } else if (safeRows.includes(row)) {
-          color = 0x90ee90; // grass is safe
-        } else if (row % 3 === 1) {
-          color = 0x696969; // road
-        } else {
-          color = 0x4a90e2; // anything that's not grass or road is water
-        }
-        //const tile = this.add.rectangle(x, y, this.GRID_SIZE - 2, this.GRID_SIZE - 2, color);
-        const tile = this.add.rectangle(x, y, this.GRID_SIZE, this.GRID_SIZE, color);
-        //const tile = this.add.rectangle(x, y, this.GRID_SIZE -1.5, this.GRID_SIZE -1.5, color);
-
-        tile.setOrigin(0, 0);
+      const color = ROW_COLORS[this.rowLayout[row]];
+      for (let col = 0; col < cols; col++) {
+        const tile = this.add.rectangle(
+          col * this.GRID_SIZE,
+          row * this.GRID_SIZE,
+          this.GRID_SIZE, this.GRID_SIZE,
+          color
+        ).setOrigin(0, 0);
         this.gameContainer.add(tile);
       }
-    }    
-    this.safeRows = safeRows;
+    }
   }
 
-  createPlayer() {
-    const startX = (Math.ceil(this.gameWidth / this.GRID_SIZE) / 2) * this.GRID_SIZE;
-    const startY = (this.ROWS - 1) * this.GRID_SIZE; // bottom row
-   
-    this.player = this.add.circle(startX + this.GRID_SIZE/2, startY + this.GRID_SIZE/2,
-                                   this.GRID_SIZE/2 - 4, 0x556b2f);
-    this.player.setDepth(1000); // olive should always be seen
+createPlayer() {
+    const cols = Math.ceil(this.gameWidth / this.GRID_SIZE);
+    const startCol = Math.floor(cols / 2);
+    const startRow = this.ROWS - 1; // bottom row
+ 
+    this.player = this.add.circle(
+      startCol * this.GRID_SIZE + this.GRID_SIZE / 2,
+      startRow * this.GRID_SIZE + this.GRID_SIZE / 2,
+      this.GRID_SIZE / 2 - 4,
+      0x556b2f
+    ).setDepth(1000);
     this.gameContainer.add(this.player);
-   
-    this.playerGridX = Math.floor(startX / this.GRID_SIZE);
-    this.playerGridY = this.ROWS - 1;
-    this.playerOnLog = null; // track which log olive is on
+ 
+    this.playerGridX = startCol;
+    this.playerGridY = startRow;
   }
 
   createLevelObjects() {
-    const cols = Math.ceil(this.gameWidth / this.GRID_SIZE);
-   
-    // make vehicles & logs for game rows only (exclude spawn row)
-    for (let row = 1; row < this.GAME_ROWS; row++) {
-      // skip safe grass rows
-      if (this.safeRows.includes(row)) {
-        continue;
-      }
-      const isRoad = row % 3 === 1; // determine if this row is road or water
-      if (isRoad) { // spawn vehicles on road
-        const direction = row % 2 === 0 ? 1 : -1;
-        this.createVehicleLane(row, direction);
-      } else { // spawn logs on water
-        const direction = row % 2 === 0 ? 1 : -1;
-        this.createWaterLane(row, direction);
-      }
+    for (let row = 1; row < this.ROWS - 1; row++) {
+      const type = this.rowLayout[row];
+      if (type === 'G') continue;
+      const direction = row % 2 === 0 ? 1 : -1;
+      if (type === 'R') this.createVehicleLane(row, direction);
+      if (type === 'W') this.createWaterLane(row, direction);
     }
     this.spawnIngredients();
   }
 
   createVehicleLane(row, direction) {
     const cols = Math.ceil(this.gameWidth / this.GRID_SIZE);
+    const vehicleTypes = [
+      { width: 2, color: 0xff00ff, name: 'jeepney'},
+      { width: 1.5, color: 0xffff00, name: 'tricycle'},
+      { width: 1, color: 0xff0000, name: 'car'},
+    ];
+
+    const GAP = 3;
     const numVehicles = Phaser.Math.Between(2, 4);
-    const spacing = Math.floor(cols / numVehicles);
-   
+    let cursor = direction > 0 ? -2 : cols + 2;
+ 
     for (let i = 0; i < numVehicles; i++) {
-      const col = (i * spacing + Phaser.Math.Between(0, spacing - 1)) % cols;
-      const vehicle = this.createVehicle(col, row, direction);
-      this.obstacles.push(vehicle);
+      const type = Phaser.Math.RND.pick(vehicleTypes);
+      const col  = direction > 0 ? cursor - type.width / 2 : cursor + type.width / 2;
+      this.obstacles.push(this.createVehicle(col, row, direction, type));
+      cursor += direction > 0 ? -(type.width + GAP) : (type.width + GAP);
     }
   }
 
-  createVehicle(col, row, direction) {
-    const x = col * this.GRID_SIZE + this.GRID_SIZE/2;
-    const y = row * this.GRID_SIZE + this.GRID_SIZE/2;
-    // random vehicle type, swap placeholders later
-    const types = [
-      { width: 2, height: 1, color: 0xff00ff, name: "jeepney" },
-      { width: 1.5, height: 1, color: 0xffff00, name: "tricycle" },
-      { width: 1, height: 1, color: 0xff0000, name: "car" }
-    ];
-    const type = Phaser.Math.RND.pick(types);
-    const vehicle = this.add.rectangle(x, y, this.GRID_SIZE * type.width - 4,
-                                       this.GRID_SIZE * type.height - 4, type.color);
-    this.gameContainer.add(vehicle);
-   
-    return {
-      sprite: vehicle,
-      gridX: col,
-      gridY: row,
-      direction: direction,
-      speed: 1.2,
-      width: type.width,
-      type: type.name
-    };
+  createVehicle(col, row, direction, type) {
+    const sprite = this.add.rectangle(
+      col * this.GRID_SIZE + this.GRID_SIZE / 2,
+      row * this.GRID_SIZE + this.GRID_SIZE / 2,
+      this.GRID_SIZE * type.width - 4,
+      this.GRID_SIZE - 4,
+      type.color
+    );
+    this.gameContainer.add(sprite);
+ 
+    return { sprite, gridX: col, gridY: row, direction, speed: 1.2, width: type.width, type: type.name };
   }
 
   createWaterLane(row, direction) {
-    const cols = Math.ceil(this.gameWidth / this.GRID_SIZE);
-    const numLogs = Phaser.Math.Between(3, 5);
-    const spacing = Math.floor(cols / numLogs);
-   
-    for (let i = 0; i < numLogs; i++) {
-      const col = (i * spacing + Phaser.Math.Between(0, spacing - 1)) % cols;
-      const log = this.createLog(col, row, direction);
-      this.obstacles.push(log);
+  const cols = Math.ceil(this.gameWidth / this.GRID_SIZE);
+  const numLogs = Phaser.Math.Between(3, 4);
+  const GAP = 3; 
+  
+  let cursor = direction > 0 ? -2 : cols + 2;
+
+  for (let i = 0; i < numLogs; i++) {
+      const logWidth = Phaser.Math.Between(2, 4);
+      const col = direction > 0 ? cursor - logWidth / 2 : cursor + logWidth / 2;
+      this.obstacles.push(this.createLog(col, row, direction, logWidth));
+      cursor += direction > 0 ? -(logWidth + GAP) : (logWidth + GAP);
     }
   }
 
-  createLog(col, row, direction) {
-    const x = col * this.GRID_SIZE + this.GRID_SIZE/2;
-    const y = row * this.GRID_SIZE + this.GRID_SIZE/2;
-    const logWidth = Phaser.Math.Between(2, 4);
 
-    const textureKey = `log${logWidth}`; // log2, log3, or log4
-    const log = this.add.image(x, y, textureKey);
-    log.setDisplaySize(this.GRID_SIZE * logWidth - 4, this.GRID_SIZE - 4);
-    this.gameContainer.add(log);
-
-    return {
-      sprite: log,
-      gridX: col,
-      gridY: row,
-      direction: direction,
-      speed: 1.5,
-      width: logWidth,
-      type: "log",
-      isSafe: true
-    };
-  }
-
+createLog(col, row, direction, logWidth) {
+    const sprite = this.add.image(
+      col * this.GRID_SIZE + this.GRID_SIZE / 2,
+      row * this.GRID_SIZE + this.GRID_SIZE / 2,
+      `log${logWidth}`
+    );
+    sprite.setDisplaySize(this.GRID_SIZE * logWidth - 4, this.GRID_SIZE - 4);
+    this.gameContainer.add(sprite);
+ 
+    return { sprite, gridX: col, gridY: row, direction, speed: 1.5, width: logWidth, type: 'log', isSafe: true };
+}
+ 
   spawnIngredients() {
     const cols = Math.ceil(this.gameWidth / this.GRID_SIZE);
     let spawned = 0;
-   
-    while (spawned < this.config.needed + 2) {
+    const target = this.config.needed + 2;
+
+    while (spawned < target) {
       const col = Phaser.Math.Between(0, cols - 1);
-      const row = Phaser.Math.Between(2, this.GAME_ROWS - 2); // spawn in game area only
+      const row = Phaser.Math.Between(1, this.ROWS - 2); // spawn in game area only
      
       // check if position is already occupied
       const occupied = this.ingredients.some(ing =>
         ing.gridX === col && ing.gridY === row
       );
      
-      if (!occupied) {
-        const x = col * this.GRID_SIZE + this.GRID_SIZE/2;
-        const y = row * this.GRID_SIZE + this.GRID_SIZE/2;
-       
-        const ingredient = this.add.star(x, y, 5, this.GRID_SIZE/4, this.GRID_SIZE/2 - 4,
-                                        this.config.color);
-        ingredient.setDepth(500); // above the board/background, below the player
-        this.gameContainer.add(ingredient);
-       
-        this.ingredients.push({
-          sprite: ingredient,
-          gridX: col,
-          gridY: row,
-          collected: false
-        });
-       
-        spawned++;
-      }
+      if (occupied) continue;
+      
+      const sprite = this.add.star(
+        col * this.GRID_SIZE + this.GRID_SIZE / 2,
+        row * this.GRID_SIZE + this.GRID_SIZE / 2,
+        5, this.GRID_SIZE / 4, this.GRID_SIZE / 2 - 4,
+        this.config.color
+      ).setDepth(500);
+      this.gameContainer.add(sprite);
+     
+      this.ingredients.push({sprite, gridX: col, gridY: row, collected: false });
+      spawned++;
     }
   }
 
@@ -240,14 +217,6 @@ class PhilippinesScene extends Phaser.Scene {
       backgroundColor: "#ffffff",
       padding: { x: 10, y: 5 }
     });
-
-    // directions
-    this.add.text(width/2, 20, "Use arrow keys to move", {
-      fontSize: "20px",
-      fill: "#000",
-      backgroundColor: "#ffffff",
-      padding: { x: 10, y: 5 }
-    }).setOrigin(0.5, 0);
   }
 
   update(time, delta) {
@@ -261,22 +230,18 @@ class PhilippinesScene extends Phaser.Scene {
 
   updateObstacles(delta) {
     const cols = Math.ceil(this.gameWidth / this.GRID_SIZE);
-    this.obstacles.forEach(obstacle => {
-      obstacle.gridX += obstacle.direction * obstacle.speed * delta / 1000;      
-      if (obstacle.direction > 0 && obstacle.gridX > cols + obstacle.width) {
-        obstacle.gridX = -obstacle.width;
-      } else if (obstacle.direction < 0 && obstacle.gridX < -obstacle.width) {
-        obstacle.gridX = cols + obstacle.width;
-      }      
-      obstacle.sprite.x = obstacle.gridX * this.GRID_SIZE + this.GRID_SIZE/2;
+    this.obstacles.forEach(obs => {
+      obs.gridX += obs.direction * obs.speed * delta / 1000;
+      if (obs.direction > 0 && obs.gridX > cols + obs.width)  obs.gridX = -obs.width;
+      if (obs.direction < 0 && obs.gridX < -obs.width)        obs.gridX = cols + obs.width;
+      obs.sprite.x = obs.gridX * this.GRID_SIZE + this.GRID_SIZE / 2;
     });
   }
 
-  movePlayerWithLog(delta) {
-    if (this.playerOnLog && !this.canMove) return;
-   
+  movePlayerWithLog(delta) {   
     const log = this.playerOnLog;
     const cols = Math.ceil(this.gameWidth / this.GRID_SIZE);    
+
     this.playerGridX += log.direction * log.speed * delta / 1000; // move olive based on log position    
     this.player.x = this.playerGridX * this.GRID_SIZE + this.GRID_SIZE/2;
     // check if olive fell off the log (moved outside log bounds)
@@ -288,37 +253,40 @@ class PhilippinesScene extends Phaser.Scene {
       this.die("Fell off the log!");
       return;
     }    
-    if (this.playerGridX < -0.5 || this.playerGridX > cols - 0.5) {
+    if (this.playerGridX < 0 || this.playerGridX > cols - 1) {
       this.die("Pushed off screen!");
     }
   }
 
   handleInput() {
     if (!this.canMove) return;
+    const cols = Math.ceil(this.gameWidth / this.GRID_SIZE);
     let moved = false;
     let newX = this.playerGridX;
     let newY = this.playerGridY;
-   
+
     if (Phaser.Input.Keyboard.JustDown(this.cursors.up)) {
-      newY--;
+      newX = Math.round(this.playerGridX);
+      newY = this.playerGridY - 1;
       moved = true;
     } else if (Phaser.Input.Keyboard.JustDown(this.cursors.down)) {
-      newY++;
+      newX = Math.round(this.playerGridX);
+      newY = this.playerGridY + 1;
       moved = true;
     } else if (Phaser.Input.Keyboard.JustDown(this.cursors.left)) {
-      newX--;
+      newX = Math.round(this.playerGridX) - 1;
+      newY = this.playerGridY;
       moved = true;
     } else if (Phaser.Input.Keyboard.JustDown(this.cursors.right)) {
-      newX++;
+      newX = Math.round(this.playerGridX) + 1;
+      newY = this.playerGridY;
       moved = true;
     }
    
-    if (moved) {
+    if (moved && newX >= 0 && newX < cols && newY >= 0 && newY < this.ROWS) {
       const cols = Math.ceil(this.gameWidth / this.GRID_SIZE);      
-      if (newX >= 0 && newX < cols && newY >= 0 && newY < this.ROWS) {
         this.playerGridX = newX;
         this.playerGridY = newY;
-       
         this.canMove = false;
         this.tweens.add({
           targets: this.player,
@@ -327,72 +295,55 @@ class PhilippinesScene extends Phaser.Scene {
           duration: 150,
           onComplete: () => {
             this.canMove = true;
-            this.checkWinCondition();
-          }
-        });
-      }
+            this.checkWinCondition(); },
+      });
     }
   }
 
   checkCollisions() {
-    const playerRow = this.playerGridY;
-   
-    // bottom spawn row or safe grass rows, no hazards
-    if (playerRow === this.ROWS - 1 || this.safeRows.includes(playerRow)) {
-      this.playerOnLog = null; // Not on a log
-    } else if (playerRow < this.GAME_ROWS) {
-      // in game area, check hazards
-      const isRoad = playerRow % 3 === 1;
-     
-      if (!isRoad) {
-        // water row, must be on a log
-        const log = this.obstacles.find(obstacle => {
-          if (obstacle.type === "log" && obstacle.gridY === playerRow) {
-            const logLeft = obstacle.gridX - obstacle.width/2;
-            const logRight = obstacle.gridX + obstacle.width/2;
-            return this.playerGridX >= logLeft && this.playerGridX <= logRight;
-          }
-          return false;
-        });
-       
-        if (log) {
-          this.playerOnLog = log; // olive is on this log
-        } else {
-          this.playerOnLog = null;
-          this.die("Fell in water!");
+
+    const row  = this.playerGridY;
+    const type = this.rowLayout[row];
+    if (type === 'G') {
+      this.playerOnLog = null;
+ 
+    } else if (type === 'W') {
+      const log = this.obstacles.find(obs => {
+        if (obs.type !== 'log' || obs.gridY !== row) return false;
+        return this.playerGridX >= obs.gridX - obs.width / 2 &&
+               this.playerGridX <= obs.gridX + obs.width / 2;
+      });
+      if (log) {
+        this.playerOnLog = log;
+      } else {
+        this.playerOnLog = null;
+        this.die('Fell in water!');
+        return; 
+      }
+ 
+    } else if (type === 'R') {
+      this.playerOnLog = null;
+      for (const obs of this.obstacles) {
+        if (obs.type === 'log' || obs.gridY !== row) continue;
+        if (this.playerGridX >= obs.gridX - obs.width / 2 &&
+            this.playerGridX <= obs.gridX + obs.width / 2) {
+          this.die('Hit by vehicle!');
           return;
         }
-      } else {
-        // road row, check vehicle collisions
-        this.playerOnLog = null; // not on a log
-       
-        this.obstacles.forEach(obstacle => {
-          if (obstacle.type !== "log" && obstacle.gridY === playerRow) {
-            const obstacleLeft = obstacle.gridX - obstacle.width/2;
-            const obstacleRight = obstacle.gridX + obstacle.width/2;
-           
-            if (this.playerGridX >= obstacleLeft && this.playerGridX <= obstacleRight) {
-              this.die("Hit by vehicle!");
-            }
-          }
-        });
       }
     }
-   
-    // check ingredient collection
-    this.ingredients.forEach(ingredient => {
-      if (!ingredient.collected) {
-        const distance = Phaser.Math.Distance.Between(
-          this.playerGridX, this.playerGridY,
-          ingredient.gridX, ingredient.gridY
-        );
-       
-        if (distance < 0.4) {
-          ingredient.collected = true;
-          ingredient.sprite.destroy();
-          this.collected++;
-          this.ingredientText.setText(`${this.config.ingredient}: ${this.collected}/${this.config.needed}`);
-        }
+ 
+    this.ingredients.forEach(ing => {
+      if (ing.collected) return;
+      const dist = Phaser.Math.Distance.Between(
+        this.playerGridX, this.playerGridY,
+        ing.gridX, ing.gridY
+      );
+      if (dist < 0.6) {
+        ing.collected = true;
+        ing.sprite.destroy();
+        this.collected++;
+        this.ingredientText.setText(`${this.config.ingredient}: ${this.collected}/${this.config.needed}`);
       }
     });
   }
@@ -427,104 +378,57 @@ class PhilippinesScene extends Phaser.Scene {
     }
   }
 
-  showGameOver(message) {
-    const width = this.scale.width;
-    const height = this.scale.height;
-    const bg = this.add.rectangle(width/2, height/2, 500, 350, 0x000000, 0.9);
-   
-    this.add.text(width/2, height/2 - 100, "Game Over!", {
-      fontSize: "48px",
-      fill: "#ff0000"
-    }).setOrigin(0.5);
-    this.add.text(width/2, height/2 - 40, message, {
-      fontSize: "24px",
-      fill: "#ffffff"
-    }).setOrigin(0.5);
-    this.add.text(width/2, height/2 + 10, `${this.config.ingredient} Collected: ${this.collected}/${this.config.needed}`, {
-      fontSize: "20px",
-      fill: "#ffff00"
-    }).setOrigin(0.5);
-   
-    const retryBtn = this.add.text(width/2, height/2 + 80, "Retry Level", {
-      fontSize: "28px",
-      fill: "#00ff00"
-    }).setOrigin(0.5).setInteractive();
-    retryBtn.on("pointerdown", () => {
-      this.scene.restart({ level: this.currentLevel });
-    });
+  _overlay() {
+    const { width, height } = this.scale;
+    this.add.rectangle(width / 2, height / 2, 520, 380, 0x000000, 0.9);
+    return { width, height };
+  }
+ 
+  _button(x, y, label, color, cb) {
+    const btn = this.add.text(x, y, label, { fontSize: '28px', fill: color })
+      .setOrigin(0.5).setInteractive();
+    btn.on('pointerdown', cb);
+    return btn;
+  }
 
-    const mapBtn = this.add.text(width/2, height/2 + 130, "Back to Map", {
-      fontSize: "28px",
-      fill: "#ffff00"
-    }).setOrigin(0.5).setInteractive();
-    mapBtn.on("pointerdown", () => {
-      this.scene.start("MapScene");
-    });
+  showGameOver(message) {
+    const { width, height } = this._overlay();
+    this.add.text(width/2, height/2 - 110, 'Game Over!', { 
+      fontSize: '48px', fill: '#ff0000' }).setOrigin(0.5);
+    this.add.text(width/2, height/2 -  50, message, { 
+      fontSize: '24px', fill: '#ffffff' }).setOrigin(0.5);
+    this.add.text(width/2, height/2,
+      `${this.config.ingredient}: ${this.collected}/${this.config.needed}`,
+      { fontSize: '20px', fill: '#ffffff' }
+    ).setOrigin(0.5);
+    this._button(width/2, height/2 +  70, 'Retry Level', '#ffffff', () => this.scene.restart({ level: this.currentLevel }));
+    this._button(width/2, height/2 + 120, 'Back to Map', '#ffffff', () => this.scene.start('MapScene'));
   }
 
   showLevelComplete() {
-    const width = this.scale.width;
-    const height = this.scale.height;
-    const bg = this.add.rectangle(width/2, height/2, 500, 350, 0x000000, 0.9);
-   
-    this.add.text(width/2, height/2 - 100, "Level Complete!", {
-      fontSize: "48px",
-      fill: "#00ff00"
-    }).setOrigin(0.5);
-    this.add.text(width/2, height/2 - 30, `${this.config.ingredient} collected!`, {
-      fontSize: "28px",
-      fill: "#ffffff"
-    }).setOrigin(0.5);
-
-    const nextBtn = this.add.text(width/2, height/2 + 50, "Next Level", {
-      fontSize: "32px",
-      fill: "#00ff00"
-    }).setOrigin(0.5).setInteractive();
-    nextBtn.on("pointerdown", () => {
-      this.scene.restart({ level: this.currentLevel + 1 });
-    });
-
-    const mapBtn = this.add.text(width/2, height/2 + 110, "Back to Map", {
-      fontSize: "28px",
-      fill: "#ffff00"
-    }).setOrigin(0.5).setInteractive();
-    mapBtn.on("pointerdown", () => {
-      this.scene.start("MapScene");
-    });
+    const { width, height } = this._overlay();
+    this.add.text(width/2, height/2 - 110, 'Level Complete!', { 
+      fontSize: '44px', 
+      fill: '#00ff00' }).setOrigin(0.5);
+    this.add.text(width/2, height/2 -  50, `${this.config.ingredient} collected!`, { 
+      fontSize: '28px', 
+      fill: '#ffffff' }).setOrigin(0.5);
+    this._button(width/2, height/2 +  40, 'Next Level', '#ffffff', () => this.scene.restart({ level: this.currentLevel + 1 }));
+    this._button(width/2, height/2 +  95, 'Back to Map', '#ffffff', () => this.scene.start('MapScene'));
   }
 
   showVictory() {
-    const width = this.scale.width;
-    const height = this.scale.height;
-    const bg = this.add.rectangle(width/2, height/2, 500, 400, 0x000000, 0.9);
-   
-    this.add.text(width/2, height/2 - 120, "Victory!", {
-      fontSize: "56px",
-      fill: "#ffd700"
-    }).setOrigin(0.5);
-    this.add.text(width/2, height/2 - 40, "All Ingredients Collected!", {
-      fontSize: "28px",
-      fill: "#ffffff"
-    }).setOrigin(0.5);
-    this.add.text(width/2, height/2 + 10, "You completed all 5 levels!", {
-      fontSize: "24px",
-      fill: "#00ff00"
-    }).setOrigin(0.5);
-   
-    const playAgainBtn = this.add.text(width/2, height/2 + 80, "Play Again", {
-      fontSize: "28px",
-      fill: "#00ff00"
-    }).setOrigin(0.5).setInteractive();
-    playAgainBtn.on("pointerdown", () => {
-      this.scene.restart({ level: 1 });
-    });
-
-    const mapBtn = this.add.text(width/2, height/2 + 130, "Back to Map", {
-      fontSize: "28px",
-      fill: "#ffff00"
-    }).setOrigin(0.5).setInteractive();
-    mapBtn.on("pointerdown", () => {
-      this.scene.start("MapScene");
-    });
+    const { width, height } = this._overlay();
+    this.add.text(width/2, height/2 - 120, 'Victory!', { 
+      fontSize: '56px', 
+      fill: '#00ff00' }).setOrigin(0.5);
+    this.add.text(width/2, height/2 -  50, 'All Ingredients Collected!', { 
+      fontSize: '28px', 
+      fill: '#ffffff' }).setOrigin(0.5);
+    this.add.text(width/2, height/2, 'You completed all 5 levels!', { 
+      fontSize: '24px', 
+      fill: '#ffffff' }).setOrigin(0.5);
+    this._button(width/2, height/2 +  70, 'Play Again', '#ffffff', () => this.scene.restart({ level: 1 }));
+    this._button(width/2, height/2 + 120, 'Back to Map', '#ffffff', () => this.scene.start('MapScene'));
   }
 }
