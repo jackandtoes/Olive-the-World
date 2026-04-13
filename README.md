@@ -2,15 +2,13 @@
 <br />
 <div align="center">
   <a href="[https://github.com/github_username/repo_name](https://github.com/jackandtoes/Olive-the-World)">
-    <img src="https://github.com/jackandtoes/Olive-the-World/blob/main/assets/olive_main_logo.png" alt="Logo" width="400" height="400">
+    <img src="https://github.com/jackandtoes/Olive-the-World/blob/main/assets/olive_logo.png?raw=true" alt="Logo" width="600" height="600">
   </a>
 </div>
 
 <!-- ABOUT THE PROJECT -->
 ## About The Project
-**Olive the World!** is an educational game where players follow the adventures of Olive the olive who dreams of becoming the best chef in the world. To achieve this goal, Olive must travel to different countries and learn about their culinary traditions and recipes through various mini-games. The game aims to introduce players to different cultures by focusing on food, something that connects all of us around the world! 
-
-The current version of the game includes three countries: Mexico, Italy, and the Philippines. Each location features its own unique minigame and cooking challenge. In Mexico, players break piñatas to collect candy and taco ingredients while avoiding dangerous chiles. In Italy, players solve a puzzle by rotating rigatoni pipes to connect pasta sauce to the correct plates. In the Philippines, players navigate the busy streets and waterways of Manila while collecting ingredients needed to make lumpia. 
+You will travel as an olive trying to become the best chef in the world!
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ### Built With
@@ -31,12 +29,9 @@ Coming soon!
 
 <!-- ROADMAP -->
 ## Roadmap
-- [x] Italy minigame
-- [x] Mexico minigame
-- [x] Philippines minigame
-- [ ] Story transitions between countries
-- [ ] Improved artwork
-- [ ] Additional countries/minigames (China, Brazil, United States, etc)
+- [ ] Italy
+- [ ] Philippines
+- [ ] Mexico
 
 See the [open issues](https://github.com/jackandtoes/Olive-the-World/issues) for a full list of proposed features (and known issues).
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
