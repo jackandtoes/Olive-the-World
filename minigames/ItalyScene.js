@@ -40,7 +40,10 @@ this.levelText = this.add.text(650, 20, "Level: " + this.level, {
     this.pointerCountAll = 50;
    }
    if(this.level === 3){
-    this.pointerCountAll = 60;
+    this.pointerCountAll = 100;
+   }
+   if(this.level === 4){
+    this.pointerCountAll = 100;
    }
    this.pointerText = this.add.text(20, 20, "Clicks:" + this.pointerCountAll , {
      fontSize: "24px",
@@ -59,7 +62,21 @@ this.levelText = this.add.text(650, 20, "Level: " + this.level, {
 
 this.levelLayouts = {
 
-1: {
+  1: {
+  bentX: [1,1,3,3,4,4,6,6],
+  bentY: [0,4,2,4,2,5,5,7],
+
+  straightX: [1,1,1,2,3,4,4,5,6],
+  straightY: [1,2,3,4,3,3,4,5,6],
+
+  crossedX: [7],
+  crossedY: [5],
+
+  tX: [0,6],
+  tY: [6,3]
+},
+
+2: {
   bentX: [2,2,3,6,2,1,4,3,5,3],
   bentY: [4,5,3,4,0,6,4,5,5,7],
 
@@ -73,7 +90,7 @@ this.levelLayouts = {
   tY: [2,1,7,5]
 },
 
-2: {
+3: {
   bentX: [0,2,2,2,2,3,4,4,4,6,6],
   bentY: [2,0,3,4,6,3,2,6,7,4,0],
 
@@ -88,7 +105,7 @@ this.levelLayouts = {
 
 },
 
-3: {
+4: {
   bentX: [1,0,0,1,1,3,4,4,5,5,5,5,6,6,7],
   bentY: [0,2,5,2,6,3,3,6,1,2,3,6,2,6,1],
 
@@ -100,20 +117,6 @@ this.levelLayouts = {
 
   tX: [0,0,1,2,2,2,2,3,4,5],
   tY: [3,4,4,3,4,5,6,6,4,4]
-},
-
-4: {
-  bentX: [2,4,6],
-  bentY: [2,4,6],
-
-  straightX: [1,3,5,7],
-  straightY: [3,3,3,3],
-
-  crossedX: [4],
-  crossedY: [5],
-
-  tX: [3,6],
-  tY: [6,1]
 },
 
 5: {
@@ -214,7 +217,13 @@ for (let i = 0; i < level.tX.length; i++) {
 
  createPipe(gridX, gridY, textureKey, rotationIndex) {
    const tile = this.tileMapData[gridY][gridX];
+const reset_button = this.add.rectangle(300, 30, 100, 50, 0x000000)
+        .setInteractive({ useHandCursor: true });
+      this.add.text(270, 30, "Reset");
 
+reset_button.on("pointerdown", () => {
+        this.scene.restart({ level: this.level });
+      });
 
    tile.rotationIndex = Phaser.Math.Between(0, 3);
 
@@ -236,34 +245,111 @@ const rotationText = this.add.text(
   pipe.y
 ).setOrigin(0.5);
 
-   pipe.rotation = Phaser.Math.DegToRad(tile.rotationIndex * 90);
-   let pointer_count = 0;
-   pipe.on("pointerdown", () => {
-     if(this.pointerCountAll > 0){
-       tile.rotationIndex = (tile.rotationIndex + 1) % 4;
-       pointer_count += 1;
-       
-       this.pointerCountAll -= 1;
-       this.pointerText.setText("Clicks: " + this.pointerCountAll);
-       this.tweens.add({
-       targets: pipe,
-       rotation: pipe.rotation + Phaser.Math.DegToRad(90),
-       duration: 200
-   });
-	this.checkWin();
- }
-   });
+pipe.rotation = Phaser.Math.DegToRad(tile.rotationIndex * 90);
+let pointer_count = 0;
+pipe.on("pointerdown", () => {
+  if(this.pointerCountAll > 0){
+    tile.rotationIndex = (tile.rotationIndex + 1) % 4;
+    pointer_count += 1;
+    
+    this.pointerCountAll -= 1;
+    this.pointerText.setText("Clicks: " + this.pointerCountAll);
+    this.tweens.add({
+      targets: pipe,
+      rotation: pipe.rotation + Phaser.Math.DegToRad(90),
+      duration: 200
+    });
+    this.checkWin();
+  } else if (this.pointerCountAll == 0){
+    if(this.outOfClicksShown) return;
+    this.outOfClicksShown = true;
 
+    const popup = this.add.rectangle(400, 300, 300, 150, 0x000000);
+    this.add.text(310, 255, "You have run out of clicks!", {
+      fontSize: "18px",
+      color: "#ffffff"
+    });
+    this.add.text(340, 305, "Restart", {
+      fontSize: "22px",
+      color: "#ffffff"
+    }).setInteractive({ useHandCursor: true })
+      .on("pointerdown", () => {
+        this.outOfClicksShown = false;
+        this.scene.restart({ level: 1 });
+      });
+  }
+});
 
-   this.boardContainer.add(pipe);
- }
+this.boardContainer.add(pipe);
+}
 	checkWin() {
 
   if (this.hasWon) {
     return;
   }
-
   if (this.level === 1) {
+
+    const pasta_1 = this.tileMapData[0][1];
+    const pasta_2 = this.tileMapData[4][1];
+    const pasta_3 = this.tileMapData[2][3];
+    const pasta_4 = this.tileMapData[4][3];
+    const pasta_5 = this.tileMapData[2][4];
+    const pasta_6 = this.tileMapData[5][4];
+    const pasta_7 = this.tileMapData[5][6];
+    const pasta_8 = this.tileMapData[7][6];
+
+    const pasta_9 = this.tileMapData[1][1];
+    const pasta_10 = this.tileMapData[2][1];
+    const pasta_11 = this.tileMapData[3][1];
+    const pasta_12 = this.tileMapData[4][2];
+    const pasta_13 = this.tileMapData[3][3];
+    const pasta_14 = this.tileMapData[3][4];
+    const pasta_15 = this.tileMapData[4][4];
+    const pasta_16 = this.tileMapData[5][5];
+    const pasta_17 = this.tileMapData[6][6];
+
+    if (
+      pasta_1.rotationIndex == 1 &&
+      pasta_2.rotationIndex == 3 &&
+      pasta_3.rotationIndex == 0 &&
+      pasta_4.rotationIndex == 2 &&
+      pasta_5.rotationIndex == 1 &&
+      pasta_6.rotationIndex == 3 &&
+      pasta_7.rotationIndex == 1 &&
+      pasta_8.rotationIndex == 3 &&
+
+      pasta_9.rotationIndex % 2 != 0 &&
+      pasta_10.rotationIndex % 2 != 0 &&
+      pasta_11.rotationIndex % 2 != 0 &&
+      pasta_12.rotationIndex % 2 == 0 &&
+      pasta_13.rotationIndex % 2 != 0 &&
+      pasta_14.rotationIndex % 2 != 0 &&
+      pasta_15.rotationIndex % 2 != 0 &&
+      pasta_16.rotationIndex % 2 == 0 &&
+      pasta_17.rotationIndex % 2 != 0
+    ) {
+
+      this.hasWon = true;
+
+      this.pointerText.setText("YOU WIN!");
+
+
+      const next_button = this.add.rectangle(400, 350, 250, 150, 0x000000)
+        .setInteractive({ useHandCursor: true });
+      this.add.text(300, 300, "You passed this level!");
+      this.add.text(340, 335, "Next Level", {
+        fontSize: "24px",
+        color: "#ffffff"
+      });
+
+      next_button.on("pointerdown", () => {
+        this.nextLevel();
+      });
+
+    }
+
+  }
+  if (this.level === 2) {
 
     const pasta_1 = this.tileMapData[0][1];
     const pasta_2 = this.tileMapData[0][2];
@@ -326,7 +412,7 @@ const rotationText = this.add.text(
 
   }
 
-    if (this.level === 2) {
+    if (this.level === 3) {
 
 const pasta_1 = this.tileMapData[2][0];
 const pasta_2 = this.tileMapData[0][2];
@@ -416,7 +502,7 @@ console.log(pasta_1.rotationIndex);
     }
   
   }
-  if (this.level === 3) {
+  if (this.level === 4) {
 
 const pasta_1 = this.tileMapData[0][1];
 const pasta_2 = this.tileMapData[2][0];
