@@ -37,6 +37,10 @@ class MapScene extends Phaser.Scene {
     super("MapScene");
   }
 
+  preload() {
+    this.load.image("mapBg", "assets/map.png")
+  }
+
   init(data) {
     if (!this.registry.has('equippedItems')) {
       this.registry.set('equippedItems', {
@@ -45,17 +49,18 @@ class MapScene extends Phaser.Scene {
     }
   }
 
-  preload() {
-     this.load.image("mapBg", "assets/worldMap.jpg");
-  }
   create() {
+    //Sets the background
     const width = this.scale.width;
     const height = this.scale.height;
     const bg = this.add.image(width/2, height/2, "mapBg");
-    const mapScale = Math.max(width / bg.width, height / bg.height);
-    bg.setScale(mapScale);
-    
-    const storeButton = this.add.text(width/2, 30, "Store", {
+    const scale = Math.max(width / bg.width, height / bg.height);
+    bg.setScale(scale);
+    bg.setScrollFactor(0);
+    bg.setDepth(-1);
+
+    //Store Button
+    const storeButton = this.add.text(width/3 * 2, 30, "Store", {
       fontSize: "28px",
       fill: "#000000",
       backgroundColor: "#ffc4e3",
@@ -66,6 +71,18 @@ class MapScene extends Phaser.Scene {
       this.scene.start("Store");
     });
 
+    //Inventory Button
+    const inventoryButton = this.add.text(width/3, 30, "Inventory", {
+      fontSize: "28px",
+      fill: "#000000",
+      backgroundColor: "#ffc4e3",
+      padding: { x: 20, y: 10 }
+    }).setOrigin(0.5).setInteractive();
+    inventoryButton.on("pointerdown", () => {
+      this.scene.start("Inventory");
+    });
+
+    //Adds Player
     this.player = this.add.circle(width/2, height/2, 18, 0x556b2f);
     this.physics.add.existing(this.player);
     this.player.body.setCollideWorldBounds(true);
@@ -85,6 +102,7 @@ class MapScene extends Phaser.Scene {
     this.createInfoPanel();
     this.updatePlayerAppearance();
   }
+
   createCountry(name, x, y, description, sceneName) {
     const landmark = this.add.rectangle(x, y, 50, 50, 0xffcc00);
     this.add.text(x, y - 40, name, {
@@ -99,6 +117,7 @@ class MapScene extends Phaser.Scene {
       radius: 60
     });
   }
+
   createInfoPanel() {
     const width = this.scale.width;
     const height = this.scale.height;
@@ -219,6 +238,33 @@ class Store extends Phaser.Scene {
   }
 }
 
+// ===============================
+// INVENTORY SCENE 
+// ===============================
+class Inventory extends Phaser.Scene {
+  constructor() {
+    super("Inventory");
+  }
+
+  create() {
+    const width = this.scale.width;
+    const height = this.scale.height;
+    this.add.rectangle(width/2, height/2, width, height, 0xffeaa7);
+    this.add.text(width/2, 60, "Inventory", {
+      fontSize: "36px",
+      fill: "#ffffff"
+    }).setOrigin(0.5);
+
+    this.add.text(width/2, height - 50, "Press ESC to return to map", {
+      fontSize: "20px",
+      fill: "#000"
+    }).setOrigin(0.5);
+
+    this.input.keyboard.on("keydown-ESC", () => {
+      this.scene.start("MapScene");
+    });
+  }
+}
 
 // ===============================
 // GAME CONFIG
@@ -240,7 +286,8 @@ const config = {
     MexicoScene,
     ItalyScene,
     PhilippinesScene,
-    Store
+    Store,
+    Inventory
   ],
   scale: {
     mode: Phaser.Scale.FIT,
