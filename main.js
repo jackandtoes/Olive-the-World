@@ -87,8 +87,13 @@ class MapScene extends Phaser.Scene {
     this.physics.add.existing(this.player);
     this.player.body.setCollideWorldBounds(true);
     
-    this.playerHat = this.add.rectangle(width/2, height/2 -25, 20, 20, 0xff0000);
-    this.playerHat.setVisible(false);
+    this.playerHatSquare = this.add.rectangle(width/2, height/2 - 25, 20, 20, 0xff0000);
+    this.playerHatSquare.setVisible(false);
+
+    this.playerHatTriangle = this.add.graphics();
+    this.playerHatTriangle.fillStyle(0x9b59b6, 1);
+    this.playerHatTriangle.fillTriangle(-10, 0, 10, 0, 0, -18);
+    this.playerHatTriangle.setVisible(false);
 
     this.cursors = this.input.keyboard.createCursorKeys();
     this.countries = [];
@@ -146,8 +151,9 @@ class MapScene extends Phaser.Scene {
   }
 
 updatePlayerAppearance() {
-  const equippedItems = this.registry.get('equippedItems');
-  this.playerHat.setVisible(equippedItems.hat !== null);
+  const hat = this.registry.get('equippedItems').hat;
+  this.playerHatSquare.setVisible(hat === 'square');
+  this.playerHatTriangle.setVisible(hat === 'triangle');
 }
 
   update() {
@@ -157,7 +163,8 @@ updatePlayerAppearance() {
     if (this.cursors.right.isDown) this.player.body.setVelocityX(speed);
     if (this.cursors.up.isDown) this.player.body.setVelocityY(-speed);
     if (this.cursors.down.isDown) this.player.body.setVelocityY(speed);
-    this.playerHat.setPosition(this.player.x, this.player.y - 25);
+    this.playerHatSquare.setPosition(this.player.x, this.player.y - 25);
+    this.playerHatTriangle.setPosition(this.player.x, this.player.y - 15);    
     let foundCountry = null;
     for (let country of this.countries) {
       const distance = Phaser.Math.Distance.Between(
@@ -200,38 +207,61 @@ class Store extends Phaser.Scene {
       fill: "#000"
     }).setOrigin(0.5);
 
-      const itemSquare = this.add.rectangle(width/2, height/2, 80, 80, 0xff0000)
+    const equippedItems = this.registry.get('equippedItems');
+
+    // first item
+    const itemSquare = this.add.rectangle(width/3, height/2, 80, 80, 0xff0000)
       .setStrokeStyle(4, 0x000000)
       .setInteractive();
     
-    this.add.text(width/2, height/2 + 70, "Fancy Hat", {
+    this.add.text(width/3, height/2 + 70, "Fancy Square", {
       fontSize: "18px",
       fill: "#000"
     }).setOrigin(0.5);
     
-    const equippedItems = this.registry.get('equippedItems');
-    const isEquipped = equippedItems.hat === 'square';
-    
-    this.statusText = this.add.text(width/2, height/2 + 100, 
-      isEquipped ? "EQUIPPED" : "Click to equip", {
+    this.squareStatusText = this.add.text(width/3, height/2 + 100, 
+      equippedItems.hat === 'square' ? "EQUIPPED" : "Click to equip", {
       fontSize: "16px",
-      fill: isEquipped ? "#00aa00" : "#666666"
+      fill: equippedItems.hat === 'square' ? "#00aa00" : "#666666"
     }).setOrigin(0.5);
     
     itemSquare.on("pointerdown", () => {
       const equippedItems = this.registry.get('equippedItems');
       equippedItems.hat = 'square';
       this.registry.set('equippedItems', equippedItems);
-      
-      this.statusText.setText("EQUIPPED");
-      this.statusText.setColor("#00aa00");
+      this.squareStatusText.setText("EQUIPPED").setColor("#00aa00");
+      this.triangleStatusText.setText("Click to equip").setColor("#666666");
+    });
+    
+    // second item 
+    const itemTriangle = this.add.triangle(width/3 * 2, height/2, 0, 80, 80, 80, 40, 0, 0x9b59b6)
+      .setStrokeStyle(4, 0x000000)
+      .setInteractive(new Phaser.Geom.Triangle(0, 80, 80, 80, 40, 0), Phaser.Geom.Triangle.Contains);
+
+    this.add.text(width/3*2, height/2 + 70, "Fancy Triangle", {
+      fontSize: "18px",
+      fill: "#000"
+    }).setOrigin(0.5);
+
+    this.triangleStatusText = this.add.text(width/3*2, height/2 + 100,
+      equippedItems.hat === 'triangle' ? "EQUIPPED" : "Click to equip", {
+      fontSize: "16px",
+      fill: equippedItems.hat === 'triangle' ? "#00aa00" : "#666666"
+    }).setOrigin(0.5);
+
+    itemTriangle.on("pointerdown", () => {
+      const equippedItems = this.registry.get('equippedItems');
+      equippedItems.hat = 'triangle';
+      this.registry.set('equippedItems', equippedItems);
+      this.triangleStatusText.setText("EQUIPPED").setColor("#00aa00");
+      this.squareStatusText.setText("Click to equip").setColor("#666666");
     });
     
     this.add.text(width/2, height - 50, "Press ESC to return to map", {
       fontSize: "20px",
       fill: "#000"
     }).setOrigin(0.5);
-    
+
     this.input.keyboard.on("keydown-ESC", () => {
       this.scene.start("MapScene");
     });
