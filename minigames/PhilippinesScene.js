@@ -5,7 +5,7 @@ const LEVEL_LAYOUTS = {
   4: ['G', 'W', 'R', 'W', 'G', 'G', 'R', 'W', 'R', 'G'],
   5: ['G', 'W', 'R', 'R', 'W', 'W', 'R', 'R', 'W', 'G'],
 };
- 
+
 const ROW_COLORS = {
   G: 0x90ee90,
   W: 0x4a90e2,
@@ -19,7 +19,7 @@ class PhilippinesScene extends Phaser.Scene {
 
   init(data) { // levels
     this.currentLevel = data.level || 1;
-    this.maxLevel = 5;    
+    this.maxLevel = 5;
     this.levelConfig = {
       1: { ingredient: "Pork", color: 0xff6b6b, needed: 3 },
       2: { ingredient: "Water Chestnuts", color: 0xf9f9f9, needed: 4 },
@@ -54,8 +54,8 @@ class PhilippinesScene extends Phaser.Scene {
 
     this.gameContainer = this.add.container(0, 0);
 
-    this.createBoard();    
-    this.createPlayer();    
+    this.createBoard();
+    this.createPlayer();
     this.createLevelObjects();
     this.gameContainer.bringToTop(this.player);
     this.createUI();
@@ -80,11 +80,11 @@ class PhilippinesScene extends Phaser.Scene {
     }
   }
 
-createPlayer() {
+  createPlayer() {
     const cols = Math.ceil(this.gameWidth / this.GRID_SIZE);
     const startCol = Math.floor(cols / 2);
     const startRow = this.ROWS - 1; // bottom row
- 
+
     this.player = this.add.circle(
       startCol * this.GRID_SIZE + this.GRID_SIZE / 2,
       startRow * this.GRID_SIZE + this.GRID_SIZE / 2,
@@ -92,7 +92,7 @@ createPlayer() {
       0x556b2f
     ).setDepth(1000);
     this.gameContainer.add(this.player);
- 
+
     this.playerGridX = startCol;
     this.playerGridY = startRow;
   }
@@ -111,18 +111,18 @@ createPlayer() {
   createVehicleLane(row, direction) {
     const cols = Math.ceil(this.gameWidth / this.GRID_SIZE);
     const vehicleTypes = [
-      { width: 2, color: 0xff00ff, name: 'jeepney'},
-      { width: 1.5, color: 0xffff00, name: 'tricycle'},
-      { width: 1, color: 0xff0000, name: 'car'},
+      { width: 2, color: 0xff00ff, name: 'jeepney' },
+      { width: 1.5, color: 0xffff00, name: 'tricycle' },
+      { width: 1, color: 0xff0000, name: 'car' },
     ];
 
     const GAP = 3;
     const numVehicles = Phaser.Math.Between(2, 4);
     let cursor = direction > 0 ? -2 : cols + 2;
- 
+
     for (let i = 0; i < numVehicles; i++) {
       const type = Phaser.Math.RND.pick(vehicleTypes);
-      const col  = direction > 0 ? cursor - type.width / 2 : cursor + type.width / 2;
+      const col = direction > 0 ? cursor - type.width / 2 : cursor + type.width / 2;
       this.obstacles.push(this.createVehicle(col, row, direction, type));
       cursor += direction > 0 ? -(type.width + GAP) : (type.width + GAP);
     }
@@ -137,18 +137,18 @@ createPlayer() {
       type.color
     );
     this.gameContainer.add(sprite);
- 
+
     return { sprite, gridX: col, gridY: row, direction, speed: 1.2, width: type.width, type: type.name };
   }
 
   createWaterLane(row, direction) {
-  const cols = Math.ceil(this.gameWidth / this.GRID_SIZE);
-  const numLogs = Phaser.Math.Between(3, 4);
-  const GAP = 3; 
-  
-  let cursor = direction > 0 ? -2 : cols + 2;
+    const cols = Math.ceil(this.gameWidth / this.GRID_SIZE);
+    const numLogs = Phaser.Math.Between(3, 4);
+    const GAP = 3;
 
-  for (let i = 0; i < numLogs; i++) {
+    let cursor = direction > 0 ? -2 : cols + 2;
+
+    for (let i = 0; i < numLogs; i++) {
       const logWidth = Phaser.Math.Between(2, 4);
       const col = direction > 0 ? cursor - logWidth / 2 : cursor + logWidth / 2;
       this.obstacles.push(this.createLog(col, row, direction, logWidth));
@@ -157,7 +157,7 @@ createPlayer() {
   }
 
 
-createLog(col, row, direction, logWidth) {
+  createLog(col, row, direction, logWidth) {
     const sprite = this.add.image(
       col * this.GRID_SIZE + this.GRID_SIZE / 2,
       row * this.GRID_SIZE + this.GRID_SIZE / 2,
@@ -165,10 +165,31 @@ createLog(col, row, direction, logWidth) {
     );
     sprite.setDisplaySize(this.GRID_SIZE * logWidth - 4, this.GRID_SIZE - 4);
     this.gameContainer.add(sprite);
- 
+
     return { sprite, gridX: col, gridY: row, direction, speed: 1.5, width: logWidth, type: 'log', isSafe: true };
-}
- 
+  }
+
+  spawnCoin() {
+    const cols = Math.ceil(this.gameWidth / this.GRID_SIZE);
+    let col, row;
+    do {
+      col = Phaser.Math.Between(1, cols - 2);
+      row = Phaser.Math.Between(1, this.ROWS - 2);
+    } while (this.rowLayout[row] === 'W'); // don't spawn on water
+
+    this.coin = this.add.circle(
+      col * this.GRID_SIZE + this.GRID_SIZE / 2,
+      row * this.GRID_SIZE + this.GRID_SIZE / 2,
+      this.GRID_SIZE / 3,
+      0xffd700
+    ).setDepth(600);
+    this.gameContainer.add(this.coin);
+    this.coinGridX = col;
+    this.coinGridY = row;
+    this.coinCollected = false;
+  }
+
+
   spawnIngredients() {
     const cols = Math.ceil(this.gameWidth / this.GRID_SIZE);
     let spawned = 0;
@@ -177,14 +198,14 @@ createLog(col, row, direction, logWidth) {
     while (spawned < target) {
       const col = Phaser.Math.Between(0, cols - 1);
       const row = Phaser.Math.Between(1, this.ROWS - 2); // spawn in game area only
-     
+
       // check if position is already occupied
       const occupied = this.ingredients.some(ing =>
         ing.gridX === col && ing.gridY === row
       );
-     
+
       if (occupied) continue;
-      
+
       const sprite = this.add.star(
         col * this.GRID_SIZE + this.GRID_SIZE / 2,
         row * this.GRID_SIZE + this.GRID_SIZE / 2,
@@ -192,15 +213,16 @@ createLog(col, row, direction, logWidth) {
         this.config.color
       ).setDepth(500);
       this.gameContainer.add(sprite);
-     
-      this.ingredients.push({sprite, gridX: col, gridY: row, collected: false });
+
+      this.ingredients.push({ sprite, gridX: col, gridY: row, collected: false });
       spawned++;
     }
+    this.spawnCoin();
   }
 
   createUI() {
     const width = this.scale.width;
-   
+
     // level indicator
     this.levelText = this.add.text(20, 20, `Level ${this.currentLevel}`, {
       fontSize: "28px",
@@ -217,12 +239,20 @@ createLog(col, row, direction, logWidth) {
       backgroundColor: "#ffffff",
       padding: { x: 10, y: 5 }
     });
+
+    this.coinText = this.add.text(width - 20, 20,
+      `Coins: ${this.registry.get('currency') || 0}`, {
+      fontSize: "24px", fill: "#000",
+      backgroundColor: "#fffbe6",
+      padding: { x: 8, y: 4 }
+    }).setOrigin(1, 0);
+
   }
 
   update(time, delta) {
     this.updateObstacles(delta);
     this.handleInput();
-    this.checkCollisions();    
+    this.checkCollisions();
     if (this.playerOnLog) { // move olive with log if on one
       this.movePlayerWithLog(delta);
     }
@@ -232,27 +262,27 @@ createLog(col, row, direction, logWidth) {
     const cols = Math.ceil(this.gameWidth / this.GRID_SIZE);
     this.obstacles.forEach(obs => {
       obs.gridX += obs.direction * obs.speed * delta / 1000;
-      if (obs.direction > 0 && obs.gridX > cols + obs.width)  obs.gridX = -obs.width;
-      if (obs.direction < 0 && obs.gridX < -obs.width)        obs.gridX = cols + obs.width;
+      if (obs.direction > 0 && obs.gridX > cols + obs.width) obs.gridX = -obs.width;
+      if (obs.direction < 0 && obs.gridX < -obs.width) obs.gridX = cols + obs.width;
       obs.sprite.x = obs.gridX * this.GRID_SIZE + this.GRID_SIZE / 2;
     });
   }
 
-  movePlayerWithLog(delta) {   
+  movePlayerWithLog(delta) {
     const log = this.playerOnLog;
-    const cols = Math.ceil(this.gameWidth / this.GRID_SIZE);    
+    const cols = Math.ceil(this.gameWidth / this.GRID_SIZE);
 
     this.playerGridX += log.direction * log.speed * delta / 1000; // move olive based on log position    
-    this.player.x = this.playerGridX * this.GRID_SIZE + this.GRID_SIZE/2;
+    this.player.x = this.playerGridX * this.GRID_SIZE + this.GRID_SIZE / 2;
     // check if olive fell off the log (moved outside log bounds)
-    const logLeft = log.gridX - log.width/2;
-    const logRight = log.gridX + log.width/2;
+    const logLeft = log.gridX - log.width / 2;
+    const logRight = log.gridX + log.width / 2;
 
     // death menu
     if (this.playerGridX < logLeft || this.playerGridX > logRight) {
       this.die("Fell off the log!");
       return;
-    }    
+    }
     if (this.playerGridX < 0 || this.playerGridX > cols - 1) {
       this.die("Pushed off screen!");
     }
@@ -282,57 +312,58 @@ createLog(col, row, direction, logWidth) {
       newY = this.playerGridY;
       moved = true;
     }
-   
+
     if (moved && newX >= 0 && newX < cols && newY >= 0 && newY < this.ROWS) {
-      const cols = Math.ceil(this.gameWidth / this.GRID_SIZE);      
-        this.playerGridX = newX;
-        this.playerGridY = newY;
-        this.canMove = false;
-        this.tweens.add({
-          targets: this.player,
-          x: newX * this.GRID_SIZE + this.GRID_SIZE/2,
-          y: newY * this.GRID_SIZE + this.GRID_SIZE/2,
-          duration: 150,
-          onComplete: () => {
-            this.canMove = true;
-            this.checkWinCondition(); },
+      const cols = Math.ceil(this.gameWidth / this.GRID_SIZE);
+      this.playerGridX = newX;
+      this.playerGridY = newY;
+      this.canMove = false;
+      this.tweens.add({
+        targets: this.player,
+        x: newX * this.GRID_SIZE + this.GRID_SIZE / 2,
+        y: newY * this.GRID_SIZE + this.GRID_SIZE / 2,
+        duration: 150,
+        onComplete: () => {
+          this.canMove = true;
+          this.checkWinCondition();
+        },
       });
     }
   }
 
   checkCollisions() {
 
-    const row  = this.playerGridY;
+    const row = this.playerGridY;
     const type = this.rowLayout[row];
     if (type === 'G') {
       this.playerOnLog = null;
- 
+
     } else if (type === 'W') {
       const log = this.obstacles.find(obs => {
         if (obs.type !== 'log' || obs.gridY !== row) return false;
         return this.playerGridX >= obs.gridX - obs.width / 2 &&
-               this.playerGridX <= obs.gridX + obs.width / 2;
+          this.playerGridX <= obs.gridX + obs.width / 2;
       });
       if (log) {
         this.playerOnLog = log;
       } else {
         this.playerOnLog = null;
         this.die('Fell in water!');
-        return; 
+        return;
       }
- 
+
     } else if (type === 'R') {
       this.playerOnLog = null;
       for (const obs of this.obstacles) {
         if (obs.type === 'log' || obs.gridY !== row) continue;
         if (this.playerGridX >= obs.gridX - obs.width / 2 &&
-            this.playerGridX <= obs.gridX + obs.width / 2) {
+          this.playerGridX <= obs.gridX + obs.width / 2) {
           this.die('Hit by vehicle!');
           return;
         }
       }
     }
- 
+
     this.ingredients.forEach(ing => {
       if (ing.collected) return;
       const dist = Phaser.Math.Distance.Between(
@@ -346,6 +377,20 @@ createLog(col, row, direction, logWidth) {
         this.ingredientText.setText(`${this.config.ingredient}: ${this.collected}/${this.config.needed}`);
       }
     });
+
+    if (!this.coinCollected) {
+      const coinDist = Phaser.Math.Distance.Between(
+        this.playerGridX, this.playerGridY,
+        this.coinGridX, this.coinGridY
+      );
+      if (coinDist < 0.6) {
+        this.coinCollected = true;
+        this.coin.destroy();
+        const current = this.registry.get('currency') || 0;
+        this.registry.set('currency', current + 1);
+        this.coinText.setText(`Coins: ${current + 1}`);
+      }
+    }
   }
 
   checkWinCondition() { // reached top row (row 0)
@@ -361,7 +406,7 @@ createLog(col, row, direction, logWidth) {
   die(message) {
     this.canMove = false;
     this.playerOnLog = null;
-   
+
     this.time.delayedCall(300, () => {
       this.showGameOver(message);
     });
@@ -370,7 +415,7 @@ createLog(col, row, direction, logWidth) {
   levelComplete() {
     this.canMove = false;
     this.playerOnLog = null;
-   
+
     if (this.currentLevel >= this.maxLevel) {
       this.showVictory();
     } else {
@@ -383,7 +428,7 @@ createLog(col, row, direction, logWidth) {
     this.add.rectangle(width / 2, height / 2, 520, 380, 0x000000, 0.9);
     return { width, height };
   }
- 
+
   _button(x, y, label, color, cb) {
     const btn = this.add.text(x, y, label, { fontSize: '28px', fill: color })
       .setOrigin(0.5).setInteractive();
@@ -393,42 +438,49 @@ createLog(col, row, direction, logWidth) {
 
   showGameOver(message) {
     const { width, height } = this._overlay();
-    this.add.text(width/2, height/2 - 110, 'Game Over!', { 
-      fontSize: '48px', fill: '#ff0000' }).setOrigin(0.5);
-    this.add.text(width/2, height/2 -  50, message, { 
-      fontSize: '24px', fill: '#ffffff' }).setOrigin(0.5);
-    this.add.text(width/2, height/2,
+    this.add.text(width / 2, height / 2 - 110, 'Game Over!', {
+      fontSize: '48px', fill: '#ff0000'
+    }).setOrigin(0.5);
+    this.add.text(width / 2, height / 2 - 50, message, {
+      fontSize: '24px', fill: '#ffffff'
+    }).setOrigin(0.5);
+    this.add.text(width / 2, height / 2,
       `${this.config.ingredient}: ${this.collected}/${this.config.needed}`,
       { fontSize: '20px', fill: '#ffffff' }
     ).setOrigin(0.5);
-    this._button(width/2, height/2 +  70, 'Retry Level', '#ffffff', () => this.scene.restart({ level: this.currentLevel }));
-    this._button(width/2, height/2 + 120, 'Back to Map', '#ffffff', () => this.scene.start('MapScene'));
+    this._button(width / 2, height / 2 + 70, 'Retry Level', '#ffffff', () => this.scene.restart({ level: this.currentLevel }));
+    this._button(width / 2, height / 2 + 120, 'Back to Map', '#ffffff', () => this.scene.start('MapScene'));
   }
 
   showLevelComplete() {
     const { width, height } = this._overlay();
-    this.add.text(width/2, height/2 - 110, 'Level Complete!', { 
-      fontSize: '44px', 
-      fill: '#00ff00' }).setOrigin(0.5);
-    this.add.text(width/2, height/2 -  50, `${this.config.ingredient} collected!`, { 
-      fontSize: '28px', 
-      fill: '#ffffff' }).setOrigin(0.5);
-    this._button(width/2, height/2 +  40, 'Next Level', '#ffffff', () => this.scene.restart({ level: this.currentLevel + 1 }));
-    this._button(width/2, height/2 +  95, 'Back to Map', '#ffffff', () => this.scene.start('MapScene'));
+    this.add.text(width / 2, height / 2 - 110, 'Level Complete!', {
+      fontSize: '44px',
+      fill: '#00ff00'
+    }).setOrigin(0.5);
+    this.add.text(width / 2, height / 2 - 50, `${this.config.ingredient} collected!`, {
+      fontSize: '28px',
+      fill: '#ffffff'
+    }).setOrigin(0.5);
+    this._button(width / 2, height / 2 + 40, 'Next Level', '#ffffff', () => this.scene.restart({ level: this.currentLevel + 1 }));
+    this._button(width / 2, height / 2 + 95, 'Back to Map', '#ffffff', () => this.scene.start('MapScene'));
   }
 
   showVictory() {
     const { width, height } = this._overlay();
-    this.add.text(width/2, height/2 - 120, 'Victory!', { 
-      fontSize: '56px', 
-      fill: '#00ff00' }).setOrigin(0.5);
-    this.add.text(width/2, height/2 -  50, 'All Ingredients Collected!', { 
-      fontSize: '28px', 
-      fill: '#ffffff' }).setOrigin(0.5);
-    this.add.text(width/2, height/2, 'You completed all 5 levels!', { 
-      fontSize: '24px', 
-      fill: '#ffffff' }).setOrigin(0.5);
-    this._button(width/2, height/2 +  70, 'Play Again', '#ffffff', () => this.scene.restart({ level: 1 }));
-    this._button(width/2, height/2 + 120, 'Back to Map', '#ffffff', () => this.scene.start('MapScene'));
+    this.add.text(width / 2, height / 2 - 120, 'Victory!', {
+      fontSize: '56px',
+      fill: '#00ff00'
+    }).setOrigin(0.5);
+    this.add.text(width / 2, height / 2 - 50, 'All Ingredients Collected!', {
+      fontSize: '28px',
+      fill: '#ffffff'
+    }).setOrigin(0.5);
+    this.add.text(width / 2, height / 2, 'You completed all 5 levels!', {
+      fontSize: '24px',
+      fill: '#ffffff'
+    }).setOrigin(0.5);
+    this._button(width / 2, height / 2 + 70, 'Play Again', '#ffffff', () => this.scene.restart({ level: 1 }));
+    this._button(width / 2, height / 2 + 120, 'Back to Map', '#ffffff', () => this.scene.start('MapScene'));
   }
 }
