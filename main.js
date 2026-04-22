@@ -7,25 +7,25 @@ class StartScene extends Phaser.Scene {
   }
 
   preload() {
-      this.load.image("homeBg", "assets/background.png");
-      this.load.image("startBtn", "assets/start_button.png");
+    this.load.image("homeBg", "assets/background.png");
+    this.load.image("startBtn", "assets/start_button.png");
   }
 
   create() {
     //Sets the background
     const width = this.scale.width;
     const height = this.scale.height;
-    const bgcolor = this.add.rectangle(width/2, height/2, width, height, 0xa0326);
-    const bg = this.add.image(width/2, height/2, "homeBg"); // 800 x 600
+    const bgcolor = this.add.rectangle(width / 2, height / 2, width, height, 0xa0326);
+    const bg = this.add.image(width / 2, height / 2, "homeBg"); // 800 x 600
     const homeScale = Math.max(width / bg.width, height / bg.height);
     bg.setScale(homeScale);
 
     // Start Button
-    const startButton = this.add.image(width/2, height/2 + 150, "startBtn").setInteractive().setScale(0.5);
+    const startButton = this.add.image(width / 2, height / 2 + 150, "startBtn").setInteractive().setScale(0.5);
     startButton.on("pointerdown", () => {
       this.scene.start("MapScene");
     });
-    
+
   }
 }
 
@@ -43,9 +43,13 @@ class MapScene extends Phaser.Scene {
 
   init(data) {
     if (!this.registry.has('equippedItems')) {
-      this.registry.set('equippedItems', {
-        hat: null
-      });
+      this.registry.set('equippedItems', { hat: null });
+    }
+    if (!this.registry.has('currency')) {
+      this.registry.set('currency', 0);
+    }
+    if (!this.registry.has('ownedItems')) {
+      this.registry.set('ownedItems', {});
     }
   }
 
@@ -53,14 +57,14 @@ class MapScene extends Phaser.Scene {
     //Sets the background
     const width = this.scale.width;
     const height = this.scale.height;
-    const bg = this.add.image(width/2, height/2, "mapBg");
+    const bg = this.add.image(width / 2, height / 2, "mapBg");
     const scale = Math.max(width / bg.width, height / bg.height);
     bg.setScale(scale);
     bg.setScrollFactor(0);
     bg.setDepth(-1);
 
     //Store Button
-    const storeButton = this.add.text(width/3 * 2, 30, "Store", {
+    const storeButton = this.add.text(width / 3 * 2, 30, "Store", {
       fontSize: "28px",
       fill: "#000000",
       backgroundColor: "#ffc4e3",
@@ -72,7 +76,7 @@ class MapScene extends Phaser.Scene {
     });
 
     //Inventory Button
-    const inventoryButton = this.add.text(width/3, 30, "Inventory", {
+    const inventoryButton = this.add.text(width / 3, 30, "Inventory", {
       fontSize: "28px",
       fill: "#000000",
       backgroundColor: "#ffc4e3",
@@ -83,11 +87,11 @@ class MapScene extends Phaser.Scene {
     });
 
     //Adds Player
-    this.player = this.add.circle(width/2, height/2, 18, 0x556b2f);
+    this.player = this.add.circle(width / 2, height / 2, 18, 0x556b2f);
     this.physics.add.existing(this.player);
     this.player.body.setCollideWorldBounds(true);
-    
-    this.playerHatSquare = this.add.rectangle(width/2, height/2 - 25, 20, 20, 0xff0000);
+
+    this.playerHatSquare = this.add.rectangle(width / 2, height / 2 - 25, 20, 20, 0xff0000);
     this.playerHatSquare.setVisible(false);
 
     this.playerHatTriangle = this.add.graphics();
@@ -126,7 +130,7 @@ class MapScene extends Phaser.Scene {
   createInfoPanel() {
     const width = this.scale.width;
     const height = this.scale.height;
-    this.infoPanel = this.add.container(width/2, height - 130);
+    this.infoPanel = this.add.container(width / 2, height - 130);
     this.infoPanel.setVisible(false);
     const bg = this.add.rectangle(0, 0, 600, 140, 0xffffff)
       .setStrokeStyle(3, 0x000000);
@@ -150,11 +154,11 @@ class MapScene extends Phaser.Scene {
     this.infoPanel.add([bg, this.panelTitle, this.panelText, playButton]);
   }
 
-updatePlayerAppearance() {
-  const hat = this.registry.get('equippedItems').hat;
-  this.playerHatSquare.setVisible(hat === 'square');
-  this.playerHatTriangle.setVisible(hat === 'triangle');
-}
+  updatePlayerAppearance() {
+    const hat = this.registry.get('equippedItems').hat;
+    this.playerHatSquare.setVisible(hat === 'square');
+    this.playerHatTriangle.setVisible(hat === 'triangle');
+  }
 
   update() {
     const speed = 200;
@@ -164,7 +168,7 @@ updatePlayerAppearance() {
     if (this.cursors.up.isDown) this.player.body.setVelocityY(-speed);
     if (this.cursors.down.isDown) this.player.body.setVelocityY(speed);
     this.playerHatSquare.setPosition(this.player.x, this.player.y - 25);
-    this.playerHatTriangle.setPosition(this.player.x, this.player.y - 15);    
+    this.playerHatTriangle.setPosition(this.player.x, this.player.y - 15);
     let foundCountry = null;
     for (let country of this.countries) {
       const distance = Phaser.Math.Distance.Between(
@@ -201,70 +205,105 @@ class Store extends Phaser.Scene {
   create() {
     const width = this.scale.width;
     const height = this.scale.height;
-    this.add.rectangle(width/2, height/2, width, height, 0xffeaa7);
-    this.add.text(width/2, 60, "Welcome to the store!", {
+    this.add.rectangle(width / 2, height / 2, width, height, 0xffeaa7);
+    this.add.text(width / 2, 60, "Welcome to the store!", {
       fontSize: "36px",
       fill: "#000"
     }).setOrigin(0.5);
 
-    const equippedItems = this.registry.get('equippedItems');
+    // currency display
+    this.coinText = this.add.text(width - 20, 20, `Coins: ${this.registry.get('currency')}`, {
+      fontSize: "28px", fill: "#000",
+      backgroundColor: "#fffbe6", padding: { x: 10, y: 5 }
+    }).setOrigin(1, 0);
 
-    // first item
-    const itemSquare = this.add.rectangle(width/3, height/2, 80, 80, 0xff0000)
+    const equippedItems = this.registry.get('equippedItems');
+    const PRICES = { square: 2, triangle: 3 };
+
+    // first item (square hat)
+    const itemSquare = this.add.rectangle(width / 3, height / 2, 80, 80, 0xff0000)
       .setStrokeStyle(4, 0x000000)
       .setInteractive();
-    
-    this.add.text(width/3, height/2 + 70, "Fancy Square", {
+
+    this.add.text(width / 3, height / 2 + 70, "Fancy Square", {
       fontSize: "18px",
       fill: "#000"
     }).setOrigin(0.5);
-    
-    this.squareStatusText = this.add.text(width/3, height/2 + 100, 
-      equippedItems.hat === 'square' ? "EQUIPPED" : "Click to equip", {
-      fontSize: "16px",
-      fill: equippedItems.hat === 'square' ? "#00aa00" : "#666666"
+    this.add.text(width / 3, height / 2 - 65, `Coins: ${PRICES.square}`, {
+      fontSize: "18px",
+      fill: "#b8860b"
     }).setOrigin(0.5);
-    
-    itemSquare.on("pointerdown", () => {
-      const equippedItems = this.registry.get('equippedItems');
-      equippedItems.hat = 'square';
-      this.registry.set('equippedItems', equippedItems);
-      this.squareStatusText.setText("EQUIPPED").setColor("#00aa00");
-      this.triangleStatusText.setText("Click to equip").setColor("#666666");
-    });
-    
-    // second item 
-    const itemTriangle = this.add.triangle(width/3 * 2, height/2, 0, 80, 80, 80, 40, 0, 0x9b59b6)
+
+    const ownedItems = this.registry.get('ownedItems') || {};
+    this.squareStatusText = this.add.text(width / 3, height / 2 + 100,
+      this._itemLabel(equippedItems, ownedItems, 'square'), {
+      fontSize: "16px",
+      fill: this._itemColor(equippedItems, ownedItems, 'square')
+    }).setOrigin(0.5);
+
+    itemSquare.on("pointerdown", () => this._handlePurchaseOrEquip('square', PRICES.square));
+
+
+    // second item (triangle hat)
+    const itemTriangle = this.add.triangle(width / 3 * 2, height / 2, 0, 80, 80, 80, 40, 0, 0x9b59b6)
       .setStrokeStyle(4, 0x000000)
       .setInteractive(new Phaser.Geom.Triangle(0, 80, 80, 80, 40, 0), Phaser.Geom.Triangle.Contains);
 
-    this.add.text(width/3*2, height/2 + 70, "Fancy Triangle", {
+    this.add.text(width / 3 * 2, height / 2 + 70, "Fancy Triangle", {
       fontSize: "18px",
       fill: "#000"
     }).setOrigin(0.5);
 
-    this.triangleStatusText = this.add.text(width/3*2, height/2 + 100,
-      equippedItems.hat === 'triangle' ? "EQUIPPED" : "Click to equip", {
+    this.add.text(width / 3 * 2, height / 2 - 65, `Coins: ${PRICES.triangle}`, {
+      fontSize: "18px", fill: "#b8860b"
+    }).setOrigin(0.5);
+
+    this.triangleStatusText = this.add.text(width / 3 * 2, height / 2 + 100,
+      this._itemLabel(equippedItems, ownedItems, 'triangle'), {
       fontSize: "16px",
-      fill: equippedItems.hat === 'triangle' ? "#00aa00" : "#666666"
+      fill: this._itemColor(equippedItems, ownedItems, 'triangle')
     }).setOrigin(0.5);
 
-    itemTriangle.on("pointerdown", () => {
-      const equippedItems = this.registry.get('equippedItems');
-      equippedItems.hat = 'triangle';
-      this.registry.set('equippedItems', equippedItems);
-      this.triangleStatusText.setText("EQUIPPED").setColor("#00aa00");
-      this.squareStatusText.setText("Click to equip").setColor("#666666");
-    });
-    
-    this.add.text(width/2, height - 50, "Press ESC to return to map", {
-      fontSize: "20px",
-      fill: "#000"
-    }).setOrigin(0.5);
+    itemTriangle.on("pointerdown", () => this._handlePurchaseOrEquip('triangle', PRICES.triangle));
 
-    this.input.keyboard.on("keydown-ESC", () => {
-      this.scene.start("MapScene");
-    });
+    this.add.text(width / 2, height - 50, "Press ESC to return to map", {
+      fontSize: "20px", fill: "#000"
+    }).setOrigin(0.5);
+    this.input.keyboard.on("keydown-ESC", () => this.scene.start("MapScene"));
+  }
+
+  _itemLabel(equipped, owned, key) {
+    if (equipped.hat === key) return "EQUIPPED";
+    if (owned[key]) return "Click to equip";
+    return "Buy";
+  }
+
+  _itemColor(equipped, owned, key) {
+    if (equipped.hat === key) return "#00aa00";
+    if (owned[key]) return "#666666";
+    return "#cc0000";
+  }
+
+  _handlePurchaseOrEquip(key, price) {
+    const equippedItems = this.registry.get('equippedItems');
+    const ownedItems = this.registry.get('ownedItems') || {};
+    const currency = this.registry.get('currency') || 0;
+
+    if (!ownedItems[key]) {
+      if (currency < price) return;
+      this.registry.set('currency', currency - price);
+      ownedItems[key] = true;
+      this.registry.set('ownedItems', ownedItems);
+      this.coinText.setText(`Coins: ${this.registry.get('currency')}`);
+    }
+
+    equippedItems.hat = key;
+    this.registry.set('equippedItems', equippedItems);
+
+    const owned2 = this.registry.get('ownedItems') || {};
+    const equipped2 = this.registry.get('equippedItems');
+    this.squareStatusText.setText(this._itemLabel(equipped2, owned2, 'square')).setColor(this._itemColor(equipped2, owned2, 'square'));
+    this.triangleStatusText.setText(this._itemLabel(equipped2, owned2, 'triangle')).setColor(this._itemColor(equipped2, owned2, 'triangle'));
   }
 }
 
@@ -279,13 +318,13 @@ class Inventory extends Phaser.Scene {
   create() {
     const width = this.scale.width;
     const height = this.scale.height;
-    this.add.rectangle(width/2, height/2, width, height, 0xffeaa7);
-    this.add.text(width/2, 60, "Inventory", {
+    this.add.rectangle(width / 2, height / 2, width, height, 0xffeaa7);
+    this.add.text(width / 2, 60, "Inventory", {
       fontSize: "36px",
       fill: "#ffffff"
     }).setOrigin(0.5);
 
-    this.add.text(width/2, height - 50, "Press ESC to return to map", {
+    this.add.text(width / 2, height - 50, "Press ESC to return to map", {
       fontSize: "20px",
       fill: "#000"
     }).setOrigin(0.5);
