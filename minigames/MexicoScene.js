@@ -9,6 +9,7 @@ class MexicoScene extends Phaser.Scene {
         this.pinatas = [];
         this.chiles = [];
         this.goldenPinatas = [];
+        this.confettiPool = [];
     }
 
     preload() {
@@ -61,7 +62,19 @@ class MexicoScene extends Phaser.Scene {
             callbackScope: this,
             loop: true
         });
+        this.initConfettiPool();
         this.spawnPinata();
+    }
+
+    initConfettiPool(poolSize = 24) {
+        this.confettiPool = [];
+
+        for (let i = 0; i < poolSize; i++) {
+            const piece = this.add.rectangle(-100, -100, 8, 14, 0xffffff);
+            piece.setVisible(false);
+            piece.setActive(false);
+            this.confettiPool.push(piece);
+        }
     }
 
     spawnPinata() {
@@ -163,6 +176,66 @@ class MexicoScene extends Phaser.Scene {
         this.goldenPinatas.push(goldenPinataData);
     }
 
+    createConfettiBurst(x, y, palette = [0xff4d4d, 0xffc94d, 0x4dd2ff, 0x8aff4d, 0xff7ad9]) {
+        const pieces = 12;
+
+        for (let i = 0; i < pieces; i++) {
+            let confetti = this.confettiPool.find(piece => !piece.active);
+
+            if (!confetti) {
+                confetti = this.add.rectangle(-100, -100, 8, 14, 0xffffff);
+                confetti.setVisible(false);
+                confetti.setActive(false);
+                this.confettiPool.push(confetti);
+            }
+
+            const color = Phaser.Utils.Array.GetRandom(palette);
+            const width = Phaser.Math.Between(6, 10);
+            const height = Phaser.Math.Between(10, 16);
+
+            confetti.setFillStyle(color);
+            confetti.setSize(width, height);
+            confetti.setPosition(x, y);
+            confetti.setAlpha(1);
+            confetti.setScale(1);
+            confetti.setAngle(0);
+            confetti.setVisible(true);
+            confetti.setActive(true);
+
+            if (confetti._burstTween) {
+                confetti._burstTween.stop();
+                confetti._burstTween = null;
+            }
+
+            const angle = Phaser.Math.FloatBetween(0, Math.PI * 2);
+            const distance = Phaser.Math.Between(50, 140);
+            const offsetX = Math.cos(angle) * distance;
+            const offsetY = Math.sin(angle) * distance - Phaser.Math.Between(20, 70);
+            const spin = Phaser.Math.Between(-360, 360);
+
+            confetti._burstTween = this.tweens.add({
+                targets: confetti,
+                x: x + offsetX,
+                y: y + offsetY,
+                angle: spin,
+                alpha: 0,
+                scaleX: Phaser.Math.FloatBetween(0.4, 1),
+                scaleY: Phaser.Math.FloatBetween(0.4, 1),
+                duration: Phaser.Math.Between(450, 700),
+                ease: 'Cubic.easeOut',
+                onComplete: () => {
+                    confetti.setVisible(false);
+                    confetti.setActive(false);
+                    confetti.setAlpha(1);
+                    confetti.setScale(1);
+                    confetti.setAngle(0);
+                    confetti.setPosition(-100, -100);
+                    confetti._burstTween = null;
+                }
+            });
+        }
+    }
+
     onPinataClicked(pinataEl) {
         if (this.gameOver) return;
 
@@ -172,6 +245,7 @@ class MexicoScene extends Phaser.Scene {
             this.score += 10;
             this.scoreText.setText('Score: ' + this.score);
 
+            this.createConfettiBurst(pinataEl.x, pinataEl.y);
             pinataEl.destroy();
             this.pinatas.splice(index, 1);
 
@@ -219,6 +293,7 @@ class MexicoScene extends Phaser.Scene {
             this.score += 50; 
             this.scoreText.setText('Score: ' + this.score);
 
+            this.createConfettiBurst(goldenPinataEl.x, goldenPinataEl.y, [0xffd700, 0xfff08a, 0xff8c42, 0xffffff]);
             goldenPinataEl.destroy();
             this.goldenPinatas.splice(index, 1);
 
