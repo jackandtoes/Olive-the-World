@@ -9,6 +9,7 @@ class ItalyScene extends Phaser.Scene {
    this.load.image('straight', 'assets/italy/straight_pasta.png');
    this.load.image('crossed', 'assets/italy/crossed_pasta.png');
    this.load.image('t_shape', 'assets/italy/t-shaped_pasta.png');
+   this.load.image('olive_mascot', 'assets/olive_favicon.png');
  }
 
 
@@ -172,6 +173,8 @@ this.levelLayouts = {
   const resetX = boardX + boardWidth / 2;
   const resetY = boardY + this.ROWS * this.GRID_SIZE + 42;
 
+  this.createCheerOlive(boardX, boardY);
+
   const reset_button = this.add.rectangle(resetX, resetY, 112, 42, this.palette.button)
     .setStrokeStyle(2, this.palette.panelBorder)
     .setInteractive({ useHandCursor: true });
@@ -198,6 +201,47 @@ this.levelLayouts = {
    });
   
   
+ }
+
+ createCheerOlive(boardX, boardY) {
+  const mascotX = boardX - 82;
+  const mascotY = boardY + 210;
+  const shadow = this.add.ellipse(mascotX, mascotY + 52, 58, 16, 0xb98547, 0.28).setDepth(2);
+  const olive = this.add.image(mascotX, mascotY, 'olive_mascot').setDepth(3);
+  olive.setDisplaySize(82, 82);
+
+  this.tweens.add({
+    targets: olive,
+    y: mascotY - 6,
+    duration: 900,
+    yoyo: true,
+    repeat: -1,
+    ease: "Sine.InOut"
+  });
+
+  const cheersByLevel = {
+    1: "You got this!",
+    2: "Twist that pasta!",
+    3: "Mamma mia!",
+    4: "Almost there!",
+    5: "Final plate!"
+  };
+
+  const cheerBubble = this.add.text(mascotX - 20, mascotY - 82, cheersByLevel[this.level] || "You got this!", {
+    fontSize: "17px",
+    color: "#5a341c",
+    fontStyle: "bold",
+    backgroundColor: "#fff4dd",
+    padding: { x: 10, y: 7 }
+  }).setOrigin(0.5).setDepth(3);
+
+  this.tweens.add({
+    targets: cheerBubble,
+    alpha: 0,
+    delay: 2800,
+    duration: 700,
+    ease: "Sine.Out"
+  });
  }
 
 
