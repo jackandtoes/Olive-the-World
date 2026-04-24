@@ -370,6 +370,7 @@ pipe.on("pointerdown", () => {
       this.reset_text.setColor("#d8d0c8");
     }
     this.checkWin();
+    this.checkTotalWin();
   } 
   else if (this.pointerCountAll == 0){
     if(this.outOfClicksShown) return;
@@ -490,6 +491,31 @@ pipe.tileData = tile;
     this.nextLevel();
   });
  }
+
+ showTotalWinPopup() {
+  this.pointerText.setText("YOU WIN!");
+
+  const next_button = this.add.rectangle(400, 350, 300, 170, 0x2b140c, 0.94)
+    .setStrokeStyle(3, this.palette.panelBorder)
+    .setInteractive({ useHandCursor: true })
+    .setDepth(20);
+  this.add.text(400, 292, "You passed\nall levels!", {
+    fontSize: "28px",
+    color: "#fff4dd",
+    fontStyle: "bold"
+  }).setOrigin(0.5).setDepth(21);
+  this.add.text(400, 360, "Back to Map", {
+    fontSize: "30px",
+    color: "#ffffff",
+    backgroundColor: "#7c2d12",
+    padding: { x: 20, y: 10 }
+  }).setOrigin(0.5).setDepth(21);
+
+  next_button.on("pointerdown", () => {
+    this.scene.start("MapScene");;
+  });
+ }
+
 	checkWin() {
 
   if (this.hasWon) {
@@ -722,7 +748,10 @@ const pasta_31 = this.tileMapData[4][4];
     }
   
   }
-  if (this.level === 5) {
+  }
+
+checkTotalWin() {
+    if (this.level === 5) {
 
 const pasta_1 = this.tileMapData[0][1];
 const pasta_2 = this.tileMapData[2][0];
@@ -817,12 +846,12 @@ const pasta_41 = this.tileMapData[4][5];
     ) {
 
       this.hasWon = true;
-      this.playSauceFillAnimation(this.getWinningAnimationCoords(), () => this.showWinPopup());
+      this.playSauceFillAnimation(this.getWinningAnimationCoords(), () => this.showTotalWinPopup());
 
     }
   
   }
-  }
+}
 
 nextLevel() {
 
