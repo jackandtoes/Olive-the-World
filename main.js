@@ -108,6 +108,8 @@ class MapScene extends Phaser.Scene {
       "Fix pasta pipes.\nServe the perfect plate!", "ItalyScene", "ItalyStore");
     this.createCountry("Philippines", width * 0.8, height * 0.7,
       "Collect lumpia ingredients.\nAvoid traffic!", "PhilippinesScene", "PhilippinesStore");
+    this.createCountry("Egypt", width * 0.4, height * 0.8,
+      "Run in the desert.\nDodge palm trees and flying falafels!", "EgyptScene", "EgyptStore");
     this.createInfoPanel();
     this.updatePlayerAppearance();
   }
@@ -355,6 +357,7 @@ const config = {
     MexicoScene,
     ItalyScene,
     PhilippinesScene,
+    EgyptScene,
     Store,
     Inventory
   ],
