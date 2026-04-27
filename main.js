@@ -38,7 +38,11 @@ class MapScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.image("mapBg", "assets/map.png")
+    this.load.image("mapBg", "assets/map.png");
+    this.load.image("flagPhilippines", "assets/Philippines_flag.png");
+    this.load.image("flagMexico", "assets/Mexico_flag.png");
+    this.load.image("flagEgypt", "assets/Egypt_flag.png");
+    this.load.image("flagItaly", "assets/Italy_flag.png");
   }
 
   init(data) {
@@ -102,20 +106,20 @@ class MapScene extends Phaser.Scene {
     this.cursors = this.input.keyboard.createCursorKeys();
     this.countries = [];
 
-    this.createCountry("Mexico", width * 0.3, height * 0.6,
-      "Whack piñatas.\nAvoid spicy chiles!", "MexicoScene", "MexicoStore");
+    this.createCountry("Mexico", width * 0.222, height * 0.47,
+      "Whack piñatas.\nAvoid spicy chiles!", "MexicoScene", "MexicoStore", "flagMexico");
     this.createCountry("Italy", width * 0.55, height * 0.45,
-      "Fix pasta pipes.\nServe the perfect plate!", "ItalyScene", "ItalyStore");
+      "Fix pasta pipes.\nServe the perfect plate!", "ItalyScene", "ItalyStore", "flagItaly");
     this.createCountry("Philippines", width * 0.8, height * 0.7,
-      "Collect lumpia ingredients.\nAvoid traffic!", "PhilippinesScene", "PhilippinesStore");
+      "Collect lumpia ingredients.\nAvoid traffic!", "PhilippinesScene", "PhilippinesStore", "flagPhilippines");
     this.createCountry("Egypt", width * 0.4, height * 0.8,
-      "Run in the desert.\nDodge palm trees and flying falafels!", "EgyptScene", "EgyptStore");
+      "Run in the desert.\nDodge palm trees and flying falafels!", "EgyptScene", "EgyptStore", "flagEgypt");
     this.createInfoPanel();
     this.updatePlayerAppearance();
   }
 
-  createCountry(name, x, y, description, sceneName) {
-    const landmark = this.add.rectangle(x, y, 50, 50, 0xffcc00);
+  createCountry(name, x, y, description, sceneName, storeName, flagKey) {
+    const landmark = this.add.image(x, y, flagKey).setScale(0.6);
     this.add.text(x, y - 40, name, {
       fontSize: "18px",
       fill: "#000"
@@ -125,6 +129,8 @@ class MapScene extends Phaser.Scene {
       landmark,
       description,
       sceneName,
+      storeName,
+      flagKey,
       radius: 60
     });
   }
