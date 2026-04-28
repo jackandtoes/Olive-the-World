@@ -14,7 +14,6 @@ class ItalyScene extends Phaser.Scene {
 
 
  create(data) {
-
   if (data.level) {
     this.level = data.level;
   } else {
@@ -859,6 +858,9 @@ const pasta_41 = this.tileMapData[4][5];
 
       this.hasWon = true;
       this.playSauceFillAnimation(this.getWinningAnimationCoords(), () => this.showTotalWinPopup());
+      const wins = this.registry.get('wins');
+      wins.italy = true;
+      this.registry.set('wins', wins);
 
     }
   
