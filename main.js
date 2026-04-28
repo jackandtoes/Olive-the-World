@@ -8,24 +8,155 @@ class StartScene extends Phaser.Scene {
 
   preload() {
     this.load.image("homeBg", "assets/background.png");
+    this.load.image("homeLogo", "assets/olive_main_logo.png");
     this.load.image("startBtn", "assets/start_button.png");
   }
 
   create() {
-    //Sets the background
     const width = this.scale.width;
     const height = this.scale.height;
-    const bgcolor = this.add.rectangle(width / 2, height / 2, width, height, 0xa0326);
-    const bg = this.add.image(width / 2, height / 2, "homeBg"); // 800 x 600
-    const homeScale = Math.max(width / bg.width, height / bg.height);
-    bg.setScale(homeScale);
 
-    // Start Button
-    const startButton = this.add.image(width / 2, height / 2 + 150, "startBtn").setInteractive().setScale(0.5);
-    startButton.on("pointerdown", () => {
-      this.scene.start("MapScene");
+    this.add.rectangle(width / 2, height / 2, width, height, 0x1a140f).setDepth(-20);
+
+    const warmGlow = this.add.circle(width * 0.8, height * 0.18, 280, 0xffd98a, 0.18)
+      .setBlendMode(Phaser.BlendModes.ADD)
+      .setDepth(-18);
+    const coolGlow = this.add.circle(width * 0.16, height * 0.85, 240, 0x8fd3ff, 0.12)
+      .setBlendMode(Phaser.BlendModes.ADD)
+      .setDepth(-18);
+
+    const backdrop = this.add.image(width / 2, height / 2 + 12, "homeBg");
+    const bgScale = Math.max(width / backdrop.width, height / backdrop.height) * 1.08;
+    backdrop.setScale(bgScale);
+    backdrop.setAlpha(1);
+    backdrop.setDepth(0);
+
+    this.add.rectangle(width / 2, height / 2, width, height, 0x000000, 0.18).setDepth(-5);
+    this.add.rectangle(width / 2, height / 2, width, height, 0x7a5a2a, 0.08).setDepth(-4);
+
+    this._createSparkles(width, height);
+
+    const buttonShadow = this.add.ellipse(width / 2, height * 0.81 + 18, 320, 62, 0x000000, 0.28)
+      .setDepth(7);
+    buttonShadow.setAlpha(0);
+    buttonShadow.setScale(1);
+    const startButton = this.add.image(width / 2, height * 0.81, "startBtn")
+      .setInteractive({ useHandCursor: true })
+      .setDepth(8);
+
+    const buttonScale = Math.min(0.62, (width * 0.44) / startButton.width);
+    startButton.setScale(buttonScale);
+    startButton.setAlpha(0);
+    startButton.y += 12;
+
+    const startGame = () => this.scene.start("MapScene");
+    startButton.on("pointerdown", startGame);
+    this.input.keyboard.once("keydown-SPACE", startGame);
+
+    startButton.on("pointerover", () => {
+      this.tweens.add({
+        targets: startButton,
+        scaleX: buttonScale * 1.05,
+        scaleY: buttonScale * 1.05,
+        duration: 140,
+        ease: "Sine.easeOut"
+      });
+      this.tweens.add({
+        targets: buttonShadow,
+        scaleX: 1.06,
+        scaleY: 1.06,
+        alpha: 0.35,
+        duration: 140,
+        ease: "Sine.easeOut"
+      });
+    });
+    startButton.on("pointerout", () => {
+      this.tweens.add({
+        targets: startButton,
+        scaleX: buttonScale,
+        scaleY: buttonScale,
+        duration: 140,
+        ease: "Sine.easeOut"
+      });
+
+      this.tweens.add({
+        targets: buttonShadow,
+        scaleX: 1,
+        scaleY: 1,
+        alpha: 0.28,
+        duration: 140,
+        ease: "Sine.easeOut"
+      });
     });
 
+    this.tweens.add({
+      targets: backdrop,
+      y: backdrop.y + 8,
+      duration: 3200,
+      yoyo: true,
+      repeat: -1,
+      ease: "Sine.easeInOut"
+    });
+
+    this.tweens.add({
+      targets: [warmGlow, coolGlow],
+      scaleX: { from: 1, to: 1.08 },
+      scaleY: { from: 1, to: 1.08 },
+      alpha: { from: 0.1, to: 0.22 },
+      duration: 3600,
+      yoyo: true,
+      repeat: -1,
+      ease: "Sine.easeInOut"
+    });
+
+    this.tweens.add({
+      targets: startButton,
+      y: startButton.y - 6,
+      duration: 1800,
+      yoyo: true,
+      repeat: -1,
+      ease: "Sine.easeInOut"
+    });
+
+    this.tweens.add({
+      targets: [buttonShadow, startButton],
+      alpha: 1,
+      duration: 520,
+      delay: 560,
+      ease: "Sine.easeOut"
+    });
+    
+  }
+
+  _createSparkles(width, height) {
+    const palette = [0xfff2b2, 0xffffff, 0x9fe7ff, 0xffc57a];
+
+    for (let i = 0; i < 14; i++) {
+      const sparkle = this.add.star(
+        Phaser.Math.Between(20, width - 20),
+        Phaser.Math.Between(20, height - 120),
+        4,
+        Phaser.Math.Between(2, 4),
+        Phaser.Math.Between(5, 9),
+        Phaser.Utils.Array.GetRandom(palette)
+      );
+      sparkle.setAlpha(Phaser.Math.FloatBetween(0.2, 0.65));
+      sparkle.setDepth(-2);
+      sparkle.setBlendMode(Phaser.BlendModes.ADD);
+
+      this.tweens.add({
+        targets: sparkle,
+        scaleX: Phaser.Math.FloatBetween(0.75, 1.15),
+        scaleY: Phaser.Math.FloatBetween(0.75, 1.15),
+        alpha: Phaser.Math.FloatBetween(0.15, 0.85),
+        angle: Phaser.Math.Between(-10, 10),
+        duration: Phaser.Math.Between(1400, 2800),
+        yoyo: true,
+        repeat: -1,
+        delay: Phaser.Math.Between(0, 1800),
+        ease: "Sine.easeInOut"
+      });
+    }
   }
 }
 
