@@ -450,6 +450,9 @@ class MexicoScene extends Phaser.Scene {
                 duration: 1000,
                 onComplete: () => plusText.destroy()
             });
+
+            const current = this.registry.get('currency') || 0;
+            this.registry.set('currency', current + 1);
         }
     }
 
