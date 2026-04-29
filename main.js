@@ -10,6 +10,10 @@ class StartScene extends Phaser.Scene {
     this.load.image("homeBg", "assets/background.png");
     this.load.image("homeLogo", "assets/olive_main_logo.png");
     this.load.image("startBtn", "assets/start_button.png");
+    this.load.image("settingsbutton", "assets/settingsbutton.png");
+    this.load.image("philip_token", "assets/bronze_token_otw.png");
+    this.load.image("italy_token", "assets/silver_token.png");
+    this.load.image("mexico_token", "assets/gold_token_otw.png");
   }
 
   create() {
@@ -107,6 +111,17 @@ class StartScene extends Phaser.Scene {
       yoyo: true,
       repeat: -1,
       ease: "Sine.easeInOut"
+    const bgcolor = this.add.rectangle(width / 2, height / 2, width, height, 0xa0326);
+    const bg = this.add.image(width / 2, height / 2, "homeBg"); // 800 x 600
+    const homeScale = Math.max(width / bg.width, height / bg.height);
+    bg.setScale(homeScale);
+    this.textures.get('italy_token').setFilter(Phaser.Textures.LINEAR);
+    this.textures.get('philip_token').setFilter(Phaser.Textures.LINEAR);
+    this.textures.get('mexico_token').setFilter(Phaser.Textures.LINEAR);
+    // Start Button
+    const startButton = this.add.image(width / 2, height / 2 + 150, "startBtn").setInteractive().setScale(0.5);
+    startButton.on("pointerdown", () => {
+      this.scene.start("MapScene");
     });
 
     this.tweens.add({
@@ -186,6 +201,9 @@ class MapScene extends Phaser.Scene {
     if (!this.registry.has('ownedItems')) {
       this.registry.set('ownedItems', {});
     }
+    if (!this.registry.has('wins')) {
+      this.registry.set('wins', { mexico: false, italy: false, philippines: false, egypt: false });
+    }
   }
 
   create() {
@@ -219,6 +237,11 @@ class MapScene extends Phaser.Scene {
     }).setOrigin(0.5).setInteractive();
     inventoryButton.on("pointerdown", () => {
       this.scene.start("Inventory");
+    });
+
+    const settingsButton = this.add.image(width / 3 * 2.75, 40, "settingsbutton").setOrigin(0.5).setScale(0.07).setInteractive();
+    settingsButton.on("pointerdown", () => {
+      this.scene.start("Settings");
     });
 
     //Adds Player
@@ -409,7 +432,14 @@ class Store extends Phaser.Scene {
       fontSize: "20px", fill: "#000"
     }).setOrigin(0.5);
     this.input.keyboard.on("keydown-ESC", () => this.scene.start("MapScene"));
+
+
+
+
+
   }
+
+
 
   _itemLabel(equipped, owned, key) {
     if (equipped.hat === key) return "EQUIPPED";
@@ -471,6 +501,53 @@ class Inventory extends Phaser.Scene {
     this.input.keyboard.on("keydown-ESC", () => {
       this.scene.start("MapScene");
     });
+        //adding in the badges
+    const blankMexico = this.add.circle(width / 4, 400, 50, 0x000000);
+    this.add.text(width / 4, 475, "Unknown Badge", {
+      fontSize: "18px",
+      fill: "#000"
+    }).setOrigin(0.5);
+    const blankItaly = this.add.circle(width / 4 * 2, 400, 50, 0x000000);
+    this.add.text(width / 4 * 2, 475, "Unknown Badge", {
+      fontSize: "18px",
+      fill: "#000"
+    }).setOrigin(0.5);
+    const blankPhilippines = this.add.circle(width / 4 * 3, 400, 50, 0x000000);
+    this.add.text(width / 4 * 3, 475, "Unknown Badge", {
+      fontSize: "18px",
+      fill: "#000"
+    }).setOrigin(0.5);
+
+    const wins = this.registry.get('wins');
+    if (wins.italy) {
+      this.add.image(width / 4 * 2, 400, "italy_token").setDisplaySize(125, 156.25);
+    }
+
+  }
+}
+
+class Settings extends Phaser.Scene {
+  constructor() {
+    super("Settings");
+  }
+
+  create() {
+    const width = this.scale.width;
+    const height = this.scale.height;
+    this.add.rectangle(width / 2, height / 2, width, height, 0xffeaa7);
+    this.add.text(width / 2, 60, "Settings", {
+      fontSize: "36px",
+      fill: "#ffffff"
+    }).setOrigin(0.5);
+
+    this.add.text(width / 2, height - 50, "Press ESC to return to map", {
+      fontSize: "20px",
+      fill: "#000"
+    }).setOrigin(0.5);
+
+    this.input.keyboard.on("keydown-ESC", () => {
+      this.scene.start("MapScene");
+    });
   }
 }
 
@@ -481,6 +558,9 @@ const config = {
   type: Phaser.AUTO,
   width: 800,
   height: 600,
+  render: {
+    antialias: true,
+    pixelArt: false},
   physics: {
     default: "arcade",
     arcade: {
@@ -496,7 +576,8 @@ const config = {
     PhilippinesScene,
     EgyptScene,
     Store,
-    Inventory
+    Inventory,
+    Settings
   ],
   scale: {
     mode: Phaser.Scale.FIT,
