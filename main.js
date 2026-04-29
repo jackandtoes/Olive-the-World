@@ -20,42 +20,77 @@ class StartScene extends Phaser.Scene {
     const width = this.scale.width;
     const height = this.scale.height;
 
-    this.add.rectangle(width / 2, height / 2, width, height, 0x1a140f).setDepth(-20);
+    this.add.rectangle(width / 2, height / 2, width, height, 0x1a140f).setDepth(-30);
 
-    const warmGlow = this.add.circle(width * 0.8, height * 0.18, 280, 0xffd98a, 0.18)
-      .setBlendMode(Phaser.BlendModes.ADD)
-      .setDepth(-18);
-    const coolGlow = this.add.circle(width * 0.16, height * 0.85, 240, 0x8fd3ff, 0.12)
-      .setBlendMode(Phaser.BlendModes.ADD)
-      .setDepth(-18);
-
-    const backdrop = this.add.image(width / 2, height / 2 + 12, "homeBg");
-    const bgScale = Math.max(width / backdrop.width, height / backdrop.height) * 1.08;
+    const backdrop = this.add.image(width / 2, height / 2 + 10, "homeBg");
+    const bgScale = Math.max(width / backdrop.width, height / backdrop.height) * 1.04;
     backdrop.setScale(bgScale);
-    backdrop.setAlpha(1);
-    backdrop.setDepth(0);
+    backdrop.setAlpha(0.72);
+    backdrop.setDepth(-10);
 
-    this.add.rectangle(width / 2, height / 2, width, height, 0x000000, 0.18).setDepth(-5);
+    const warmGlow = this.add.circle(width * 0.78, height * 0.18, 260, 0xffd98a, 0.18)
+      .setBlendMode(Phaser.BlendModes.ADD)
+      .setDepth(-6);
+    const coolGlow = this.add.circle(width * 0.16, height * 0.84, 230, 0x8fd3ff, 0.12)
+      .setBlendMode(Phaser.BlendModes.ADD)
+      .setDepth(-6);
+
+    this.add.rectangle(width / 2, height / 2, width, height, 0x000000, 0.14).setDepth(-5);
     this.add.rectangle(width / 2, height / 2, width, height, 0x7a5a2a, 0.08).setDepth(-4);
-
     this._createSparkles(width, height);
+
+    const logo = this.add.image(width / 2, height * 0.31, "homeLogo");
+    const logoScale = Math.min((width * 0.84) / logo.width, (height * 0.42) / logo.height);
+    logo.setScale(logoScale);
+    logo.setDepth(5);
+    logo.setAlpha(0);
+    logo.y -= 18;
+
+    const subtitle = this.add.text(width / 2, height * 0.54, "A cozy world-hopping adventure", {
+      fontFamily: "Trebuchet MS, Arial, sans-serif",
+      fontSize: "24px",
+      color: "#fff2cb",
+      stroke: "#4b2d12",
+      strokeThickness: 4,
+      align: "center"
+    }).setOrigin(0.5).setDepth(6);
+    subtitle.setAlpha(0);
+    subtitle.y += 12;
+
+    const footer = this.add.text(width / 2, height * 0.605, "Explore countries, earn coins, and customize Olive.", {
+      fontFamily: "Trebuchet MS, Arial, sans-serif",
+      fontSize: "16px",
+      color: "#f7e8c8",
+      align: "center"
+    }).setOrigin(0.5).setDepth(6);
+    footer.setAlpha(0);
+    footer.y += 12;
 
     const buttonShadow = this.add.ellipse(width / 2, height * 0.81 + 18, 320, 62, 0x000000, 0.28)
       .setDepth(7);
     buttonShadow.setAlpha(0);
-    buttonShadow.setScale(1);
     const startButton = this.add.image(width / 2, height * 0.81, "startBtn")
       .setInteractive({ useHandCursor: true })
       .setDepth(8);
-
     const buttonScale = Math.min(0.62, (width * 0.44) / startButton.width);
     startButton.setScale(buttonScale);
     startButton.setAlpha(0);
     startButton.y += 12;
 
+    const hintPill = this.add.text(width / 2, height * 0.9, "Press Enter or click to begin", {
+      fontFamily: "Trebuchet MS, Arial, sans-serif",
+      fontSize: "18px",
+      color: "#fff6df",
+      backgroundColor: "#5f3d1b",
+      padding: { x: 16, y: 8 }
+    }).setOrigin(0.5).setDepth(8);
+    hintPill.setAlpha(0);
+    hintPill.y += 10;
+
     const startGame = () => this.scene.start("MapScene");
     startButton.on("pointerdown", startGame);
     this.input.keyboard.once("keydown-SPACE", startGame);
+    this.input.keyboard.once("keydown-ENTER", startGame);
 
     startButton.on("pointerover", () => {
       this.tweens.add({
@@ -82,7 +117,6 @@ class StartScene extends Phaser.Scene {
         duration: 140,
         ease: "Sine.easeOut"
       });
-
       this.tweens.add({
         targets: buttonShadow,
         scaleX: 1,
@@ -111,17 +145,15 @@ class StartScene extends Phaser.Scene {
       yoyo: true,
       repeat: -1,
       ease: "Sine.easeInOut"
-    const bgcolor = this.add.rectangle(width / 2, height / 2, width, height, 0xa0326);
-    const bg = this.add.image(width / 2, height / 2, "homeBg"); // 800 x 600
-    const homeScale = Math.max(width / bg.width, height / bg.height);
-    bg.setScale(homeScale);
-    this.textures.get('italy_token').setFilter(Phaser.Textures.LINEAR);
-    this.textures.get('philip_token').setFilter(Phaser.Textures.LINEAR);
-    this.textures.get('mexico_token').setFilter(Phaser.Textures.LINEAR);
-    // Start Button
-    const startButton = this.add.image(width / 2, height / 2 + 150, "startBtn").setInteractive().setScale(0.5);
-    startButton.on("pointerdown", () => {
-      this.scene.start("MapScene");
+    });
+
+    this.tweens.add({
+      targets: logo,
+      angle: { from: -1.2, to: 1.2 },
+      duration: 2800,
+      yoyo: true,
+      repeat: -1,
+      ease: "Sine.easeInOut"
     });
 
     this.tweens.add({
@@ -134,13 +166,53 @@ class StartScene extends Phaser.Scene {
     });
 
     this.tweens.add({
+      targets: [subtitle, footer, hintPill],
+      alpha: { from: 0.7, to: 1 },
+      duration: 1800,
+      yoyo: true,
+      repeat: -1,
+      ease: "Sine.easeInOut"
+    });
+
+    this.tweens.add({
+      targets: logo,
+      alpha: 1,
+      y: logo.y + 18,
+      duration: 650,
+      delay: 150,
+      ease: "Back.easeOut"
+    });
+    this.tweens.add({
+      targets: subtitle,
+      alpha: 1,
+      y: subtitle.y - 12,
+      duration: 520,
+      delay: 320,
+      ease: "Sine.easeOut"
+    });
+    this.tweens.add({
+      targets: footer,
+      alpha: 1,
+      y: footer.y - 12,
+      duration: 520,
+      delay: 440,
+      ease: "Sine.easeOut"
+    });
+    this.tweens.add({
       targets: [buttonShadow, startButton],
       alpha: 1,
       duration: 520,
       delay: 560,
       ease: "Sine.easeOut"
     });
-    
+    this.tweens.add({
+      targets: hintPill,
+      alpha: 1,
+      y: hintPill.y - 10,
+      duration: 520,
+      delay: 680,
+      ease: "Sine.easeOut"
+    });
   }
 
   _createSparkles(width, height) {
@@ -432,11 +504,6 @@ class Store extends Phaser.Scene {
       fontSize: "20px", fill: "#000"
     }).setOrigin(0.5);
     this.input.keyboard.on("keydown-ESC", () => this.scene.start("MapScene"));
-
-
-
-
-
   }
 
 
@@ -585,3 +652,4 @@ const config = {
   }
 };
 new Phaser.Game(config);
+
