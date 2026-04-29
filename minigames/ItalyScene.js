@@ -14,7 +14,6 @@ class ItalyScene extends Phaser.Scene {
 
 
  create(data) {
-
   if (data.level) {
     this.level = data.level;
   } else {
@@ -80,6 +79,14 @@ this.levelText = this.add.text(width - 138, 22, "Level " + this.level, {
      backgroundColor: "#fff4dd",
      padding: { x: 12, y: 8 }
    });
+   this.coinText = this.add.text(20, 50, `Coins: ${this.registry.get('currency')}`,
+  {
+     fontSize: "24px",
+     color: this.palette.text,
+     fontStyle: "bold",
+     backgroundColor: "#fff4dd",
+     padding: { x: 12, y: 8 }
+   });
    
    this.GRID_SIZE = 50;
    this.COLS = 8;
@@ -93,6 +100,7 @@ this.levelText = this.add.text(width - 138, 22, "Level " + this.level, {
      (width - this.COLS * this.GRID_SIZE) / 2,
      (height - this.ROWS * this.GRID_SIZE) / 2
    );
+
 
 this.levelLayouts = {
   1: {
@@ -347,7 +355,6 @@ pipe.rotation = Phaser.Math.DegToRad(tile.rotationIndex * 90);
 pipe.on("pointerdown", () => {
   if(this.pointerCountAll > 0){
     tile.rotationIndex = (tile.rotationIndex + 1) % 4;
-    
     this.pointerCountAll -= 1;
     this.pointerText.setText("Clicks: " + this.pointerCountAll);
     this.tweens.add({
@@ -486,7 +493,7 @@ pipe.tileData = tile;
     backgroundColor: "#7c2d12",
     padding: { x: 20, y: 10 }
   }).setOrigin(0.5).setDepth(21);
-
+  this.addCoin(1);
   next_button.on("pointerdown", () => {
     this.nextLevel();
   });
@@ -520,6 +527,7 @@ pipe.tileData = tile;
 
   if (this.hasWon) {
     return;
+    
   }
   if (this.level === 1) {
 
@@ -573,6 +581,7 @@ pipe.tileData = tile;
 
       this.hasWon = true;
       this.playSauceFillAnimation(this.getWinningAnimationCoords(), () => this.showWinPopup());
+      
 
     }
 
@@ -667,8 +676,10 @@ pipe.tileData = tile;
       pasta_17.rotationIndex % 2 == 0
     ) {
 
+      this.addCoin()
       this.hasWon = true;
       this.playSauceFillAnimation(this.getWinningAnimationCoords(), () => this.showWinPopup());
+  
 
     }
 
@@ -847,11 +858,34 @@ const pasta_41 = this.tileMapData[4][5];
 
       this.hasWon = true;
       this.playSauceFillAnimation(this.getWinningAnimationCoords(), () => this.showTotalWinPopup());
+      const wins = this.registry.get('wins');
+      wins.italy = true;
+      this.registry.set('wins', wins);
 
     }
   
   }
 }
+
+addCoin(amount = 1) {
+  let current = this.registry.get('currency');
+
+  if (current === undefined || current === null) {
+    current = 0;
+  }
+
+  current += amount;
+
+  this.registry.set('currency', current);
+
+  console.log("Coins updated to:", current); // DEBUG
+
+  if (this.coinText) {
+    this.coinText.setText(`Coins: ${current}`);
+  }
+}
+
+
 
 nextLevel() {
 
