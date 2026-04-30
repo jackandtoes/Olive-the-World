@@ -8,6 +8,7 @@ class StartScene extends Phaser.Scene {
 
   preload() {
     this.load.image("homeBg", "assets/background.png");
+    this.load.image("homeLogo", "assets/olive_main_logo.png");
     this.load.image("startBtn", "assets/start_button.png");
     this.load.image("settingsbutton", "assets/settingsbutton.png");
     this.load.image("philip_token", "assets/bronze_token_otw.png");
@@ -16,22 +17,146 @@ class StartScene extends Phaser.Scene {
   }
 
   create() {
-    //Sets the background
     const width = this.scale.width;
     const height = this.scale.height;
-    const bgcolor = this.add.rectangle(width / 2, height / 2, width, height, 0xa0326);
-    const bg = this.add.image(width / 2, height / 2, "homeBg"); // 800 x 600
-    const homeScale = Math.max(width / bg.width, height / bg.height);
-    bg.setScale(homeScale);
-    this.textures.get('italy_token').setFilter(Phaser.Textures.LINEAR);
-    this.textures.get('philip_token').setFilter(Phaser.Textures.LINEAR);
-    this.textures.get('mexico_token').setFilter(Phaser.Textures.LINEAR);
-    // Start Button
-    const startButton = this.add.image(width / 2, height / 2 + 150, "startBtn").setInteractive().setScale(0.5);
-    startButton.on("pointerdown", () => {
-      this.scene.start("MapScene");
+
+    this.add.rectangle(width / 2, height / 2, width, height, 0x1a140f).setDepth(-30);
+
+    const backdrop = this.add.image(width / 2, height / 2 + 10, "homeBg");
+    const bgScale = Math.max(width / backdrop.width, height / backdrop.height) * 1.04;
+    backdrop.setScale(bgScale);
+    backdrop.setAlpha(1);
+    backdrop.setDepth(0);
+
+    const warmGlow = this.add.circle(width * 0.78, height * 0.18, 260, 0xffd98a, 0.18)
+      .setBlendMode(Phaser.BlendModes.ADD)
+      .setDepth(-6);
+    const coolGlow = this.add.circle(width * 0.16, height * 0.84, 230, 0x8fd3ff, 0.12)
+      .setBlendMode(Phaser.BlendModes.ADD)
+      .setDepth(-6);
+
+    this.add.rectangle(width / 2, height / 2, width, height, 0x000000, 0.14).setDepth(-5);
+    this.add.rectangle(width / 2, height / 2, width, height, 0x7a5a2a, 0.08).setDepth(-4);
+    this._createSparkles(width, height);
+
+    const buttonShadow = this.add.ellipse(width / 2, height * 0.81 + 18, 320, 62, 0x000000, 0.28)
+      .setDepth(7);
+    buttonShadow.setAlpha(0);
+    const startButton = this.add.image(width / 2, height * 0.81, "startBtn")
+      .setInteractive({ useHandCursor: true })
+      .setDepth(8);
+    const buttonScale = Math.min(0.62, (width * 0.44) / startButton.width);
+    startButton.setScale(buttonScale);
+    startButton.setAlpha(0);
+    startButton.y += 12;
+
+    const startGame = () => this.scene.start("MapScene");
+    startButton.on("pointerdown", startGame);
+    this.input.keyboard.once("keydown-SPACE", startGame);
+
+
+    startButton.on("pointerover", () => {
+      this.tweens.add({
+        targets: startButton,
+        scaleX: buttonScale * 1.05,
+        scaleY: buttonScale * 1.05,
+        duration: 140,
+        ease: "Sine.easeOut"
+      });
+      this.tweens.add({
+        targets: buttonShadow,
+        scaleX: 1.06,
+        scaleY: 1.06,
+        alpha: 0.35,
+        duration: 140,
+        ease: "Sine.easeOut"
+      });
+    });
+    startButton.on("pointerout", () => {
+      this.tweens.add({
+        targets: startButton,
+        scaleX: buttonScale,
+        scaleY: buttonScale,
+        duration: 140,
+        ease: "Sine.easeOut"
+      });
+      this.tweens.add({
+        targets: buttonShadow,
+        scaleX: 1,
+        scaleY: 1,
+        alpha: 0.28,
+        duration: 140,
+        ease: "Sine.easeOut"
+      });
     });
 
+    this.tweens.add({
+      targets: backdrop,
+      y: backdrop.y + 8,
+      duration: 3200,
+      yoyo: true,
+      repeat: -1,
+      ease: "Sine.easeInOut"
+    });
+
+    this.tweens.add({
+      targets: [warmGlow, coolGlow],
+      scaleX: { from: 1, to: 1.08 },
+      scaleY: { from: 1, to: 1.08 },
+      alpha: { from: 0.1, to: 0.22 },
+      duration: 3600,
+      yoyo: true,
+      repeat: -1,
+      ease: "Sine.easeInOut"
+    });
+
+    this.tweens.add({
+      targets: startButton,
+      y: startButton.y - 6,
+      duration: 1800,
+      yoyo: true,
+      repeat: -1,
+      ease: "Sine.easeInOut"
+    });
+
+    this.tweens.add({
+      targets: [buttonShadow, startButton],
+      alpha: 1,
+      duration: 520,
+      delay: 560,
+      ease: "Sine.easeOut"
+    });
+  }
+
+  _createSparkles(width, height) {
+    const palette = [0xfff2b2, 0xffffff, 0x9fe7ff, 0xffc57a];
+
+    for (let i = 0; i < 14; i++) {
+      const sparkle = this.add.star(
+        Phaser.Math.Between(20, width - 20),
+        Phaser.Math.Between(20, height - 120),
+        4,
+        Phaser.Math.Between(2, 4),
+        Phaser.Math.Between(5, 9),
+        Phaser.Utils.Array.GetRandom(palette)
+      );
+      sparkle.setAlpha(Phaser.Math.FloatBetween(0.2, 0.65));
+      sparkle.setDepth(-2);
+      sparkle.setBlendMode(Phaser.BlendModes.ADD);
+
+      this.tweens.add({
+        targets: sparkle,
+        scaleX: Phaser.Math.FloatBetween(0.75, 1.15),
+        scaleY: Phaser.Math.FloatBetween(0.75, 1.15),
+        alpha: Phaser.Math.FloatBetween(0.15, 0.85),
+        angle: Phaser.Math.Between(-10, 10),
+        duration: Phaser.Math.Between(1400, 2800),
+        yoyo: true,
+        repeat: -1,
+        delay: Phaser.Math.Between(0, 1800),
+        ease: "Sine.easeInOut"
+      });
+    }
   }
 }
 
@@ -44,7 +169,11 @@ class MapScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.image("mapBg", "assets/map.png")
+    this.load.image("mapBg", "assets/map (2).png");
+    this.load.image("flagPhilippines", "assets/Philippines_flag.png");
+    this.load.image("flagMexico", "assets/Mexico_flag.png");
+    this.load.image("flagEgypt", "assets/Egypt_flag.png");
+    this.load.image("flagItaly", "assets/Italy_flag.png");
   }
 
   init(data) {
@@ -69,8 +198,15 @@ class MapScene extends Phaser.Scene {
     const bg = this.add.image(width / 2, height / 2, "mapBg");
     const scale = Math.max(width / bg.width, height / bg.height);
     bg.setScale(scale);
-    bg.setScrollFactor(0);
+    bg.setOrigin(0, 0);
+    bg.setPosition(0, 0);
     bg.setDepth(-1);
+
+    const worldWidth = bg.displayWidth;
+    const worldHeight = bg.displayHeight;
+    this.physics.world.setBounds(0, 0, worldWidth, worldHeight);
+    this.cameras.main.setBounds(0, 0, worldWidth, worldHeight);
+    this.cameras.main.setZoom(2.5);
 
     //Store Button
     const storeButton = this.add.text(width / 3 * 2, 30, "Store", {
@@ -78,7 +214,7 @@ class MapScene extends Phaser.Scene {
       fill: "#000000",
       backgroundColor: "#ffc4e3",
       padding: { x: 20, y: 10 }
-    }).setOrigin(0.5).setInteractive();
+    }).setOrigin(0.5).setInteractive().setScrollFactor(0).setDepth(20);
 
     storeButton.on("pointerdown", () => {
       this.scene.start("Store");
@@ -90,76 +226,87 @@ class MapScene extends Phaser.Scene {
       fill: "#000000",
       backgroundColor: "#ffc4e3",
       padding: { x: 20, y: 10 }
-    }).setOrigin(0.5).setInteractive();
+    }).setOrigin(0.5).setInteractive().setScrollFactor(0).setDepth(20);
     inventoryButton.on("pointerdown", () => {
       this.scene.start("Inventory");
     });
 
-    const settingsButton = this.add.image(width / 3 * 2.75, 40, "settingsbutton").setOrigin(0.5).setScale(0.07).setInteractive();
+    const settingsButton = this.add.image(width / 3 * 2.75, 40, "settingsbutton")
+      .setOrigin(0.5)
+      .setScale(0.07)
+      .setInteractive()
+      .setScrollFactor(0)
+      .setDepth(20);
     settingsButton.on("pointerdown", () => {
       this.scene.start("Settings");
     });
 
     //Adds Player
-    this.player = this.add.circle(width / 2, height / 2, 18, 0x556b2f);
+    this.player = this.add.circle(width / 2, height / 2, 9, 0x556b2f);
     this.physics.add.existing(this.player);
     this.player.body.setCollideWorldBounds(true);
+    this.player.setDepth(5);
 
     this.playerHatSquare = this.add.rectangle(width / 2, height / 2 - 25, 20, 20, 0xff0000);
     this.playerHatSquare.setVisible(false);
+    this.playerHatSquare.setDepth(6);
 
     this.playerHatTriangle = this.add.graphics();
     this.playerHatTriangle.fillStyle(0x9b59b6, 1);
     this.playerHatTriangle.fillTriangle(-10, 0, 10, 0, 0, -18);
     this.playerHatTriangle.setVisible(false);
+    this.playerHatTriangle.setDepth(6);
 
     this.cursors = this.input.keyboard.createCursorKeys();
     this.countries = [];
 
-    this.createCountry("Mexico", width * 0.3, height * 0.6,
-      "Whack piñatas.\nAvoid spicy chiles!", "MexicoScene", "MexicoStore");
+    this.createCountry("Mexico", width * 0.222, height * 0.47,
+      "Whack piñatas.\nAvoid spicy chiles!", "MexicoScene", "MexicoStore", "flagMexico");
     this.createCountry("Italy", width * 0.55, height * 0.45,
-      "Fix pasta pipes.\nServe the perfect plate!", "ItalyScene", "ItalyStore");
+      "Fix pasta pipes.\nServe the perfect plate!", "ItalyScene", "ItalyStore", "flagItaly");
     this.createCountry("Philippines", width * 0.8, height * 0.7,
-      "Collect lumpia ingredients.\nAvoid traffic!", "PhilippinesScene", "PhilippinesStore");
+      "Collect lumpia ingredients.\nAvoid traffic!", "PhilippinesScene", "PhilippinesStore", "flagPhilippines");
     this.createCountry("Egypt", width * 0.4, height * 0.8,
-      "Run in the desert.\nDodge palm trees and flying falafels!", "EgyptScene", "EgyptStore");
+      "Run in the desert.\nDodge palm trees and flying falafels!", "EgyptScene", "EgyptStore", "flagEgypt");
     this.createInfoPanel();
     this.updatePlayerAppearance();
+
+    this.cameras.main.startFollow(this.player, true, 0.08, 0.08);
   }
 
-  createCountry(name, x, y, description, sceneName) {
-    const landmark = this.add.rectangle(x, y, 50, 50, 0xffcc00);
+  createCountry(name, x, y, description, sceneName, storeName, flagKey) {
+    const landmark = this.add.image(x, y, flagKey).setScale(0.6).setDepth(1);
     this.add.text(x, y - 40, name, {
       fontSize: "18px",
       fill: "#000"
-    }).setOrigin(0.5);
+    }).setOrigin(0.5).setDepth(2);
     this.countries.push({
       name,
       landmark,
       description,
       sceneName,
+      storeName,
+      flagKey,
       radius: 60
     });
   }
 
   createInfoPanel() {
-    const width = this.scale.width;
-    const height = this.scale.height;
-    this.infoPanel = this.add.container(width / 2, height - 130);
+    this.infoPanel = this.add.container(0, 0);
+    this.infoPanel.setDepth(20);
     this.infoPanel.setVisible(false);
-    const bg = this.add.rectangle(0, 0, 600, 140, 0xffffff)
+    const bg = this.add.rectangle(0, 0, 290, 150, 0xfff7ef)
       .setStrokeStyle(3, 0x000000);
-    this.panelTitle = this.add.text(-260, -45, "", {
-      fontSize: "22px",
+    this.panelTitle = this.add.text(-130, -55, "", {
+      fontSize: "20px",
       fill: "#000"
     });
-    this.panelText = this.add.text(-260, -10, "", {
+    this.panelText = this.add.text(-130, -20, "", {
+      fontSize: "16px",
+      fill: "#000"
+    }).setWordWrapWidth(250);
+    const playButton = this.add.text(-130, 42, "Play game!", {
       fontSize: "18px",
-      fill: "#000"
-    });
-    const playButton = this.add.text(-240, 35, "Play game!", {
-      fontSize: "22px",
       fill: "#007700"
     }).setInteractive();
     playButton.on("pointerdown", () => {
@@ -170,6 +317,31 @@ class MapScene extends Phaser.Scene {
     this.infoPanel.add([bg, this.panelTitle, this.panelText, playButton]);
   }
 
+  positionInfoPanel(country) {
+    const width = this.scale.width;
+    const height = this.scale.height;
+    const worldWidth = this.physics.world.bounds.width;
+    const worldHeight = this.physics.world.bounds.height;
+    const bubbleWidth = 290;
+    const bubbleHeight = 150;
+    const offsetX = 100;
+    const offsetY = -50;
+
+    const x = Phaser.Math.Clamp(
+      country.landmark.x + offsetX,
+      bubbleWidth / 2,
+      worldWidth - bubbleWidth / 2
+    );
+    const y = Phaser.Math.Clamp(
+      country.landmark.y + offsetY,
+      bubbleHeight / 2,
+      worldHeight - bubbleHeight / 2
+    );
+
+    this.infoPanel.setPosition(x, y);
+    this.infoPanel.setScale(1 / this.cameras.main.zoom);
+  }
+
   updatePlayerAppearance() {
     const hat = this.registry.get('equippedItems').hat;
     this.playerHatSquare.setVisible(hat === 'square');
@@ -177,7 +349,7 @@ class MapScene extends Phaser.Scene {
   }
 
   update() {
-    const speed = 200;
+    const speed = 125;
     this.player.body.setVelocity(0);
     if (this.cursors.left.isDown) this.player.body.setVelocityX(-speed);
     if (this.cursors.right.isDown) this.player.body.setVelocityX(speed);
@@ -202,6 +374,7 @@ class MapScene extends Phaser.Scene {
       this.currentCountry = foundCountry;
       this.panelTitle.setText(foundCountry.name);
       this.panelText.setText(foundCountry.description);
+      this.positionInfoPanel(foundCountry);
       this.infoPanel.setVisible(true);
     } else {
       this.currentCountry = null;
@@ -286,11 +459,6 @@ class Store extends Phaser.Scene {
       fontSize: "20px", fill: "#000"
     }).setOrigin(0.5);
     this.input.keyboard.on("keydown-ESC", () => this.scene.start("MapScene"));
-
-
-
-
-
   }
 
 
@@ -439,3 +607,4 @@ const config = {
   }
 };
 new Phaser.Game(config);
+
