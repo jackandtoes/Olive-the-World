@@ -54,7 +54,6 @@ class StartScene extends Phaser.Scene {
     startButton.on("pointerdown", startGame);
     this.input.keyboard.once("keydown-SPACE", startGame);
 
-
     startButton.on("pointerover", () => {
       this.tweens.add({
         targets: startButton,
@@ -72,6 +71,7 @@ class StartScene extends Phaser.Scene {
         ease: "Sine.easeOut"
       });
     });
+
     startButton.on("pointerout", () => {
       this.tweens.add({
         targets: startButton,
@@ -209,31 +209,38 @@ class MapScene extends Phaser.Scene {
     this.cameras.main.setZoom(2.5);
 
     //Store Button
-    const storeButton = this.add.text(width / 3 * 2, 30, "Store", {
-      fontSize: "28px",
+    const storeButton = this.add.text(250, 190, "Store", {
+      fontSize: "10px",
       fill: "#000000",
       backgroundColor: "#ffc4e3",
-      padding: { x: 20, y: 10 }
-    }).setOrigin(0.5).setInteractive().setScrollFactor(0).setDepth(20);
+      padding: { x: 10, y: 5 }
+    }).setOrigin(0, 0).setInteractive().setScrollFactor(0).setDepth(20);
 
     storeButton.on("pointerdown", () => {
       this.scene.start("Store");
     });
 
+    storeButton.on("pointerover", () => {
+      storeButton.setStyle({ backgroundColor: "#f9a1eb" });
+    });
+    storeButton.on("pointerout", () => {
+      storeButton.setStyle({ backgroundColor: "#ffc4e3" });
+    });
+
     //Inventory Button
-    const inventoryButton = this.add.text(width / 3, 30, "Inventory", {
-      fontSize: "28px",
+    const inventoryButton = this.add.text(350, 200, "Inventory", {
+      fontSize: "10px",
       fill: "#000000",
       backgroundColor: "#ffc4e3",
-      padding: { x: 20, y: 10 }
+      padding: { x: 10, y: 5 }
     }).setOrigin(0.5).setInteractive().setScrollFactor(0).setDepth(20);
     inventoryButton.on("pointerdown", () => {
       this.scene.start("Inventory");
     });
 
-    const settingsButton = this.add.image(width / 3 * 2.75, 40, "settingsbutton")
+    const settingsButton = this.add.image(540, 200, "settingsbutton")
       .setOrigin(0.5)
-      .setScale(0.07)
+      .setScale(0.03)
       .setInteractive()
       .setScrollFactor(0)
       .setDepth(20);
@@ -509,42 +516,209 @@ class Inventory extends Phaser.Scene {
   create() {
     const width = this.scale.width;
     const height = this.scale.height;
-    this.add.rectangle(width / 2, height / 2, width, height, 0xffeaa7);
-    this.add.text(width / 2, 60, "Inventory", {
-      fontSize: "36px",
-      fill: "#ffffff"
+    this.add.rectangle(width / 2, height / 2, width, height, 0xf8e7c5);
+    this.add.rectangle(width / 2, height / 2, width - 48, height - 48, 0xfff7e7)
+      .setStrokeStyle(3, 0xc99b52, 0.85);
+    this.add.text(width / 2, 64, "Inventory", {
+      fontSize: "38px",
+      fill: "#6b3e1f",
+      fontStyle: "bold"
     }).setOrigin(0.5);
+    this.add.text(width / 2, 98, "Collect tokens from each country to fill your passport.", {
+      fontSize: "18px",
+      fill: "#9a6b3d"
+    }).setOrigin(0.5);
+
+    const scrollArea = {
+      x: 58,
+      y: 158,
+      width: width - 116,
+      height: height - 250
+    };
+    this.scrollArea = scrollArea;
+
+    this.add.rectangle(scrollArea.x + scrollArea.width / 2, scrollArea.y + scrollArea.height / 2, scrollArea.width, scrollArea.height, 0xfffbf1)
+      .setStrokeStyle(2, 0xd5b073, 0.8);
 
     this.add.text(width / 2, height - 50, "Press ESC to return to map", {
       fontSize: "20px",
-      fill: "#000"
+      fill: "#6b3e1f"
     }).setOrigin(0.5);
 
     this.input.keyboard.on("keydown-ESC", () => {
       this.scene.start("MapScene");
     });
-        //adding in the badges
-    const blankMexico = this.add.circle(width / 4, 400, 50, 0x000000);
-    this.add.text(width / 4, 475, "Unknown Badge", {
-      fontSize: "18px",
-      fill: "#000"
-    }).setOrigin(0.5);
-    const blankItaly = this.add.circle(width / 4 * 2, 400, 50, 0x000000);
-    this.add.text(width / 4 * 2, 475, "Unknown Badge", {
-      fontSize: "18px",
-      fill: "#000"
-    }).setOrigin(0.5);
-    const blankPhilippines = this.add.circle(width / 4 * 3, 400, 50, 0x000000);
-    this.add.text(width / 4 * 3, 475, "Unknown Badge", {
-      fontSize: "18px",
-      fill: "#000"
-    }).setOrigin(0.5);
 
     const wins = this.registry.get('wins');
-    if (wins.italy) {
-      this.add.image(width / 4 * 2, 400, "italy_token").setDisplaySize(125, 156.25);
+    const ownedItems = this.registry.get('ownedItems') || {};
+    const cards = [
+      { section: "Country Tokens", label: "Mexico", unlocked: wins.mexico, texture: "mexico_token", tokenWidth: 118, tokenHeight: 118, ribbon: "Collected" },
+      { section: "Country Tokens", label: "Italy", unlocked: wins.italy, texture: "italy_token", tokenWidth: 125, tokenHeight: 156.25, ribbon: "Collected" },
+      { section: "Country Tokens", label: "Philippines", unlocked: wins.philippines, texture: "philip_token", tokenWidth: 118, tokenHeight: 118, ribbon: "Collected" },
+      { section: "Accessories", label: "Fancy Square", unlocked: !!ownedItems.square, shape: "square", ribbon: "Owned" },
+      { section: "Accessories", label: "Fancy Triangle", unlocked: !!ownedItems.triangle, shape: "triangle", ribbon: "Owned" }
+    ];
+
+    this.scrollContent = this.add.container(scrollArea.x, scrollArea.y);
+    const maskShape = this.make.graphics({ x: 0, y: 0, add: false });
+    maskShape.fillStyle(0xffffff);
+    maskShape.fillRect(scrollArea.x, scrollArea.y, scrollArea.width, scrollArea.height);
+    this.scrollContent.setMask(maskShape.createGeometryMask());
+
+    const contentHeight = this.buildInventoryCards(cards);
+    this.maxScrollY = Math.max(0, contentHeight - scrollArea.height);
+    this.scrollY = 0;
+    this.isDraggingInventory = false;
+
+    this.input.on("wheel", (pointer, gameObjects, deltaX, deltaY) => {
+      if (!Phaser.Geom.Rectangle.Contains(new Phaser.Geom.Rectangle(scrollArea.x, scrollArea.y, scrollArea.width, scrollArea.height), pointer.x, pointer.y)) {
+        return;
+      }
+      this.setInventoryScroll(this.scrollY - deltaY * 0.6);
+    });
+
+    this.input.on("pointerdown", (pointer) => {
+      if (Phaser.Geom.Rectangle.Contains(new Phaser.Geom.Rectangle(scrollArea.x, scrollArea.y, scrollArea.width, scrollArea.height), pointer.x, pointer.y)) {
+        this.isDraggingInventory = true;
+      }
+    });
+
+    this.input.on("pointerup", () => {
+      this.isDraggingInventory = false;
+    });
+
+    this.input.on("pointermove", (pointer) => {
+      if (!this.isDraggingInventory || !pointer.isDown) return;
+      this.setInventoryScroll(this.scrollY + pointer.velocity.y / 10);
+    });
+
+    if (this.maxScrollY > 0) {
+      this.add.text(width - 74, scrollArea.y + scrollArea.height - 14, "Scroll for more", {
+        fontSize: "16px",
+        fill: "#9a6b3d"
+      }).setOrigin(1, 1);
     }
 
+  }
+
+  buildInventoryCards(cards) {
+    const columns = 3;
+    const cardWidth = 184;
+    const cardHeight = 250;
+    const rowGap = 36;
+    const sectionGap = 72;
+    const titleGap = 28;
+    const topPadding = 34;
+    const leftPadding = 22;
+    const usableWidth = this.scrollArea.width - leftPadding * 2;
+    const columnGap = (usableWidth - columns * cardWidth) / (columns - 1);
+    const startX = leftPadding + cardWidth / 2;
+    let currentY = topPadding;
+
+    const sections = [];
+    cards.forEach((cardData) => {
+      let section = sections.find((entry) => entry.name === cardData.section);
+      if (!section) {
+        section = { name: cardData.section, cards: [] };
+        sections.push(section);
+      }
+      section.cards.push(cardData);
+    });
+
+    sections.forEach((section) => {
+      const sectionTitle = this.add.text(0, currentY, section.name, {
+        fontSize: "26px",
+        fill: "#6b3e1f",
+        fontStyle: "bold"
+      });
+      const underline = this.add.rectangle(this.scrollArea.width / 2, currentY + 15, this.scrollArea.width - 24, 2, 0xd9bb84, 0.85)
+        .setOrigin(0.5);
+      this.scrollContent.add([sectionTitle, underline]);
+
+      currentY += titleGap + cardHeight / 2;
+
+      section.cards.forEach((cardData, index) => {
+        const column = index % columns;
+        const row = Math.floor(index / columns);
+        const x = startX + column * (cardWidth + columnGap);
+        const y = currentY + row * (cardHeight + rowGap);
+        this.scrollContent.add(this.createInventoryCard(x, y, cardData));
+      });
+
+      const rowsUsed = Math.ceil(section.cards.length / columns);
+      currentY += rowsUsed * cardHeight + Math.max(0, rowsUsed - 1) * rowGap + sectionGap;
+    });
+
+    return currentY;
+  }
+
+  createInventoryCard(x, y, cardData) {
+    const card = this.add.container(x, y);
+    const shadow = this.add.rectangle(6, 8, 184, 250, 0xd9b97d, 0.35)
+      .setStrokeStyle(0, 0x000000, 0);
+    const panel = this.add.rectangle(0, 0, 184, 250, 0xfffcf2)
+      .setStrokeStyle(3, 0xc79b53);
+    const ringColor = cardData.unlocked ? 0xe0bb67 : 0xdbc9a9;
+    const medallion = this.add.circle(0, -18, 62, ringColor, 0.28)
+      .setStrokeStyle(5, ringColor, 0.95);
+    const innerPlate = this.add.circle(0, -18, 49, cardData.unlocked ? 0xfff1cf : 0xf0e5d0, 1)
+      .setStrokeStyle(2, cardData.unlocked ? 0xc4933f : 0xc9bca1, 0.9);
+
+    card.add([shadow, panel, medallion, innerPlate]);
+
+    if (cardData.unlocked) {
+      if (cardData.texture) {
+        const token = this.add.image(0, -18, cardData.texture)
+          .setDisplaySize(cardData.tokenWidth, cardData.tokenHeight);
+        card.add(token);
+      } else if (cardData.shape === "square") {
+        const square = this.add.rectangle(0, -18, 64, 64, 0xff5757)
+          .setStrokeStyle(4, 0x8b1e1e);
+        card.add(square);
+      } else if (cardData.shape === "triangle") {
+        const triangle = this.add.triangle(0, -12, -34, 34, 34, 34, 0, -34, 0x9b59b6)
+          .setStrokeStyle(4, 0x5d2b7f);
+        card.add(triangle);
+      }
+
+      const ribbon = this.add.rectangle(0, 78, 120, 30, 0x4d8d57, 1)
+        .setStrokeStyle(2, 0x2f6137);
+      const ribbonText = this.add.text(0, 78, cardData.ribbon, {
+        fontSize: "16px",
+        fill: "#fff8e8",
+        fontStyle: "bold"
+      }).setOrigin(0.5);
+      card.add([ribbon, ribbonText]);
+    } else {
+      const lockSilhouette = this.add.circle(0, -18, 34, 0xb5a58c, 0.45)
+        .setStrokeStyle(2, 0x98876d, 0.8);
+      const question = this.add.text(0, -18, "?", {
+        fontSize: "34px",
+        fill: "#7c6a54",
+        fontStyle: "bold"
+      }).setOrigin(0.5);
+      const lockedText = this.add.text(0, 78, "Not collected yet", {
+        fontSize: "16px",
+        fill: "#8d7a62"
+      }).setOrigin(0.5);
+      card.add([lockSilhouette, question, lockedText]);
+    }
+
+    const label = this.add.text(0, 112, cardData.label, {
+      fontSize: "20px",
+      fill: "#6b3e1f",
+      fontStyle: "bold",
+      align: "center",
+      wordWrap: { width: 150 }
+    }).setOrigin(0.5);
+    card.add(label);
+
+    return card;
+  }
+
+  setInventoryScroll(nextY) {
+    this.scrollY = Phaser.Math.Clamp(nextY, -this.maxScrollY, 0);
+    this.scrollContent.y = this.scrollY + this.scrollArea.y;
   }
 }
 
@@ -607,4 +781,5 @@ const config = {
   }
 };
 new Phaser.Game(config);
+
 

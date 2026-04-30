@@ -10,6 +10,8 @@ class MexicoScene extends Phaser.Scene {
         this.chiles = [];
         this.goldenPinatas = [];
         this.confettiPool = [];
+        this.coinPool = [];
+        this.explosionPool = [];
     }
 
     preload() {
@@ -63,6 +65,8 @@ class MexicoScene extends Phaser.Scene {
             loop: true
         });
         this.initConfettiPool();
+        this.initCoinPool();
+        this.initExplosionPool();
         this.spawnPinata();
     }
 
@@ -74,6 +78,29 @@ class MexicoScene extends Phaser.Scene {
             piece.setVisible(false);
             piece.setActive(false);
             this.confettiPool.push(piece);
+        }
+    }
+
+    initCoinPool(poolSize = 16) {
+        this.coinPool = [];
+
+        for (let i = 0; i < poolSize; i++) {
+            const coin = this.add.circle(-100, -100, 10, 0xffd34d);
+            coin.setStrokeStyle(2, 0xb8860b);
+            coin.setVisible(false);
+            coin.setActive(false);
+            this.coinPool.push(coin);
+        }
+    }
+
+    initExplosionPool(poolSize = 12) {
+        this.explosionPool = [];
+
+        for (let i = 0; i < poolSize; i++) {
+            const puff = this.add.circle(-100, -100, 6, 0xff9f1c);
+            puff.setVisible(false);
+            puff.setActive(false);
+            this.explosionPool.push(puff);
         }
     }
 
@@ -236,6 +263,123 @@ class MexicoScene extends Phaser.Scene {
         }
     }
 
+    createCoinBurst(x, y) {
+        const pieces = 7;
+
+        for (let i = 0; i < pieces; i++) {
+            let coin = this.coinPool.find(piece => !piece.active);
+
+            if (!coin) {
+                coin = this.add.circle(-100, -100, 10, 0xffd34d);
+                coin.setStrokeStyle(2, 0xb8860b);
+                coin.setVisible(false);
+                coin.setActive(false);
+                this.coinPool.push(coin);
+            }
+
+            const radius = Phaser.Math.Between(8, 13);
+            coin.setRadius(radius);
+            coin.setFillStyle(Phaser.Math.RND.pick([0xffd34d, 0xffe66d, 0xffc93d]));
+            coin.setStrokeStyle(2, 0xb8860b);
+            coin.setPosition(x, y);
+            coin.setAlpha(1);
+            coin.setScale(1);
+            coin.setAngle(0);
+            coin.setVisible(true);
+            coin.setActive(true);
+
+            if (coin._burstTween) {
+                coin._burstTween.stop();
+                coin._burstTween = null;
+            }
+
+            const angle = Phaser.Math.FloatBetween(0, Math.PI * 2);
+            const distance = Phaser.Math.Between(40, 110);
+            const offsetX = Math.cos(angle) * distance;
+            const offsetY = Math.sin(angle) * distance - Phaser.Math.Between(25, 75);
+            const spin = Phaser.Math.Between(360, 1080);
+
+            coin._burstTween = this.tweens.add({
+                targets: coin,
+                x: x + offsetX,
+                y: y + offsetY,
+                angle: spin,
+                alpha: 0,
+                scaleX: Phaser.Math.FloatBetween(0.85, 1.25),
+                scaleY: Phaser.Math.FloatBetween(0.85, 1.25),
+                duration: Phaser.Math.Between(500, 800),
+                ease: 'Cubic.easeOut',
+                onComplete: () => {
+                    coin.setVisible(false);
+                    coin.setActive(false);
+                    coin.setAlpha(1);
+                    coin.setScale(1);
+                    coin.setAngle(0);
+                    coin.setPosition(-100, -100);
+                    coin._burstTween = null;
+                }
+            });
+        }
+    }
+
+    createChileExplosion(x, y) {
+        const pieces = 12;
+        const palette = [0xff3b30, 0xff6b35, 0xff9f1c, 0xffffff];
+
+        for (let i = 0; i < pieces; i++) {
+            let puff = this.explosionPool.find(piece => !piece.active);
+
+            if (!puff) {
+                puff = this.add.circle(-100, -100, 6, 0xff9f1c);
+                puff.setVisible(false);
+                puff.setActive(false);
+                this.explosionPool.push(puff);
+            }
+
+            const radius = Phaser.Math.Between(8, 12);
+            puff.setRadius(radius);
+            puff.setFillStyle(Phaser.Utils.Array.GetRandom(palette));
+            puff.setPosition(x, y);
+            puff.setAlpha(0.95);
+            puff.setScale(1);
+            puff.setAngle(0);
+            puff.setVisible(true);
+            puff.setActive(true);
+
+            if (puff._burstTween) {
+                puff._burstTween.stop();
+                puff._burstTween = null;
+            }
+
+            const angle = Phaser.Math.FloatBetween(0, Math.PI * 2);
+            const distance = Phaser.Math.Between(25, 65);
+            const offsetX = Math.cos(angle) * distance;
+            const offsetY = Math.sin(angle) * distance - Phaser.Math.Between(30, 50);
+            const spin = Phaser.Math.Between(-180, 180);
+
+            puff._burstTween = this.tweens.add({
+                targets: puff,
+                x: x + offsetX,
+                y: y + offsetY,
+                angle: spin,
+                alpha: 0,
+                scaleX: Phaser.Math.FloatBetween(0.6, 1.1),
+                scaleY: Phaser.Math.FloatBetween(0.6, 1.1),
+                duration: Phaser.Math.Between(220, 380),
+                ease: 'Quad.easeOut',
+                onComplete: () => {
+                    puff.setVisible(false);
+                    puff.setActive(false);
+                    puff.setAlpha(1);
+                    puff.setScale(1);
+                    puff.setAngle(0);
+                    puff.setPosition(-100, -100);
+                    puff._burstTween = null;
+                }
+            });
+        }
+    }
+
     onPinataClicked(pinataEl) {
         if (this.gameOver) return;
 
@@ -270,6 +414,7 @@ class MexicoScene extends Phaser.Scene {
             this.score -= 20;
             this.scoreText.setText('Score: ' + this.score);
 
+            this.createChileExplosion(chileEl.x, chileEl.y);
             chileEl.destroy();
             this.chiles.splice(index, 1);
 
@@ -293,7 +438,7 @@ class MexicoScene extends Phaser.Scene {
             this.score += 50; 
             this.scoreText.setText('Score: ' + this.score);
 
-            this.createConfettiBurst(goldenPinataEl.x, goldenPinataEl.y, [0xffd700, 0xfff08a, 0xff8c42, 0xffffff]);
+            this.createCoinBurst(goldenPinataEl.x, goldenPinataEl.y);
             goldenPinataEl.destroy();
             this.goldenPinatas.splice(index, 1);
 
@@ -305,6 +450,9 @@ class MexicoScene extends Phaser.Scene {
                 duration: 1000,
                 onComplete: () => plusText.destroy()
             });
+
+            const current = this.registry.get('currency') || 0;
+            this.registry.set('currency', current + 1);
         }
     }
 
