@@ -54,7 +54,6 @@ class StartScene extends Phaser.Scene {
     startButton.on("pointerdown", startGame);
     this.input.keyboard.once("keydown-SPACE", startGame);
 
-
     startButton.on("pointerover", () => {
       this.tweens.add({
         targets: startButton,
@@ -72,6 +71,7 @@ class StartScene extends Phaser.Scene {
         ease: "Sine.easeOut"
       });
     });
+
     startButton.on("pointerout", () => {
       this.tweens.add({
         targets: startButton,
