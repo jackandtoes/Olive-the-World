@@ -11,9 +11,12 @@ class StartScene extends Phaser.Scene {
     this.load.image("homeLogo", "assets/olive_main_logo.png");
     this.load.image("startBtn", "assets/start_button.png");
     this.load.image("settingsbutton", "assets/settingsbutton.png");
+    this.load.image("oliveFarmhouse", "assets/olive_farmhouse.png");
+    this.load.image("oliveBirthday", "assets/olive_birthday.png");
     this.load.image("philip_token", "assets/bronze_token_otw.png");
     this.load.image("italy_token", "assets/silver_token.png");
     this.load.image("mexico_token", "assets/gold_token_otw.png");
+    this.load.audio("birthday_song", "assets/olive_birthday_song.MP3");
   }
 
   create() {
@@ -50,7 +53,7 @@ class StartScene extends Phaser.Scene {
     startButton.setAlpha(0);
     startButton.y += 12;
 
-    const startGame = () => this.scene.start("MapScene");
+    const startGame = () => this.scene.start("IntroCutscene");
     startButton.on("pointerdown", startGame);
     this.input.keyboard.once("keydown-SPACE", startGame);
 
@@ -156,6 +159,113 @@ class StartScene extends Phaser.Scene {
         delay: Phaser.Math.Between(0, 1800),
         ease: "Sine.easeInOut"
       });
+    }
+  }
+}
+
+class IntroCutscene extends Phaser.Scene {
+  constructor() {
+    super("IntroCutscene");
+  }
+
+  create() {
+    const width = this.scale.width;
+    const height = this.scale.height;
+    this.slides = ["oliveFarmhouse", "oliveBirthday"];
+
+    this.cutsceneIndex = 0;
+    this.isTransitioningSlide = false;
+    this.birthdaySong = null;
+
+    this.add.rectangle(width / 2, height / 2, width, height, 0x130e0b);
+
+    this.cutsceneImage = this.add.image(width / 2, height / 2, this.slides[0]).setAlpha(0);
+    this._fitCutsceneImage(this.cutsceneImage, width, height);
+
+    this.cutsceneCaption = this.add.text(width / 2, height - 44, "Click or press SPACE to continue", {
+      fontSize: "22px",
+      fill: "#fff4dd",
+      backgroundColor: "#5a341d",
+      padding: { x: 14, y: 8 }
+    }).setOrigin(0.5);
+
+    this.cutsceneProgress = this.add.text(width / 2, 36, "1 / 2", {
+      fontSize: "24px",
+      fill: "#fff4dd"
+    }).setOrigin(0.5);
+
+    this.tweens.add({
+      targets: this.cutsceneImage,
+      alpha: 1,
+      duration: 450,
+      ease: "Sine.easeOut",
+      onComplete: () => {
+        this.playBirthdaySong();
+      }
+    });
+
+    this.input.on("pointerdown", () => this.advanceCutscene());
+    this.input.keyboard.on("keydown-SPACE", () => this.advanceCutscene());
+    this.input.keyboard.on("keydown-ENTER", () => this.advanceCutscene());
+    this.events.once("shutdown", () => this.stopBirthdaySong());
+  }
+
+  _fitCutsceneImage(image, width, height) {
+    const scale = Math.min((width - 80) / image.width, (height - 120) / image.height);
+    image.setScale(scale);
+  }
+
+  advanceCutscene() {
+    if (this.isTransitioningSlide) return;
+
+    const nextIndex = this.cutsceneIndex + 1;
+
+    if (nextIndex >= this.slides.length) {
+      this.isTransitioningSlide = true;
+      this.stopBirthdaySong();
+      this.cameras.main.fadeOut(350, 19, 14, 11);
+      this.time.delayedCall(360, () => {
+        this.scene.start("MapScene");
+      });
+      return;
+    }
+
+    this.isTransitioningSlide = true;
+    this.tweens.add({
+      targets: this.cutsceneImage,
+      alpha: 0,
+      duration: 250,
+      ease: "Sine.easeIn",
+      onComplete: () => {
+        this.cutsceneIndex = nextIndex;
+        this.cutsceneImage.setTexture(this.slides[this.cutsceneIndex]);
+        this._fitCutsceneImage(this.cutsceneImage, this.scale.width, this.scale.height);
+        this.cutsceneProgress.setText(`${this.cutsceneIndex + 1} / ${this.slides.length}`);
+        this.tweens.add({
+          targets: this.cutsceneImage,
+          alpha: 1,
+          duration: 300,
+          ease: "Sine.easeOut",
+          onComplete: () => {
+            this.isTransitioningSlide = false;
+          }
+        });
+      }
+    });
+  }
+
+  playBirthdaySong() {
+    if (!this.birthdaySong) {
+      this.birthdaySong = this.sound.add("birthday_song", { volume: 0.55 });
+    }
+    if (!this.birthdaySong.isPlaying) {
+      this.birthdaySong.play();
+    }
+  }
+
+  stopBirthdaySong() {
+    if (this.birthdaySong && this.birthdaySong.isPlaying) {
+      this.birthdaySong.stop();
     }
   }
 }
@@ -766,6 +876,7 @@ const config = {
   },
   scene: [
     StartScene,
+    IntroCutscene,
     MapScene,
     MexicoScene,
     ItalyScene,
@@ -781,5 +892,3 @@ const config = {
   }
 };
 new Phaser.Game(config);
-
-
