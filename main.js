@@ -209,31 +209,38 @@ class MapScene extends Phaser.Scene {
     this.cameras.main.setZoom(2.5);
 
     //Store Button
-    const storeButton = this.add.text(width / 3 * 2, 30, "Store", {
-      fontSize: "28px",
+    const storeButton = this.add.text(250, 190, "Store", {
+      fontSize: "10px",
       fill: "#000000",
       backgroundColor: "#ffc4e3",
-      padding: { x: 20, y: 10 }
-    }).setOrigin(0.5).setInteractive().setScrollFactor(0).setDepth(20);
+      padding: { x: 10, y: 5 }
+    }).setOrigin(0, 0).setInteractive().setScrollFactor(0).setDepth(20);
 
     storeButton.on("pointerdown", () => {
       this.scene.start("Store");
     });
 
+    storeButton.on("pointerover", () => {
+      storeButton.setStyle({ backgroundColor: "#f9a1eb" });
+    });
+    storeButton.on("pointerout", () => {
+      storeButton.setStyle({ backgroundColor: "#ffc4e3" });
+    });
+
     //Inventory Button
-    const inventoryButton = this.add.text(width / 3, 30, "Inventory", {
-      fontSize: "28px",
+    const inventoryButton = this.add.text(350, 200, "Inventory", {
+      fontSize: "10px",
       fill: "#000000",
       backgroundColor: "#ffc4e3",
-      padding: { x: 20, y: 10 }
+      padding: { x: 10, y: 5 }
     }).setOrigin(0.5).setInteractive().setScrollFactor(0).setDepth(20);
     inventoryButton.on("pointerdown", () => {
       this.scene.start("Inventory");
     });
 
-    const settingsButton = this.add.image(width / 3 * 2.75, 40, "settingsbutton")
+    const settingsButton = this.add.image(540, 200, "settingsbutton")
       .setOrigin(0.5)
-      .setScale(0.07)
+      .setScale(0.03)
       .setInteractive()
       .setScrollFactor(0)
       .setDepth(20);
