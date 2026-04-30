@@ -169,7 +169,7 @@ class MapScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.image("mapBg", "assets/map.png");
+    this.load.image("mapBg", "assets/map (2).png");
     this.load.image("flagPhilippines", "assets/Philippines_flag.png");
     this.load.image("flagMexico", "assets/Mexico_flag.png");
     this.load.image("flagEgypt", "assets/Egypt_flag.png");
@@ -198,8 +198,15 @@ class MapScene extends Phaser.Scene {
     const bg = this.add.image(width / 2, height / 2, "mapBg");
     const scale = Math.max(width / bg.width, height / bg.height);
     bg.setScale(scale);
-    bg.setScrollFactor(0);
+    bg.setOrigin(0, 0);
+    bg.setPosition(0, 0);
     bg.setDepth(-1);
+
+    const worldWidth = bg.displayWidth;
+    const worldHeight = bg.displayHeight;
+    this.physics.world.setBounds(0, 0, worldWidth, worldHeight);
+    this.cameras.main.setBounds(0, 0, worldWidth, worldHeight);
+    this.cameras.main.setZoom(2.5);
 
     //Store Button
     const storeButton = this.add.text(width / 3 * 2, 30, "Store", {
@@ -207,7 +214,7 @@ class MapScene extends Phaser.Scene {
       fill: "#000000",
       backgroundColor: "#ffc4e3",
       padding: { x: 20, y: 10 }
-    }).setOrigin(0.5).setInteractive();
+    }).setOrigin(0.5).setInteractive().setScrollFactor(0).setDepth(20);
 
     storeButton.on("pointerdown", () => {
       this.scene.start("Store");
@@ -219,28 +226,36 @@ class MapScene extends Phaser.Scene {
       fill: "#000000",
       backgroundColor: "#ffc4e3",
       padding: { x: 20, y: 10 }
-    }).setOrigin(0.5).setInteractive();
+    }).setOrigin(0.5).setInteractive().setScrollFactor(0).setDepth(20);
     inventoryButton.on("pointerdown", () => {
       this.scene.start("Inventory");
     });
 
-    const settingsButton = this.add.image(width / 3 * 2.75, 40, "settingsbutton").setOrigin(0.5).setScale(0.07).setInteractive();
+    const settingsButton = this.add.image(width / 3 * 2.75, 40, "settingsbutton")
+      .setOrigin(0.5)
+      .setScale(0.07)
+      .setInteractive()
+      .setScrollFactor(0)
+      .setDepth(20);
     settingsButton.on("pointerdown", () => {
       this.scene.start("Settings");
     });
 
     //Adds Player
-    this.player = this.add.circle(width / 2, height / 2, 18, 0x556b2f);
+    this.player = this.add.circle(width / 2, height / 2, 9, 0x556b2f);
     this.physics.add.existing(this.player);
     this.player.body.setCollideWorldBounds(true);
+    this.player.setDepth(5);
 
     this.playerHatSquare = this.add.rectangle(width / 2, height / 2 - 25, 20, 20, 0xff0000);
     this.playerHatSquare.setVisible(false);
+    this.playerHatSquare.setDepth(6);
 
     this.playerHatTriangle = this.add.graphics();
     this.playerHatTriangle.fillStyle(0x9b59b6, 1);
     this.playerHatTriangle.fillTriangle(-10, 0, 10, 0, 0, -18);
     this.playerHatTriangle.setVisible(false);
+    this.playerHatTriangle.setDepth(6);
 
     this.cursors = this.input.keyboard.createCursorKeys();
     this.countries = [];
@@ -255,14 +270,16 @@ class MapScene extends Phaser.Scene {
       "Run in the desert.\nDodge palm trees and flying falafels!", "EgyptScene", "EgyptStore", "flagEgypt");
     this.createInfoPanel();
     this.updatePlayerAppearance();
+
+    this.cameras.main.startFollow(this.player, true, 0.08, 0.08);
   }
 
   createCountry(name, x, y, description, sceneName, storeName, flagKey) {
-    const landmark = this.add.image(x, y, flagKey).setScale(0.6);
+    const landmark = this.add.image(x, y, flagKey).setScale(0.6).setDepth(1);
     this.add.text(x, y - 40, name, {
       fontSize: "18px",
       fill: "#000"
-    }).setOrigin(0.5);
+    }).setOrigin(0.5).setDepth(2);
     this.countries.push({
       name,
       landmark,
@@ -275,22 +292,21 @@ class MapScene extends Phaser.Scene {
   }
 
   createInfoPanel() {
-    const width = this.scale.width;
-    const height = this.scale.height;
-    this.infoPanel = this.add.container(width / 2, height - 130);
+    this.infoPanel = this.add.container(0, 0);
+    this.infoPanel.setDepth(20);
     this.infoPanel.setVisible(false);
-    const bg = this.add.rectangle(0, 0, 600, 140, 0xffffff)
+    const bg = this.add.rectangle(0, 0, 290, 150, 0xfff7ef)
       .setStrokeStyle(3, 0x000000);
-    this.panelTitle = this.add.text(-260, -45, "", {
-      fontSize: "22px",
+    this.panelTitle = this.add.text(-130, -55, "", {
+      fontSize: "20px",
       fill: "#000"
     });
-    this.panelText = this.add.text(-260, -10, "", {
+    this.panelText = this.add.text(-130, -20, "", {
+      fontSize: "16px",
+      fill: "#000"
+    }).setWordWrapWidth(250);
+    const playButton = this.add.text(-130, 42, "Play game!", {
       fontSize: "18px",
-      fill: "#000"
-    });
-    const playButton = this.add.text(-240, 35, "Play game!", {
-      fontSize: "22px",
       fill: "#007700"
     }).setInteractive();
     playButton.on("pointerdown", () => {
@@ -301,6 +317,31 @@ class MapScene extends Phaser.Scene {
     this.infoPanel.add([bg, this.panelTitle, this.panelText, playButton]);
   }
 
+  positionInfoPanel(country) {
+    const width = this.scale.width;
+    const height = this.scale.height;
+    const worldWidth = this.physics.world.bounds.width;
+    const worldHeight = this.physics.world.bounds.height;
+    const bubbleWidth = 290;
+    const bubbleHeight = 150;
+    const offsetX = 100;
+    const offsetY = -50;
+
+    const x = Phaser.Math.Clamp(
+      country.landmark.x + offsetX,
+      bubbleWidth / 2,
+      worldWidth - bubbleWidth / 2
+    );
+    const y = Phaser.Math.Clamp(
+      country.landmark.y + offsetY,
+      bubbleHeight / 2,
+      worldHeight - bubbleHeight / 2
+    );
+
+    this.infoPanel.setPosition(x, y);
+    this.infoPanel.setScale(1 / this.cameras.main.zoom);
+  }
+
   updatePlayerAppearance() {
     const hat = this.registry.get('equippedItems').hat;
     this.playerHatSquare.setVisible(hat === 'square');
@@ -308,7 +349,7 @@ class MapScene extends Phaser.Scene {
   }
 
   update() {
-    const speed = 200;
+    const speed = 125;
     this.player.body.setVelocity(0);
     if (this.cursors.left.isDown) this.player.body.setVelocityX(-speed);
     if (this.cursors.right.isDown) this.player.body.setVelocityX(speed);
@@ -333,6 +374,7 @@ class MapScene extends Phaser.Scene {
       this.currentCountry = foundCountry;
       this.panelTitle.setText(foundCountry.name);
       this.panelText.setText(foundCountry.description);
+      this.positionInfoPanel(foundCountry);
       this.infoPanel.setVisible(true);
     } else {
       this.currentCountry = null;
