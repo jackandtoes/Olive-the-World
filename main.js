@@ -544,6 +544,9 @@ class Inventory extends Phaser.Scene {
     if (wins.italy) {
       this.add.image(width / 4 * 2, 400, "italy_token").setDisplaySize(125, 156.25);
     }
+    if (wins.philippines) {
+      this.add.image(width / 4 * 3, 400, "philip_token").setDisplaySize(125, 156.25);
+    }
 
   }
 }

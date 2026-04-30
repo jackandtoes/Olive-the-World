@@ -919,6 +919,9 @@ class PhilippinesScene extends Phaser.Scene {
   }
 
   showVictory() {
+    const wins = this.registry.get('wins');
+    wins.philippines = true;
+    this.registry.set('wins', wins);
     const { width, height } = this._overlay();
     this.add.text(width / 2, height / 2 - 118, "Victory!", {
       fontSize: "54px",
