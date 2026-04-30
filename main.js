@@ -554,7 +554,7 @@ class Inventory extends Phaser.Scene {
     const cards = [
       { section: "Country Tokens", label: "Mexico", unlocked: wins.mexico, texture: "mexico_token", tokenWidth: 118, tokenHeight: 118, ribbon: "Collected" },
       { section: "Country Tokens", label: "Italy", unlocked: wins.italy, texture: "italy_token", tokenWidth: 125, tokenHeight: 156.25, ribbon: "Collected" },
-      { section: "Country Tokens", label: "Philippines", unlocked: wins.philippines, texture: "philip_token", tokenWidth: 118, tokenHeight: 118, ribbon: "Collected" },
+      { section: "Country Tokens", label: "Philippines", unlocked: wins.philippines, texture: "philip_token", tokenWidth: 125, tokenHeight: 156.25, ribbon: "Collected" },
       { section: "Accessories", label: "Fancy Square", unlocked: !!ownedItems.square, shape: "square", ribbon: "Owned" },
       { section: "Accessories", label: "Fancy Triangle", unlocked: !!ownedItems.triangle, shape: "triangle", ribbon: "Owned" }
     ];
@@ -598,10 +598,6 @@ class Inventory extends Phaser.Scene {
         fill: "#9a6b3d"
       }).setOrigin(1, 1);
     }
-    if (wins.philippines) {
-      this.add.image(width / 4 * 3, 400, "philip_token").setDisplaySize(125, 156.25);
-    }
-
   }
 
   buildInventoryCards(cards) {
