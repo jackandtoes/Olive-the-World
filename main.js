@@ -200,7 +200,7 @@ class IntroCutscene extends Phaser.Scene {
       duration: 450,
       ease: "Sine.easeOut",
       onComplete: () => {
-        this.playBirthdaySong();
+        //this.playBirthdaySong();
       }
     });
 
@@ -377,13 +377,13 @@ class MapScene extends Phaser.Scene {
     this.cursors = this.input.keyboard.createCursorKeys();
     this.countries = [];
 
-    this.createCountry("Mexico", width * 0.222, height * 0.47,
+    this.createCountry("Mexico", width * 0.3, height * 0.44,
       "Whack piñatas.\nAvoid spicy chiles!", "MexicoScene", "MexicoStore", "flagMexico");
-    this.createCountry("Italy", width * 0.55, height * 0.45,
+    this.createCountry("Italy", width * 0.70, height * 0.35,
       "Fix pasta pipes.\nServe the perfect plate!", "ItalyScene", "ItalyStore", "flagItaly");
-    this.createCountry("Philippines", width * 0.8, height * 0.7,
+    this.createCountry("Philippines", width * 1.1, height * 0.5,
       "Collect lumpia ingredients.\nAvoid traffic!", "PhilippinesScene", "PhilippinesStore", "flagPhilippines");
-    this.createCountry("Egypt", width * 0.4, height * 0.8,
+    this.createCountry("Egypt", width * 0.76, height * 0.42,
       "Run in the desert.\nDodge palm trees and flying falafels!", "EgyptScene", "EgyptStore", "flagEgypt");
     this.createInfoPanel();
     this.updatePlayerAppearance();
