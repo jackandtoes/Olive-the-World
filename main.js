@@ -326,15 +326,30 @@ class MapScene extends Phaser.Scene {
       padding: { x: 10, y: 5 }
     }).setOrigin(0, 0).setInteractive().setScrollFactor(0).setDepth(20);
 
-    storeButton.on("pointerdown", () => {
-      this.scene.start("Store");
+    storeButton.on("pointerover", () => {
+      this.tweens.add({
+        targets: storeButton,
+        scaleX: 1.05,
+        scaleY: 1.05,
+        duration: 140,
+        ease: "Sine.easeOut"
+      });
+      storeButton.setBackgroundColor("#ef7cac");
     });
 
-    storeButton.on("pointerover", () => {
-      storeButton.setStyle({ backgroundColor: "#f9a1eb" });
-    });
     storeButton.on("pointerout", () => {
-      storeButton.setStyle({ backgroundColor: "#ffc4e3" });
+      this.tweens.add({
+        targets: storeButton,
+        scaleX: 1,
+        scaleY: 1,
+        duration: 140,
+        ease: "Sine.easeOut",
+      });
+      storeButton.setBackgroundColor("#ffc4e3");
+    });
+
+    storeButton.on("pointerdown", () => {
+      this.scene.start("Store");
     });
 
     //Inventory Button
@@ -348,6 +363,29 @@ class MapScene extends Phaser.Scene {
       this.scene.start("Inventory");
     });
 
+    inventoryButton.on("pointerover", () => {
+      this.tweens.add({
+        targets: inventoryButton,
+        scaleX: 1.05,
+        scaleY: 1.05,
+        duration: 140,
+        ease: "Sine.easeOut"
+      });
+      inventoryButton.setBackgroundColor("#ef7cac");
+    });
+
+    inventoryButton.on("pointerout", () => {
+      this.tweens.add({
+        targets: inventoryButton,
+        scaleX: 1,
+        scaleY: 1,
+        duration: 140,
+        ease: "Sine.easeOut",
+      });
+      inventoryButton.setBackgroundColor("#ffc4e3");
+    });
+
+    //Settings Button
     const settingsButton = this.add.image(540, 200, "settingsbutton")
       .setOrigin(0.5)
       .setScale(0.03)
@@ -356,6 +394,26 @@ class MapScene extends Phaser.Scene {
       .setDepth(20);
     settingsButton.on("pointerdown", () => {
       this.scene.start("Settings");
+    });
+
+    settingsButton.on("pointerover", () => {
+      this.tweens.add({
+        targets: settingsButton,
+        scaleX: 0.03*1.06,
+        scaleY: 0.03*1.06,
+        duration: 140,
+        ease: "Sine.easeOut"
+      });
+    });
+
+    settingsButton.on("pointerout", () => {
+      this.tweens.add({
+        targets: settingsButton,
+        scaleX: 0.03,
+        scaleY: 0.03,
+        duration: 140,
+        ease: "Sine.easeOut",
+      });
     });
 
     //Adds Player
