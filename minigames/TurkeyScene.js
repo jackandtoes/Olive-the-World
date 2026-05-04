@@ -3,12 +3,18 @@ class TurkeyScene extends Phaser.Scene {
         super("TurkeyScene");
     }
 
+    preload() {
+        this.load.image('chile', 'assets/mexico/mexico_minigame_chile.png');
+    }
+
     create() {
         const width = this.scale.width;
         const height = this.scale.height;
         this.score = 0;
         this.gameOver = false;
         this.spawnTimer = null;
+
+        this.physics.world.gravity.y = 300;
 
         // Background
         this.add.rectangle(width / 2, height / 2, width, height, 0xf7d6b4);
@@ -37,10 +43,13 @@ class TurkeyScene extends Phaser.Scene {
         this.skewer.body.setCollideWorldBounds(true);
         this.skewer.body.setSize(20, 200, true);
 
+        this.fallingFoods = this.physics.add.group();
+
         // Input
         this.cursors = this.input.keyboard.createCursorKeys();
         this.input.keyboard.on("keydown-ESC", () => this.scene.start("MapScene"));
 
+        // Adds Timer
         this.time.addEvent({
             delay: 1200,
             callback: this.spawnRandomIngredient,
@@ -48,6 +57,14 @@ class TurkeyScene extends Phaser.Scene {
             loop: true
         });
 
+        // Collision Detection
+        this.physics.add.overlap(this.skewer, this.fallingFoods, (skewer, ingredient) => {
+            if (ingredient.texture.key === 'chile') {
+                ingredient.destroy();
+                this.score += 10;
+                this.scoreText.setText("Score: " + this.score);
+            }
+        });
     }
 
     update() {
@@ -63,8 +80,15 @@ class TurkeyScene extends Phaser.Scene {
     }
 
     spawnRandomIngredient() {
-        this.circle = this.add.circle(20, 0, 16, 0xff6347).setDepth(20);
-        this.physics.add.existing(this.circle);
-        this.circle.body.setAllowGravity(true);
+        const ingredient = this.physics.add.image(
+            Phaser.Math.Between(50, this.scale.width - 50),
+            -50,
+            'chile'
+        );
+        ingredient.setVelocityY(120);
+        ingredient.setCollideWorldBounds(false);
+        this.fallingFoods.add(ingredient);
     }
+
+
 }
