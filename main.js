@@ -1,3 +1,12 @@
+const HAT_CATALOG = [
+  { key: "chef", texture: "hatChef", oliveTexture: "oliveHatChef", label: "Chef Hat", price: 2, displayWidth: 74, displayHeight: 74, storeDisplayWidth: 90, storeDisplayHeight: 90 },
+  { key: "jester", texture: "hatJester", oliveTexture: "oliveHatJester", label: "Jester Hat", price: 3, displayWidth: 74, displayHeight: 74, storeDisplayWidth: 74, storeDisplayHeight: 74 },
+  { key: "propeller", texture: "hatPropeller", oliveTexture: "oliveHatPropeller", label: "Propeller Hat", price: 4, displayWidth: 78, displayHeight: 78, storeDisplayWidth: 92, storeDisplayHeight: 92 },
+  { key: "wizard", texture: "hatWizard", oliveTexture: "oliveHatWizard", label: "Wizard Hat", price: 5, displayWidth: 74, displayHeight: 74, storeDisplayWidth: 74, storeDisplayHeight: 74 }
+];
+
+const MAP_OLIVE_TARGET_HEIGHT = 38;
+
 // ===============================
 // START SCENE
 // ===============================
@@ -11,9 +20,16 @@ class StartScene extends Phaser.Scene {
     this.load.image("homeLogo", "assets/olive_main_logo.png");
     this.load.image("startBtn", "assets/start_button.png");
     this.load.image("settingsbutton", "assets/settingsbutton.png");
+    this.load.image("oliveFarmhouse", "assets/olive_farmhouse.png");
+    this.load.image("oliveBirthday", "assets/olive_birthday.png");
     this.load.image("philip_token", "assets/bronze_token_otw.png");
     this.load.image("italy_token", "assets/silver_token.png");
     this.load.image("mexico_token", "assets/gold_token_otw.png");
+    this.load.image("hatChef", "assets/hat_chef.PNG");
+    this.load.image("hatJester", "assets/hat_jester.PNG");
+    this.load.image("hatPropeller", "assets/hat_propeller.PNG");
+    this.load.image("hatWizard", "assets/hat_wizard.PNG");
+    this.load.audio("birthday_song", "assets/olive_birthday_song.MP3");
   }
 
   create() {
@@ -50,7 +66,7 @@ class StartScene extends Phaser.Scene {
     startButton.setAlpha(0);
     startButton.y += 12;
 
-    const startGame = () => this.scene.start("MapScene");
+    const startGame = () => this.scene.start("IntroCutscene");
     startButton.on("pointerdown", startGame);
     this.input.keyboard.once("keydown-SPACE", startGame);
 
@@ -160,6 +176,113 @@ class StartScene extends Phaser.Scene {
   }
 }
 
+class IntroCutscene extends Phaser.Scene {
+  constructor() {
+    super("IntroCutscene");
+  }
+
+  create() {
+    const width = this.scale.width;
+    const height = this.scale.height;
+    this.slides = ["oliveFarmhouse", "oliveBirthday"];
+
+    this.cutsceneIndex = 0;
+    this.isTransitioningSlide = false;
+    this.birthdaySong = null;
+
+    this.add.rectangle(width / 2, height / 2, width, height, 0x130e0b);
+
+    this.cutsceneImage = this.add.image(width / 2, height / 2, this.slides[0]).setAlpha(0);
+    this._fitCutsceneImage(this.cutsceneImage, width, height);
+
+    this.cutsceneCaption = this.add.text(width / 2, height - 44, "Click or press SPACE to continue", {
+      fontSize: "22px",
+      fill: "#fff4dd",
+      backgroundColor: "#5a341d",
+      padding: { x: 14, y: 8 }
+    }).setOrigin(0.5);
+
+    this.cutsceneProgress = this.add.text(width / 2, 36, "1 / 2", {
+      fontSize: "24px",
+      fill: "#fff4dd"
+    }).setOrigin(0.5);
+
+    this.tweens.add({
+      targets: this.cutsceneImage,
+      alpha: 1,
+      duration: 450,
+      ease: "Sine.easeOut",
+      onComplete: () => {
+        //this.playBirthdaySong();
+      }
+    });
+
+    this.input.on("pointerdown", () => this.advanceCutscene());
+    this.input.keyboard.on("keydown-SPACE", () => this.advanceCutscene());
+    this.input.keyboard.on("keydown-ENTER", () => this.advanceCutscene());
+    this.events.once("shutdown", () => this.stopBirthdaySong());
+  }
+
+  _fitCutsceneImage(image, width, height) {
+    const scale = Math.min((width - 80) / image.width, (height - 120) / image.height);
+    image.setScale(scale);
+  }
+
+  advanceCutscene() {
+    if (this.isTransitioningSlide) return;
+
+    const nextIndex = this.cutsceneIndex + 1;
+
+    if (nextIndex >= this.slides.length) {
+      this.isTransitioningSlide = true;
+      this.stopBirthdaySong();
+      this.cameras.main.fadeOut(350, 19, 14, 11);
+      this.time.delayedCall(360, () => {
+        this.scene.start("MapScene");
+      });
+      return;
+    }
+
+    this.isTransitioningSlide = true;
+    this.tweens.add({
+      targets: this.cutsceneImage,
+      alpha: 0,
+      duration: 250,
+      ease: "Sine.easeIn",
+      onComplete: () => {
+        this.cutsceneIndex = nextIndex;
+        this.cutsceneImage.setTexture(this.slides[this.cutsceneIndex]);
+        this._fitCutsceneImage(this.cutsceneImage, this.scale.width, this.scale.height);
+        this.cutsceneProgress.setText(`${this.cutsceneIndex + 1} / ${this.slides.length}`);
+        this.tweens.add({
+          targets: this.cutsceneImage,
+          alpha: 1,
+          duration: 300,
+          ease: "Sine.easeOut",
+          onComplete: () => {
+            this.isTransitioningSlide = false;
+          }
+        });
+      }
+    });
+  }
+
+  playBirthdaySong() {
+    if (!this.birthdaySong) {
+      this.birthdaySong = this.sound.add("birthday_song", { volume: 0.55 });
+    }
+    if (!this.birthdaySong.isPlaying) {
+      this.birthdaySong.play();
+    }
+  }
+
+  stopBirthdaySong() {
+    if (this.birthdaySong && this.birthdaySong.isPlaying) {
+      this.birthdaySong.stop();
+    }
+  }
+}
+
 // ===============================
 // MAP SCENE
 // ===============================
@@ -174,6 +297,15 @@ class MapScene extends Phaser.Scene {
     this.load.image("flagMexico", "assets/Mexico_flag.png");
     this.load.image("flagEgypt", "assets/Egypt_flag.png");
     this.load.image("flagItaly", "assets/Italy_flag.png");
+    this.load.image("hatChef", "assets/hat_chef.PNG");
+    this.load.image("hatJester", "assets/hat_jester.PNG");
+    this.load.image("hatPropeller", "assets/hat_propeller.PNG");
+    this.load.image("hatWizard", "assets/hat_wizard.PNG");
+    this.load.image("oliveOverjoyed", "assets/olive_overjoyed.PNG");
+    this.load.image("oliveHatChef", "assets/olive_hat_chef.PNG");
+    this.load.image("oliveHatJester", "assets/olive_hat_jester.PNG");
+    this.load.image("oliveHatPropeller", "assets/olive_hat_propeller.PNG");
+    this.load.image("oliveHatWizard", "assets/olive_hat_wizard.PNG");
   }
 
   init(data) {
@@ -307,31 +439,23 @@ class MapScene extends Phaser.Scene {
     });
 
     //Adds Player
-    this.player = this.add.circle(width / 2, height / 2, 9, 0x556b2f);
+    this.player = this.add.image(width / 2, height / 2, "oliveOverjoyed");
     this.physics.add.existing(this.player);
     this.player.body.setCollideWorldBounds(true);
+    this.player.body.setSize(22, 22);
+    this.player.body.setOffset(6, 6);
     this.player.setDepth(5);
-
-    this.playerHatSquare = this.add.rectangle(width / 2, height / 2 - 25, 20, 20, 0xff0000);
-    this.playerHatSquare.setVisible(false);
-    this.playerHatSquare.setDepth(6);
-
-    this.playerHatTriangle = this.add.graphics();
-    this.playerHatTriangle.fillStyle(0x9b59b6, 1);
-    this.playerHatTriangle.fillTriangle(-10, 0, 10, 0, 0, -18);
-    this.playerHatTriangle.setVisible(false);
-    this.playerHatTriangle.setDepth(6);
 
     this.cursors = this.input.keyboard.createCursorKeys();
     this.countries = [];
 
-    this.createCountry("Mexico", width * 0.222, height * 0.47,
+    this.createCountry("Mexico", width * 0.3, height * 0.44,
       "Whack piñatas.\nAvoid spicy chiles!", "MexicoScene", "MexicoStore", "flagMexico");
-    this.createCountry("Italy", width * 0.55, height * 0.45,
+    this.createCountry("Italy", width * 0.70, height * 0.35,
       "Fix pasta pipes.\nServe the perfect plate!", "ItalyScene", "ItalyStore", "flagItaly");
-    this.createCountry("Philippines", width * 0.8, height * 0.7,
+    this.createCountry("Philippines", width * 1.1, height * 0.5,
       "Collect lumpia ingredients.\nAvoid traffic!", "PhilippinesScene", "PhilippinesStore", "flagPhilippines");
-    this.createCountry("Egypt", width * 0.4, height * 0.8,
+    this.createCountry("Egypt", width * 0.76, height * 0.42,
       "Run in the desert.\nDodge palm trees and flying falafels!", "EgyptScene", "EgyptStore", "flagEgypt");
     this.createInfoPanel();
     this.updatePlayerAppearance();
@@ -409,19 +533,30 @@ class MapScene extends Phaser.Scene {
 
   updatePlayerAppearance() {
     const hat = this.registry.get('equippedItems').hat;
-    this.playerHatSquare.setVisible(hat === 'square');
-    this.playerHatTriangle.setVisible(hat === 'triangle');
+    const hatConfig = HAT_CATALOG.find((entry) => entry.key === hat);
+    this.player.setTexture(hatConfig ? hatConfig.oliveTexture : "oliveOverjoyed");
+    this.fitPlayerOlive();
+  }
+
+  fitPlayerOlive() {
+    const sourceImage = this.player.texture.getSourceImage();
+    const scale = MAP_OLIVE_TARGET_HEIGHT / sourceImage.height;
+    this.player.setScale(scale);
   }
 
   update() {
     const speed = 125;
     this.player.body.setVelocity(0);
-    if (this.cursors.left.isDown) this.player.body.setVelocityX(-speed);
-    if (this.cursors.right.isDown) this.player.body.setVelocityX(speed);
+    if (this.cursors.left.isDown) {
+      this.player.body.setVelocityX(-speed);
+      this.player.setFlipX(true);
+    }
+    if (this.cursors.right.isDown) {
+      this.player.body.setVelocityX(speed);
+      this.player.setFlipX(false);
+    }
     if (this.cursors.up.isDown) this.player.body.setVelocityY(-speed);
     if (this.cursors.down.isDown) this.player.body.setVelocityY(speed);
-    this.playerHatSquare.setPosition(this.player.x, this.player.y - 25);
-    this.playerHatTriangle.setPosition(this.player.x, this.player.y - 15);
     let foundCountry = null;
     for (let country of this.countries) {
       const distance = Phaser.Math.Distance.Between(
@@ -471,54 +606,43 @@ class Store extends Phaser.Scene {
       backgroundColor: "#fffbe6", padding: { x: 10, y: 5 }
     }).setOrigin(1, 0);
 
-    const equippedItems = this.registry.get('equippedItems');
-    const PRICES = { square: 2, triangle: 3 };
-
-    // first item (square hat)
-    const itemSquare = this.add.rectangle(width / 3, height / 2, 80, 80, 0xff0000)
-      .setStrokeStyle(4, 0x000000)
-      .setInteractive();
-
-    this.add.text(width / 3, height / 2 + 70, "Fancy Square", {
-      fontSize: "18px",
-      fill: "#000"
-    }).setOrigin(0.5);
-    this.add.text(width / 3, height / 2 - 65, `Coins: ${PRICES.square}`, {
-      fontSize: "18px",
-      fill: "#b8860b"
-    }).setOrigin(0.5);
+    this.hatStatusTexts = {};
+    const positions = [
+      { x: width * 0.28, y: height * 0.36 },
+      { x: width * 0.72, y: height * 0.36 },
+      { x: width * 0.28, y: height * 0.67 },
+      { x: width * 0.72, y: height * 0.67 }
+    ];
 
     const ownedItems = this.registry.get('ownedItems') || {};
-    this.squareStatusText = this.add.text(width / 3, height / 2 + 100,
-      this._itemLabel(equippedItems, ownedItems, 'square'), {
-      fontSize: "16px",
-      fill: this._itemColor(equippedItems, ownedItems, 'square')
-    }).setOrigin(0.5);
 
-    itemSquare.on("pointerdown", () => this._handlePurchaseOrEquip('square', PRICES.square));
+    HAT_CATALOG.forEach((hat, index) => {
+      const pos = positions[index];
+      const panel = this.add.rectangle(pos.x, pos.y, 180, 180, 0xfff8e5)
+        .setStrokeStyle(4, 0xcaa24f)
+        .setInteractive({ useHandCursor: true });
+      const image = this.add.image(pos.x, pos.y - 20, hat.texture)
+        .setDisplaySize(hat.storeDisplayWidth || hat.displayWidth, hat.storeDisplayHeight || hat.displayHeight)
+        .setInteractive({ useHandCursor: true });
 
+      this.add.text(pos.x, pos.y + 55, hat.label, {
+        fontSize: "18px",
+        fill: "#000"
+      }).setOrigin(0.5);
+      this.add.text(pos.x, pos.y - 75, `Coins: ${hat.price}`, {
+        fontSize: "18px",
+        fill: "#b8860b"
+      }).setOrigin(0.5);
 
-    // second item (triangle hat)
-    const itemTriangle = this.add.triangle(width / 3 * 2, height / 2, 0, 80, 80, 80, 40, 0, 0x9b59b6)
-      .setStrokeStyle(4, 0x000000)
-      .setInteractive(new Phaser.Geom.Triangle(0, 80, 80, 80, 40, 0), Phaser.Geom.Triangle.Contains);
+      this.hatStatusTexts[hat.key] = this.add.text(pos.x, pos.y + 85, this._storeItemLabel(ownedItems, hat.key), {
+        fontSize: "16px",
+        fill: this._storeItemColor(ownedItems, hat.key)
+      }).setOrigin(0.5);
 
-    this.add.text(width / 3 * 2, height / 2 + 70, "Fancy Triangle", {
-      fontSize: "18px",
-      fill: "#000"
-    }).setOrigin(0.5);
-
-    this.add.text(width / 3 * 2, height / 2 - 65, `Coins: ${PRICES.triangle}`, {
-      fontSize: "18px", fill: "#b8860b"
-    }).setOrigin(0.5);
-
-    this.triangleStatusText = this.add.text(width / 3 * 2, height / 2 + 100,
-      this._itemLabel(equippedItems, ownedItems, 'triangle'), {
-      fontSize: "16px",
-      fill: this._itemColor(equippedItems, ownedItems, 'triangle')
-    }).setOrigin(0.5);
-
-    itemTriangle.on("pointerdown", () => this._handlePurchaseOrEquip('triangle', PRICES.triangle));
+      const buyHat = () => this._handlePurchase(hat.key, hat.price);
+      panel.on("pointerdown", buyHat);
+      image.on("pointerdown", buyHat);
+    });
 
     this.add.text(width / 2, height - 50, "Press ESC to return to map", {
       fontSize: "20px", fill: "#000"
@@ -528,38 +652,36 @@ class Store extends Phaser.Scene {
 
 
 
-  _itemLabel(equipped, owned, key) {
-    if (equipped.hat === key) return "EQUIPPED";
-    if (owned[key]) return "Click to equip";
-    return "Buy";
+  _storeItemLabel(owned, key) {
+    if (owned[key]) return "Owned";
+    return "Click to buy";
   }
 
-  _itemColor(equipped, owned, key) {
-    if (equipped.hat === key) return "#00aa00";
-    if (owned[key]) return "#666666";
+  _storeItemColor(owned, key) {
+    if (owned[key]) return "#00aa00";
     return "#cc0000";
   }
 
-  _handlePurchaseOrEquip(key, price) {
-    const equippedItems = this.registry.get('equippedItems');
+  _refreshStoreStatuses() {
+    const ownedItems = this.registry.get('ownedItems') || {};
+    HAT_CATALOG.forEach((hat) => {
+      this.hatStatusTexts[hat.key]
+        .setText(this._storeItemLabel(ownedItems, hat.key))
+        .setColor(this._storeItemColor(ownedItems, hat.key));
+    });
+  }
+
+  _handlePurchase(key, price) {
     const ownedItems = this.registry.get('ownedItems') || {};
     const currency = this.registry.get('currency') || 0;
 
-    if (!ownedItems[key]) {
-      if (currency < price) return;
-      this.registry.set('currency', currency - price);
-      ownedItems[key] = true;
-      this.registry.set('ownedItems', ownedItems);
-      this.coinText.setText(`Coins: ${this.registry.get('currency')}`);
-    }
+    if (ownedItems[key] || currency < price) return;
 
-    equippedItems.hat = key;
-    this.registry.set('equippedItems', equippedItems);
-
-    const owned2 = this.registry.get('ownedItems') || {};
-    const equipped2 = this.registry.get('equippedItems');
-    this.squareStatusText.setText(this._itemLabel(equipped2, owned2, 'square')).setColor(this._itemColor(equipped2, owned2, 'square'));
-    this.triangleStatusText.setText(this._itemLabel(equipped2, owned2, 'triangle')).setColor(this._itemColor(equipped2, owned2, 'triangle'));
+    ownedItems[key] = true;
+    this.registry.set('ownedItems', ownedItems);
+    this.registry.set('currency', currency - price);
+    this.coinText.setText(`Coins: ${this.registry.get('currency')}`);
+    this._refreshStoreStatuses();
   }
 }
 
@@ -569,6 +691,10 @@ class Store extends Phaser.Scene {
 class Inventory extends Phaser.Scene {
   constructor() {
     super("Inventory");
+  }
+
+  init(data) {
+    this.initialScrollY = data?.scrollY ?? 0;
   }
 
   create() {
@@ -609,12 +735,22 @@ class Inventory extends Phaser.Scene {
 
     const wins = this.registry.get('wins');
     const ownedItems = this.registry.get('ownedItems') || {};
+    const equippedItems = this.registry.get('equippedItems') || { hat: null };
     const cards = [
       { section: "Country Tokens", label: "Mexico", unlocked: wins.mexico, texture: "mexico_token", tokenWidth: 118, tokenHeight: 118, ribbon: "Collected" },
       { section: "Country Tokens", label: "Italy", unlocked: wins.italy, texture: "italy_token", tokenWidth: 125, tokenHeight: 156.25, ribbon: "Collected" },
-      { section: "Country Tokens", label: "Philippines", unlocked: wins.philippines, texture: "philip_token", tokenWidth: 118, tokenHeight: 118, ribbon: "Collected" },
-      { section: "Accessories", label: "Fancy Square", unlocked: !!ownedItems.square, shape: "square", ribbon: "Owned" },
-      { section: "Accessories", label: "Fancy Triangle", unlocked: !!ownedItems.triangle, shape: "triangle", ribbon: "Owned" }
+      { section: "Country Tokens", label: "Philippines", unlocked: wins.philippines, texture: "philip_token", tokenWidth: 125, tokenHeight: 156.25, ribbon: "Collected" },
+      { section: "Accessories", label: "No Hat", unlocked: true, texture: "oliveOverjoyed", tokenWidth: 74, tokenHeight: 74, ribbon: equippedItems.hat === null ? "Equipped" : "Click to unequip", accessoryKey: null },
+      ...HAT_CATALOG.map((hat) => ({
+        section: "Accessories",
+        label: hat.label,
+        unlocked: !!ownedItems[hat.key],
+        texture: hat.texture,
+        tokenWidth: hat.displayWidth,
+        tokenHeight: hat.displayHeight,
+        ribbon: equippedItems.hat === hat.key ? "Equipped" : "Click to equip",
+        accessoryKey: hat.key
+      }))
     ];
 
     this.scrollContent = this.add.container(scrollArea.x, scrollArea.y);
@@ -625,8 +761,9 @@ class Inventory extends Phaser.Scene {
 
     const contentHeight = this.buildInventoryCards(cards);
     this.maxScrollY = Math.max(0, contentHeight - scrollArea.height);
-    this.scrollY = 0;
+    this.scrollY = Phaser.Math.Clamp(this.initialScrollY, -this.maxScrollY, 0);
     this.isDraggingInventory = false;
+    this.setInventoryScroll(this.scrollY);
 
     this.input.on("wheel", (pointer, gameObjects, deltaX, deltaY) => {
       if (!Phaser.Geom.Rectangle.Contains(new Phaser.Geom.Rectangle(scrollArea.x, scrollArea.y, scrollArea.width, scrollArea.height), pointer.x, pointer.y)) {
@@ -656,7 +793,6 @@ class Inventory extends Phaser.Scene {
         fill: "#9a6b3d"
       }).setOrigin(1, 1);
     }
-
   }
 
   buildInventoryCards(cards) {
@@ -729,17 +865,10 @@ class Inventory extends Phaser.Scene {
         const token = this.add.image(0, -18, cardData.texture)
           .setDisplaySize(cardData.tokenWidth, cardData.tokenHeight);
         card.add(token);
-      } else if (cardData.shape === "square") {
-        const square = this.add.rectangle(0, -18, 64, 64, 0xff5757)
-          .setStrokeStyle(4, 0x8b1e1e);
-        card.add(square);
-      } else if (cardData.shape === "triangle") {
-        const triangle = this.add.triangle(0, -12, -34, 34, 34, 34, 0, -34, 0x9b59b6)
-          .setStrokeStyle(4, 0x5d2b7f);
-        card.add(triangle);
       }
 
-      const ribbon = this.add.rectangle(0, 78, 120, 30, 0x4d8d57, 1)
+      const isAccessory = !!cardData.accessoryKey;
+      const ribbon = this.add.rectangle(0, 78, 120, 30, isAccessory && cardData.ribbon === "Equipped" ? 0x4d8d57 : 0x8c7446, 1)
         .setStrokeStyle(2, 0x2f6137);
       const ribbonText = this.add.text(0, 78, cardData.ribbon, {
         fontSize: "16px",
@@ -747,6 +876,16 @@ class Inventory extends Phaser.Scene {
         fontStyle: "bold"
       }).setOrigin(0.5);
       card.add([ribbon, ribbonText]);
+
+      if (Object.prototype.hasOwnProperty.call(cardData, "accessoryKey")) {
+        panel.setInteractive({ useHandCursor: true });
+        panel.on("pointerdown", () => {
+          const equipped = this.registry.get('equippedItems') || { hat: null };
+          equipped.hat = cardData.accessoryKey;
+          this.registry.set('equippedItems', equipped);
+          this.scene.restart({ scrollY: this.scrollY });
+        });
+      }
     } else {
       const lockSilhouette = this.add.circle(0, -18, 34, 0xb5a58c, 0.45)
         .setStrokeStyle(2, 0x98876d, 0.8);
@@ -824,6 +963,7 @@ const config = {
   },
   scene: [
     StartScene,
+    IntroCutscene,
     MapScene,
     MexicoScene,
     ItalyScene,
@@ -839,5 +979,3 @@ const config = {
   }
 };
 new Phaser.Game(config);
-
-
