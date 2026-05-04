@@ -453,6 +453,8 @@ class MapScene extends Phaser.Scene {
       "Whack piñatas.\nAvoid spicy chiles!", "MexicoScene", "MexicoStore", "flagMexico");
     this.createCountry("Italy", width * 0.70, height * 0.35,
       "Fix pasta pipes.\nServe the perfect plate!", "ItalyScene", "ItalyStore", "flagItaly");
+    this.createCountry("Turkey", width * 0.62, height * 0.27,
+      "A quick visit to Turkey.\nTry the turkey scene!", "TurkeyScene", "TurkeyStore");
     this.createCountry("Philippines", width * 1.1, height * 0.5,
       "Collect lumpia ingredients.\nAvoid traffic!", "PhilippinesScene", "PhilippinesStore", "flagPhilippines");
     this.createCountry("Egypt", width * 0.76, height * 0.42,
@@ -465,19 +467,8 @@ class MapScene extends Phaser.Scene {
     this.cameras.main.startFollow(this.player, true, 0.08, 0.08);
   }
 
-  createCountry(name, x, y, description, sceneName, storeName, flagKey, placeholder = null) {
-    let landmark;
-
-    if (placeholder === "star") {
-      landmark = this.add.star(x, y, 5, 7, 14, 0xf4d35e)
-        .setStrokeStyle(3, 0xc49a2d, 0.95)
-        .setDepth(1);
-    } else {
-      landmark = this.add.image(x, y, flagKey)
-        .setScale(0.6)
-        .setDepth(1);
-    }
-
+  createCountry(name, x, y, description, sceneName, storeName, flagKey) {
+    const landmark = this.add.image(x, y, flagKey).setScale(0.6).setDepth(1);
     this.add.text(x, y - 40, name, {
       fontSize: "18px",
       fill: "#000"
@@ -1002,6 +993,7 @@ const config = {
     PhilippinesScene,
     EgyptScene,
     BrazilScene,
+    TurkeyScene,
     Store,
     Inventory,
     Settings
