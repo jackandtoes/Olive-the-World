@@ -566,7 +566,7 @@ class MexicoScene extends Phaser.Scene {
         const width = this.scale.width;
         const height = this.scale.height;
 
-            if (this.score >= 500) {
+            if (this.score >= 1500) {
                 this.add.rectangle(width/2, height/2, 400, 400, 0x000000, 0.8);
                 this.add.text(width/2, height/2 - 40, 'YOU WIN!', 
                     { fontSize: '48px', fill: '#fff' }).setOrigin(0.5);
@@ -586,6 +586,9 @@ class MexicoScene extends Phaser.Scene {
                 playButton.on('pointerdown', () => {
                     this.scene.start('MexicoScene');
                 });
+                const wins = this.registry.get('wins');
+                wins.mexico = true;
+                this.registry.set('wins', wins);
             }
             else {
                 this.add.rectangle(width/2, height/2, 400, 400, 0x000000, 0.8);
@@ -608,5 +611,6 @@ class MexicoScene extends Phaser.Scene {
                     this.scene.start('MexicoScene');
                 });
             }
+        
     }
 }
