@@ -750,11 +750,20 @@ class Inventory extends Phaser.Scene {
     const wins = this.registry.get('wins');
     const ownedItems = this.registry.get('ownedItems') || {};
     const equippedItems = this.registry.get('equippedItems') || { hat: null };
+    const equippedHatConfig = HAT_CATALOG.find((entry) => entry.key === equippedItems.hat);
+    this.inventoryOlive = this.add.image(
+      85,
+      500,
+      equippedHatConfig ? equippedHatConfig.oliveTexture : "oliveOverjoyed"
+    ).setDepth(101);
+    this.fitInventoryOlive();
+
     const cards = [
+       { section: "Accessories", label: "No Hat", unlocked: true, texture: "oliveOverjoyed", tokenWidth: 74, tokenHeight: 74, ribbon: equippedItems.hat === null ? "Equipped" : "Click to unequip", accessoryKey: null },
       { section: "Country Tokens", label: "Mexico", unlocked: wins.mexico, texture: "mexico_token", tokenWidth: 118, tokenHeight: 118, ribbon: "Collected" },
       { section: "Country Tokens", label: "Italy", unlocked: wins.italy, texture: "italy_token", tokenWidth: 125, tokenHeight: 156.25, ribbon: "Collected" },
       { section: "Country Tokens", label: "Philippines", unlocked: wins.philippines, texture: "philip_token", tokenWidth: 125, tokenHeight: 156.25, ribbon: "Collected" },
-      { section: "Accessories", label: "No Hat", unlocked: true, texture: "oliveOverjoyed", tokenWidth: 74, tokenHeight: 74, ribbon: equippedItems.hat === null ? "Equipped" : "Click to unequip", accessoryKey: null },
+     
       ...HAT_CATALOG.map((hat) => ({
         section: "Accessories",
         label: hat.label,
@@ -778,6 +787,8 @@ class Inventory extends Phaser.Scene {
     this.scrollY = Phaser.Math.Clamp(this.initialScrollY, -this.maxScrollY, 0);
     this.isDraggingInventory = false;
     this.setInventoryScroll(this.scrollY);
+
+    this.add.rectangle(50, 550, 300, 300, 0xf8e7c4).setDepth(100).setStrokeStyle(3, 0xc99b52);
 
     this.input.on("wheel", (pointer, gameObjects, deltaX, deltaY) => {
       if (!Phaser.Geom.Rectangle.Contains(new Phaser.Geom.Rectangle(scrollArea.x, scrollArea.y, scrollArea.width, scrollArea.height), pointer.x, pointer.y)) {
@@ -930,6 +941,12 @@ class Inventory extends Phaser.Scene {
   setInventoryScroll(nextY) {
     this.scrollY = Phaser.Math.Clamp(nextY, -this.maxScrollY, 0);
     this.scrollContent.y = this.scrollY + this.scrollArea.y;
+  }
+
+  fitInventoryOlive() {
+    const sourceImage = this.inventoryOlive.texture.getSourceImage();
+    const scale = 180 / sourceImage.height;
+    this.inventoryOlive.setScale(scale);
   }
 }
 
