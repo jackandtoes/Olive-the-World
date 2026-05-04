@@ -1,8 +1,8 @@
 const HAT_CATALOG = [
-  { key: "chef", texture: "hatChef", oliveTexture: "oliveHatChef", label: "Chef Hat", price: 2, displayWidth: 74, displayHeight: 74 },
-  { key: "jester", texture: "hatJester", oliveTexture: "oliveHatJester", label: "Jester Hat", price: 3, displayWidth: 74, displayHeight: 74 },
-  { key: "propeller", texture: "hatPropeller", oliveTexture: "oliveHatPropeller", label: "Propeller Hat", price: 4, displayWidth: 78, displayHeight: 78 },
-  { key: "wizard", texture: "hatWizard", oliveTexture: "oliveHatWizard", label: "Wizard Hat", price: 5, displayWidth: 74, displayHeight: 74 }
+  { key: "chef", texture: "hatChef", oliveTexture: "oliveHatChef", label: "Chef Hat", price: 2, displayWidth: 74, displayHeight: 74, storeDisplayWidth: 90, storeDisplayHeight: 90 },
+  { key: "jester", texture: "hatJester", oliveTexture: "oliveHatJester", label: "Jester Hat", price: 3, displayWidth: 74, displayHeight: 74, storeDisplayWidth: 74, storeDisplayHeight: 74 },
+  { key: "propeller", texture: "hatPropeller", oliveTexture: "oliveHatPropeller", label: "Propeller Hat", price: 4, displayWidth: 78, displayHeight: 78, storeDisplayWidth: 92, storeDisplayHeight: 92 },
+  { key: "wizard", texture: "hatWizard", oliveTexture: "oliveHatWizard", label: "Wizard Hat", price: 5, displayWidth: 74, displayHeight: 74, storeDisplayWidth: 74, storeDisplayHeight: 74 }
 ];
 
 const MAP_OLIVE_TARGET_HEIGHT = 38;
@@ -622,7 +622,7 @@ class Store extends Phaser.Scene {
         .setStrokeStyle(4, 0xcaa24f)
         .setInteractive({ useHandCursor: true });
       const image = this.add.image(pos.x, pos.y - 20, hat.texture)
-        .setDisplaySize(hat.displayWidth, hat.displayHeight)
+        .setDisplaySize(hat.storeDisplayWidth || hat.displayWidth, hat.storeDisplayHeight || hat.displayHeight)
         .setInteractive({ useHandCursor: true });
 
       this.add.text(pos.x, pos.y + 55, hat.label, {
@@ -693,6 +693,10 @@ class Inventory extends Phaser.Scene {
     super("Inventory");
   }
 
+  init(data) {
+    this.initialScrollY = data?.scrollY ?? 0;
+  }
+
   create() {
     const width = this.scale.width;
     const height = this.scale.height;
@@ -757,8 +761,9 @@ class Inventory extends Phaser.Scene {
 
     const contentHeight = this.buildInventoryCards(cards);
     this.maxScrollY = Math.max(0, contentHeight - scrollArea.height);
-    this.scrollY = 0;
+    this.scrollY = Phaser.Math.Clamp(this.initialScrollY, -this.maxScrollY, 0);
     this.isDraggingInventory = false;
+    this.setInventoryScroll(this.scrollY);
 
     this.input.on("wheel", (pointer, gameObjects, deltaX, deltaY) => {
       if (!Phaser.Geom.Rectangle.Contains(new Phaser.Geom.Rectangle(scrollArea.x, scrollArea.y, scrollArea.width, scrollArea.height), pointer.x, pointer.y)) {
@@ -878,7 +883,7 @@ class Inventory extends Phaser.Scene {
           const equipped = this.registry.get('equippedItems') || { hat: null };
           equipped.hat = cardData.accessoryKey;
           this.registry.set('equippedItems', equipped);
-          this.scene.restart();
+          this.scene.restart({ scrollY: this.scrollY });
         });
       }
     } else {
