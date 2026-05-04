@@ -938,17 +938,16 @@ class PhilippinesScene extends Phaser.Scene {
     wins.philippines = true;
     this.registry.set('wins', wins);
     const { width, height } = this._overlay();
-    this.add.text(width / 2, height / 2 - 118, "Victory!", {
-      fontSize: "54px",
+    this.add.text(width / 2, height / 2 - 108, "Victory!", {
+      fontSize: "46px",
       color: this.palette.win,
       fontStyle: "bold",
     }).setOrigin(0.5);
-    this.add.text(width / 2, height / 2 - 52, "All ingredients collected!", {
-      fontSize: "28px",
+    this.add.text(width / 2, height / 2 - 48, "All ingredients collected!", {
+      fontSize: "24px",
       color: "#6b3b21",
-      fontStyle: "bold",
     }).setOrigin(0.5);
-    this.add.text(width / 2, height / 2, "You completed all 5 Philippines levels.", {
+    this.add.text(width / 2, height / 2 + 4, "You completed all 5 Philippines levels.", {
       fontSize: "22px",
       color: "#82553a",
     }).setOrigin(0.5);
