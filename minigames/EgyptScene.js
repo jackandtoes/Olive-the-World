@@ -51,7 +51,7 @@ class EgyptScene extends Phaser.Scene {
     this.add.ellipse(width / 2, this.GROUND_Y - 18, width * 0.9, 90, this.palette.dune, 0.82);
     this.add.ellipse(width / 2, this.GROUND_Y + 12, width, 70, 0xc58f4d, 0.95);
     this.createBackdropPyramids(width);
- 
+    
     // Ground line
     this.groundLine = this.add.rectangle(width / 2, this.GROUND_Y + 2, width, 4, this.palette.ground);
     this.upperLaneGuide = this.add.rectangle(width / 2, this.UPPER_PLATFORM_Y + 8, width * 0.42, 2, 0xc59a5d, 0.2);
@@ -65,7 +65,6 @@ class EgyptScene extends Phaser.Scene {
       );
       this.clouds.push(cloud);
     }
- 
     // Runner
     this.dino = this.createDino();
     this.dinoX = 80;
@@ -555,7 +554,7 @@ createDino() {
         this.moveCloud(cloud, nx, ny);
       }
     }
- 
+
     const previousY = this.dinoY;
 
     // Gravity + jump
