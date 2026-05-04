@@ -439,7 +439,7 @@ class MapScene extends Phaser.Scene {
     });
 
     //Adds Player
-    this.player = this.add.image(width / 2, height / 2, "oliveOverjoyed");
+    this.player = this.add.image(width / 2, height / 2, "oliveOverjoyed").setDepth(2);
     this.physics.add.existing(this.player);
     this.player.body.setCollideWorldBounds(true);
     this.player.body.setSize(22, 22);
