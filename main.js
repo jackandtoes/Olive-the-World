@@ -319,7 +319,7 @@ class MapScene extends Phaser.Scene {
       this.registry.set('ownedItems', {});
     }
     if (!this.registry.has('wins')) {
-      this.registry.set('wins', { mexico: false, italy: false, philippines: false, egypt: false });
+      this.registry.set('wins', { mexico: false, italy: false, philippines: false, egypt: false, brazil: false });
     }
   }
 
@@ -346,7 +346,7 @@ class MapScene extends Phaser.Scene {
       fill: "#000000",
       backgroundColor: "#ffc4e3",
       padding: { x: 10, y: 5 }
-    }).setOrigin(0, 0).setInteractive().setScrollFactor(0).setDepth(20);
+    }).setOrigin(0, 0).setInteractive().setScrollFactor(0).setDepth(30);
 
     storeButton.on("pointerover", () => {
       this.tweens.add({
@@ -413,7 +413,7 @@ class MapScene extends Phaser.Scene {
       .setScale(0.03)
       .setInteractive()
       .setScrollFactor(0)
-      .setDepth(20);
+      .setDepth(30);
     settingsButton.on("pointerdown", () => {
       this.scene.start("Settings");
     });
@@ -457,12 +457,26 @@ class MapScene extends Phaser.Scene {
       "Collect lumpia ingredients.\nAvoid traffic!", "PhilippinesScene", "PhilippinesStore", "flagPhilippines");
     this.createCountry("Egypt", width * 0.76, height * 0.42,
       "Run in the desert.\nDodge palm trees and flying falafels!", "EgyptScene", "EgyptStore", "flagEgypt");
+    this.createCountry("Brazil", width * 0.45, height * 0.65,
+      "Collect carnival ingredients.\nJump past floats and hazards!", "BrazilScene", "BrazilStore", null, "star");
     this.createInfoPanel();
     this.updatePlayerAppearance();
 
     this.cameras.main.startFollow(this.player, true, 0.08, 0.08);
   }
 
+  createCountry(name, x, y, description, sceneName, storeName, flagKey, placeholder = null) {
+    let landmark;
+
+    if (placeholder === "star") {
+      landmark = this.add.star(x, y, 5, 7, 14, 0xf4d35e)
+        .setStrokeStyle(3, 0xc49a2d, 0.95)
+        .setDepth(1);
+    } else {
+      landmark = this.add.image(x, y, flagKey).setScale(0.6).setDepth(1);
+    }
+
+  // Helper function to create country landmarks and info
   createCountry(name, x, y, description, sceneName, storeName, flagKey) {
     const landmark = this.add.image(x, y, flagKey).setScale(0.6).setDepth(1);
     this.add.text(x, y - 40, name, {
@@ -480,9 +494,10 @@ class MapScene extends Phaser.Scene {
     });
   }
 
+  // Creates the info panel that appears when the player is near a country landmark
   createInfoPanel() {
     this.infoPanel = this.add.container(0, 0);
-    this.infoPanel.setDepth(20);
+    this.infoPanel.setDepth(10);
     this.infoPanel.setVisible(false);
     const bg = this.add.rectangle(0, 0, 290, 150, 0xfff7ef)
       .setStrokeStyle(3, 0x000000);
@@ -986,6 +1001,7 @@ const config = {
     ItalyScene,
     PhilippinesScene,
     EgyptScene,
+    BrazilScene,
     Store,
     Inventory,
     Settings
