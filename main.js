@@ -453,6 +453,8 @@ class MapScene extends Phaser.Scene {
       "Whack piñatas.\nAvoid spicy chiles!", "MexicoScene", "MexicoStore", "flagMexico");
     this.createCountry("Italy", width * 0.70, height * 0.35,
       "Fix pasta pipes.\nServe the perfect plate!", "ItalyScene", "ItalyStore", "flagItaly");
+    this.createCountry("Turkey", width * 0.62, height * 0.27,
+      "A quick visit to Turkey.\nTry the turkey scene!", "TurkeyScene", "TurkeyStore");
     this.createCountry("Philippines", width * 1.1, height * 0.5,
       "Collect lumpia ingredients.\nAvoid traffic!", "PhilippinesScene", "PhilippinesStore", "flagPhilippines");
     this.createCountry("Egypt", width * 0.76, height * 0.42,
@@ -464,7 +466,22 @@ class MapScene extends Phaser.Scene {
   }
 
   createCountry(name, x, y, description, sceneName, storeName, flagKey) {
-    const landmark = this.add.image(x, y, flagKey).setScale(0.6).setDepth(1);
+    let landmark;
+
+    if (flagKey && this.textures.exists(flagKey)) {
+      landmark = this.add.image(x, y, flagKey).setScale(0.6).setDepth(1);
+    } else {
+      const marker = this.add.container(x, y).setDepth(1);
+      const base = this.add.circle(0, 0, 24, 0xb23a3a, 1).setStrokeStyle(4, 0xffffff);
+      const label = this.add.text(0, 0, "TR", {
+        fontSize: "18px",
+        fontStyle: "bold",
+        fill: "#ffffff"
+      }).setOrigin(0.5);
+      marker.add([base, label]);
+      landmark = marker;
+    }
+
     this.add.text(x, y - 40, name, {
       fontSize: "18px",
       fill: "#000"
@@ -969,6 +986,7 @@ const config = {
     ItalyScene,
     PhilippinesScene,
     EgyptScene,
+    TurkeyScene,
     Store,
     Inventory,
     Settings
