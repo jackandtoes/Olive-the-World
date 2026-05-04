@@ -27,6 +27,14 @@ const LANE_STYLES = {
   },
 };
 
+const OLIVE_TEXTURES = {
+  default: "oliveOverjoyed",
+  chef: "oliveHatChef",
+  jester: "oliveHatJester",
+  propeller: "oliveHatPropeller",
+  wizard: "oliveHatWizard",
+};
+
 class PhilippinesScene extends Phaser.Scene {
   constructor() {
     super("PhilippinesScene");
@@ -67,7 +75,11 @@ class PhilippinesScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.image("oliveFavicon", "assets/olive_favicon.png");
+    this.load.image("oliveOverjoyed", "assets/olive_overjoyed.PNG");
+    this.load.image("oliveHatChef", "assets/olive_hat_chef.PNG");
+    this.load.image("oliveHatJester", "assets/olive_hat_jester.PNG");
+    this.load.image("oliveHatPropeller", "assets/olive_hat_propeller.PNG");
+    this.load.image("oliveHatWizard", "assets/olive_hat_wizard.PNG");
   }
 
   create() {
@@ -202,10 +214,13 @@ class PhilippinesScene extends Phaser.Scene {
     const startRow = this.ROWS - 1;
     const x = startCol * this.GRID_SIZE + this.GRID_SIZE / 2;
     const y = startRow * this.GRID_SIZE + this.GRID_SIZE / 2;
+    const equippedHat = this.registry.get("equippedItems")?.hat;
+    const textureKey = OLIVE_TEXTURES[equippedHat] || OLIVE_TEXTURES.default;
 
     const shadow = this.add.ellipse(0, 12, this.GRID_SIZE * 0.65, 14, this.palette.shadow, 0.16);
-    const sprite = this.add.image(0, -2, "oliveFavicon");
-    sprite.setDisplaySize(this.GRID_SIZE - 5, this.GRID_SIZE - 5);
+    const sprite = this.add.image(0, -2, textureKey);
+    const spriteScale = (this.GRID_SIZE + 4) / sprite.texture.getSourceImage().height;
+    sprite.setScale(spriteScale);
     this.playerSprite = sprite;
 
     this.player = this.add.container(x, y, [
@@ -919,6 +934,9 @@ class PhilippinesScene extends Phaser.Scene {
   }
 
   showVictory() {
+    const wins = this.registry.get('wins');
+    wins.philippines = true;
+    this.registry.set('wins', wins);
     const { width, height } = this._overlay();
     this.add.text(width / 2, height / 2 - 118, "Victory!", {
       fontSize: "54px",
