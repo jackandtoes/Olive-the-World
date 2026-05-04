@@ -421,8 +421,8 @@ class MapScene extends Phaser.Scene {
     settingsButton.on("pointerover", () => {
       this.tweens.add({
         targets: settingsButton,
-        scaleX: 0.03*1.06,
-        scaleY: 0.03*1.06,
+        scaleX: 0.03 * 1.06,
+        scaleY: 0.03 * 1.06,
         duration: 140,
         ease: "Sine.easeOut"
       });
@@ -473,16 +473,16 @@ class MapScene extends Phaser.Scene {
         .setStrokeStyle(3, 0xc49a2d, 0.95)
         .setDepth(1);
     } else {
-      landmark = this.add.image(x, y, flagKey).setScale(0.6).setDepth(1);
+      landmark = this.add.image(x, y, flagKey)
+        .setScale(0.6)
+        .setDepth(1);
     }
 
-  // Helper function to create country landmarks and info
-  createCountry(name, x, y, description, sceneName, storeName, flagKey) {
-    const landmark = this.add.image(x, y, flagKey).setScale(0.6).setDepth(1);
     this.add.text(x, y - 40, name, {
       fontSize: "18px",
       fill: "#000"
     }).setOrigin(0.5).setDepth(2);
+
     this.countries.push({
       name,
       landmark,
@@ -493,7 +493,6 @@ class MapScene extends Phaser.Scene {
       radius: 60
     });
   }
-
   // Creates the info panel that appears when the player is near a country landmark
   createInfoPanel() {
     this.infoPanel = this.add.container(0, 0);
@@ -985,7 +984,8 @@ const config = {
   height: 600,
   render: {
     antialias: true,
-    pixelArt: false},
+    pixelArt: false
+  },
   physics: {
     default: "arcade",
     arcade: {
