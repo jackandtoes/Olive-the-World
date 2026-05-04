@@ -32,6 +32,31 @@ class BrazilScene extends Phaser.Scene {
     this.levelData = BRAZIL_PLATFORM_LEVELS[this.currentLevel - 1];
     this.active = true;
     this.goalReached = false;
+    this.ingredientCollected = false;
+    this.toast = null;
+
+    this.palette = {
+      bgTop: 0xdfeee4,
+      bgBottom: 0xe8efe3,
+      sun: 0xf2ecc0,
+      mountain: 0xb9ccb5,
+      mountainShadow: 0x99b59a,
+      uiPanel: 0xf6f4eb,
+      uiBorder: 0x9fad95,
+      uiText: "#5b351d",
+      uiAccent: 0xc9d4c0,
+      shadow: 0x000000,
+      coin: 0xe3c254,
+      coinInner: 0xf1e5a4,
+      overlay: 0x222620,
+      win: "#2f9e44",
+      lose: "#d94841",
+      buttonFill: 0xf1efe4,
+      buttonBorder: 0x97a38b,
+      buttonText: "#5a5143",
+      buttonHover: 0xe3eadb,
+    };
+
   }
 
   preload() {
@@ -39,6 +64,7 @@ class BrazilScene extends Phaser.Scene {
   }
 
   create() {
+    this.input.keyboard.enabled = true;
     this.physics.world.gravity.y = 800;
     this.physics.world.setBounds(0, 0, this.sceneWidth, 760);
 
@@ -204,7 +230,14 @@ class BrazilScene extends Phaser.Scene {
   }
 
   createIngredient() {
-    const ingredientIndex = Math.max(1, this.levelData.heights.lastIndexOf(Math.max(...this.levelData.heights.filter(Number.isFinite))) - 1);
+    const platformIndexes = this.levelData.heights
+      .map((height, index) => ({ height, index }))
+      .filter((platform) => Number.isFinite(platform.height));
+    const goalIndex = platformIndexes[platformIndexes.length - 1].index;
+    const candidatePlatforms = platformIndexes.filter((platform) => platform.index > 0 && platform.index < goalIndex);
+    const spawnPlatforms = candidatePlatforms.length ? candidatePlatforms : platformIndexes;
+    const targetPlatform = spawnPlatforms[spawnPlatforms.length - 1];
+    const ingredientIndex = targetPlatform.index;
     const ingredientHeight = this.levelData.heights[ingredientIndex] ?? 4;
     const x = 220 * ingredientIndex + 110;
     const y = ingredientHeight * 70 - 55;
@@ -319,30 +352,10 @@ class BrazilScene extends Phaser.Scene {
 
   applyWeather(weather) {
     const weathers = {
-      morning: {
-        color: 0xecdccc,
-        particles: 2,
-        wind: 20,
-        bgColor: 0xf8c3ac,
-      },
-      afternoon: {
-        color: 0xffffff,
-        particles: 4,
-        wind: 80,
-        bgColor: 0x0571ff,
-      },
-      twilight: {
-        color: 0xccaacc,
-        particles: 9,
-        wind: 180,
-        bgColor: 0x5b4b8a,
-      },
-      night: {
-        color: 0x7f8fa6,
-        particles: 1,
-        wind: 10,
-        bgColor: 0x111827,
-      },
+      morning: {color: 0xecdccc, particles: 2, wind: 20, bgColor: 0xf8c3ac,},
+      afternoon: {color: 0xffffff, particles: 4, wind: 80, bgColor: 0x0571ff,},
+      twilight: {color: 0xccaacc, particles: 9, wind: 180, bgColor: 0x5b4b8a,},
+      night: {color: 0x7f8fa6, particles: 1, wind: 10, bgColor: 0x111827,},
     };
 
     const current = weathers[weather];
@@ -351,9 +364,10 @@ class BrazilScene extends Phaser.Scene {
     this.bg3.setTint(current.color);
     this.bgColor.fillColor = current.bgColor;
     this.emitter.setQuantity(current.particles);
-    this.emitter.setConfig({
-      speedX: { min: -current.wind, max: -current.wind - 20 }
-    }); this.player.setTint(current.color);
+    this.emitter.updateConfig({
+      speedX: { min: -current.wind - 20, max: -current.wind }
+    });
+    this.player.setTint(current.color);
 
     this.platforms.getChildren().forEach((platform) => {
       platform.setTint(current.color);
@@ -397,124 +411,177 @@ class BrazilScene extends Phaser.Scene {
     } else {
       this.showVictory();
     }
-}
-
-showVictory() {
-  const wins = this.registry.get("wins") || {};
-  wins.brazil = true;
-  this.registry.set("wins", wins);
-
-  this.physics.pause();
-  this.add.rectangle(this.scale.width / 2, this.scale.height / 2, 420, 260, 0x000000, 0.8)
-    .setScrollFactor(0);
-  this.add.text(this.scale.width / 2, this.scale.height / 2 - 56, "You Win!", {
-    fontSize: "42px",
-    color: "#ffffff",
-    fontStyle: "bold",
-  }).setOrigin(0.5).setScrollFactor(0);
-  this.add.text(this.scale.width / 2, this.scale.height / 2 - 6, "All platform levels cleared.", {
-    fontSize: "22px",
-    color: "#ffffff",
-  }).setOrigin(0.5).setScrollFactor(0);
-
-  const backButton = this.add.text(this.scale.width / 2, this.scale.height / 2 + 54, "Return to Map", {
-    fontSize: "24px",
-    color: "#00ff99",
-    backgroundColor: "#2d1e2f",
-    padding: { x: 12, y: 8 },
-  }).setOrigin(0.5).setInteractive({ useHandCursor: true }).setScrollFactor(0);
-
-  backButton.on("pointerdown", () => {
-    this.scene.start("MapScene");
-  });
-}
-
-showBanner(title, subtitle) {
-  const banner = this.add.container(this.scale.width / 2, 82).setScrollFactor(0);
-  const bg = this.add.rectangle(0, 0, 360, 72, 0xfff8ef, 0.95).setStrokeStyle(2, 0x9c6644, 1);
-  const titleText = this.add.text(0, -12, title, {
-    fontSize: "24px",
-    color: "#5c3d2e",
-    fontStyle: "bold",
-  }).setOrigin(0.5);
-  const subtitleText = this.add.text(0, 14, subtitle, {
-    fontSize: "16px",
-    color: "#7f5539",
-  }).setOrigin(0.5);
-
-  banner.add([bg, titleText, subtitleText]);
-
-  this.tweens.add({
-    targets: banner,
-    alpha: 0,
-    y: 64,
-    delay: 1200,
-    duration: 300,
-    onComplete: () => banner.destroy(),
-  });
-}
-
-showToast(message) {
-  if (this.toast) {
-    this.toast.destroy();
   }
 
-  this.toast = this.add.text(this.scale.width / 2, 116, message, {
-    fontSize: "18px",
-    color: "#ffffff",
-    backgroundColor: "#5c3d2e",
-    padding: { x: 10, y: 6 },
-  }).setOrigin(0.5).setScrollFactor(0);
+  _button(x, y, label, cb, depth = 30) {
+    const shadow = this.add.rectangle(x + 3, y + 4, 190, 44, 0x7e4a2c, 0.2).setScrollFactor(0).setDepth(depth -1);
+    const bg = this.add.rectangle(x, y, 190, 44, this.palette.buttonFill)
+      .setStrokeStyle(3, this.palette.buttonBorder, 0.95)
+      .setInteractive({ useHandCursor: true })
+      .setScrollFactor(0).setDepth(depth);
+    const text = this.add.text(x, y, label, {
+      fontSize: "24px",
+      color: this.palette.buttonText,
+      fontStyle: "bold",
+    }).setOrigin(0.5).setScrollFactor(0).setDepth(depth + 1).setInteractive({ useHandCursor: true });
 
-  this.tweens.add({
-    targets: this.toast,
-    alpha: 0,
-    y: 100,
-    delay: 700,
-    duration: 220,
-    onComplete: () => {
-      if (this.toast) {
-        this.toast.destroy();
-        this.toast = null;
-      }
-    },
-  });
-}
+    const activateHover = () => {
+      bg.setFillStyle(this.palette.buttonHover, 1);
+      text.setScale(1.03);
+    };
 
-update() {
-  if (!this.active) {
-    return;
+    const deactivateHover = () => {
+      bg.setFillStyle(this.palette.buttonFill, 1);
+      text.setScale(1);
+    };
+
+    bg.on("pointerover", activateHover);
+    text.on("pointerover", activateHover);
+    bg.on("pointerout", deactivateHover);
+    text.on("pointerout", deactivateHover);
+    bg.on("pointerdown", cb);
+    text.on("pointerdown", cb);
+
+    return this.add.container(0, 0, [shadow, bg, text]).setScrollFactor(0).setDepth(depth);
   }
 
-  if (this.cursors.right.isDown) {
-    this.player.flipX = false;
-    this.player.setVelocityX(240);
-    this.player.anims.play("brazilRun", true);
-  } else if (this.cursors.left.isDown) {
-    this.player.flipX = true;
-    this.player.setVelocityX(-240);
-    this.player.anims.play("brazilRun", true);
-  } else {
-    this.player.setVelocityX(0);
-    this.player.anims.play("brazilIdle", true);
+  _overlay() {
+    const { width, height } = this.scale;
+    const depth = 1000;
+
+    const fade = this.add.rectangle(width / 2, height / 2, width, height, this.palette.overlay, 0.38)
+      .setScrollFactor(0).setDepth(depth);
+    const panelShadow = this.add.rectangle(width / 2 + 6, height / 2 + 8, 530, 380, 0x5e685d, 0.14)
+      .setScrollFactor(0).setDepth(depth + 1);
+    const panel = this.add.rectangle(width / 2, height / 2, 530, 380, 0xf6f4eb, 0.98)
+      .setStrokeStyle(3, this.palette.uiBorder, 1)
+      .setScrollFactor(0).setDepth(depth + 2);
+    const accent = this.add.rectangle(width / 2, height / 2 - 140, 440, 6, this.palette.uiAccent, 0.95)
+      .setScrollFactor(0).setDepth(depth + 3);
+
+    return { width, height, depth, fade, panelShadow, panel, accent };
   }
 
-  if (Phaser.Input.Keyboard.JustDown(this.cursors.space) && this.player.body.touching.down) {
-    this.player.anims.play("brazilJump", true);
-    this.player.setVelocityY(-500);
-  }
+  showVictory() {
+    const wins = this.registry.get("wins") || {};
+    wins.brazil = true;
+    this.registry.set("wins", wins);
 
-  if (!this.player.body.touching.down) {
-    this.player.anims.play("brazilJump", true);
-  }
-
-  if (this.player.y > this.bg3.height) {
     this.active = false;
-    this.cameras.main.shake(240, 0.01, false, (camera, progress) => {
-      if (progress > 0.9) {
-        this.scene.restart({ level: this.currentLevel });
-      }
+    this.physics.pause();
+    this.input.keyboard.enabled = false;
+
+    const { width, height, depth } = this._overlay();
+
+    this.add.text(width / 2, height / 2 - 108, "Victory!", {
+      fontSize: "46px",
+      color: this.palette.win,
+      fontStyle: "bold",
+    }).setOrigin(0.5).setScrollFactor(0).setDepth(depth + 4);
+
+    this.add.text(width / 2, height / 2 - 48, "All ingredients collected!", {
+      fontSize: "24px",
+      color: "#6b3b21",
+    }).setOrigin(0.5).setScrollFactor(0).setDepth(depth + 4);
+
+    this.add.text(width / 2, height / 2 + 4, "You completed all 4 Brazil levels.", {
+      fontSize: "22px",
+      color: "#82553a",
+    }).setOrigin(0.5).setScrollFactor(0).setDepth(depth + 4);
+
+    this._button(width / 2, height / 2 + 78, "Play Again",
+      () => this.scene.restart({ level: 1 }), depth + 5);
+
+    this._button(width / 2, height / 2 + 132, "Back to Map",
+      () => this.scene.start("MapScene"), depth + 5);
+  }
+
+  showBanner(title, subtitle) {
+    const banner = this.add.container(this.scale.width / 2, 82).setScrollFactor(0);
+    const bg = this.add.rectangle(0, 0, 360, 72, 0xfff8ef, 0.95).setStrokeStyle(2, 0x9c6644, 1);
+    const titleText = this.add.text(0, -12, title, {
+      fontSize: "24px",
+      color: "#5c3d2e",
+      fontStyle: "bold",
+    }).setOrigin(0.5);
+    const subtitleText = this.add.text(0, 14, subtitle, {
+      fontSize: "16px",
+      color: "#7f5539",
+    }).setOrigin(0.5);
+
+    banner.add([bg, titleText, subtitleText]);
+
+    this.tweens.add({
+      targets: banner,
+      alpha: 0,
+      y: 64,
+      delay: 1200,
+      duration: 300,
+      onComplete: () => banner.destroy(),
     });
   }
-}
+
+  showToast(message) {
+    if (this.toast) {
+      this.toast.destroy();
+    }
+
+    this.toast = this.add.text(this.scale.width / 2, 116, message, {
+      fontSize: "18px",
+      color: "#ffffff",
+      backgroundColor: "#5c3d2e",
+      padding: { x: 10, y: 6 },
+    }).setOrigin(0.5).setScrollFactor(0);
+
+    this.tweens.add({
+      targets: this.toast,
+      alpha: 0,
+      y: 100,
+      delay: 700,
+      duration: 220,
+      onComplete: () => {
+        if (this.toast) {
+          this.toast.destroy();
+          this.toast = null;
+        }
+      },
+    });
+  }
+
+  update() {
+    if (!this.active) {
+      return;
+    }
+
+    if (this.cursors.right.isDown) {
+      this.player.flipX = false;
+      this.player.setVelocityX(240);
+      this.player.anims.play("brazilRun", true);
+    } else if (this.cursors.left.isDown) {
+      this.player.flipX = true;
+      this.player.setVelocityX(-240);
+      this.player.anims.play("brazilRun", true);
+    } else {
+      this.player.setVelocityX(0);
+      this.player.anims.play("brazilIdle", true);
+    }
+
+    if (Phaser.Input.Keyboard.JustDown(this.cursors.space) && this.player.body.touching.down) {
+      this.player.anims.play("brazilJump", true);
+      this.player.setVelocityY(-500);
+    }
+
+    if (!this.player.body.touching.down) {
+      this.player.anims.play("brazilJump", true);
+    }
+
+    if (this.player.y > this.bg3.height) {
+      this.active = false;
+      this.cameras.main.shake(240, 0.01, false, (camera, progress) => {
+        if (progress > 0.9) {
+          this.scene.restart({ level: this.currentLevel });
+        }
+      });
+    }
+  }
 }
