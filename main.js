@@ -992,6 +992,8 @@ const config = {
     ItalyScene,
     PhilippinesScene,
     EgyptScene,
+    BrazilScene,
+    TurkeyScene,
     Store,
     Inventory,
     Settings
