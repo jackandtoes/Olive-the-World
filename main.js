@@ -346,7 +346,7 @@ class MapScene extends Phaser.Scene {
       fill: "#000000",
       backgroundColor: "#ffc4e3",
       padding: { x: 10, y: 5 }
-    }).setOrigin(0, 0).setInteractive().setScrollFactor(0).setDepth(20);
+    }).setOrigin(0, 0).setInteractive().setScrollFactor(0).setDepth(30);
 
     storeButton.on("pointerover", () => {
       this.tweens.add({
@@ -413,7 +413,7 @@ class MapScene extends Phaser.Scene {
       .setScale(0.03)
       .setInteractive()
       .setScrollFactor(0)
-      .setDepth(20);
+      .setDepth(30);
     settingsButton.on("pointerdown", () => {
       this.scene.start("Settings");
     });
@@ -421,8 +421,8 @@ class MapScene extends Phaser.Scene {
     settingsButton.on("pointerover", () => {
       this.tweens.add({
         targets: settingsButton,
-        scaleX: 0.03*1.06,
-        scaleY: 0.03*1.06,
+        scaleX: 0.03 * 1.06,
+        scaleY: 0.03 * 1.06,
         duration: 140,
         ease: "Sine.easeOut"
       });
@@ -473,13 +473,16 @@ class MapScene extends Phaser.Scene {
         .setStrokeStyle(3, 0xc49a2d, 0.95)
         .setDepth(1);
     } else {
-      landmark = this.add.image(x, y, flagKey).setScale(0.6).setDepth(1);
+      landmark = this.add.image(x, y, flagKey)
+        .setScale(0.6)
+        .setDepth(1);
     }
 
     this.add.text(x, y - 40, name, {
       fontSize: "18px",
       fill: "#000"
     }).setOrigin(0.5).setDepth(2);
+
     this.countries.push({
       name,
       landmark,
@@ -490,10 +493,10 @@ class MapScene extends Phaser.Scene {
       radius: 60
     });
   }
-
+  // Creates the info panel that appears when the player is near a country landmark
   createInfoPanel() {
     this.infoPanel = this.add.container(0, 0);
-    this.infoPanel.setDepth(20);
+    this.infoPanel.setDepth(10);
     this.infoPanel.setVisible(false);
     const bg = this.add.rectangle(0, 0, 290, 150, 0xfff7ef)
       .setStrokeStyle(3, 0x000000);
@@ -747,11 +750,20 @@ class Inventory extends Phaser.Scene {
     const wins = this.registry.get('wins');
     const ownedItems = this.registry.get('ownedItems') || {};
     const equippedItems = this.registry.get('equippedItems') || { hat: null };
+    const equippedHatConfig = HAT_CATALOG.find((entry) => entry.key === equippedItems.hat);
+    this.inventoryOlive = this.add.image(
+      85,
+      500,
+      equippedHatConfig ? equippedHatConfig.oliveTexture : "oliveOverjoyed"
+    ).setDepth(101);
+    this.fitInventoryOlive();
+
     const cards = [
+       { section: "Accessories", label: "No Hat", unlocked: true, texture: "oliveOverjoyed", tokenWidth: 74, tokenHeight: 74, ribbon: equippedItems.hat === null ? "Equipped" : "Click to unequip", accessoryKey: null },
       { section: "Country Tokens", label: "Mexico", unlocked: wins.mexico, texture: "mexico_token", tokenWidth: 118, tokenHeight: 118, ribbon: "Collected" },
       { section: "Country Tokens", label: "Italy", unlocked: wins.italy, texture: "italy_token", tokenWidth: 125, tokenHeight: 156.25, ribbon: "Collected" },
       { section: "Country Tokens", label: "Philippines", unlocked: wins.philippines, texture: "philip_token", tokenWidth: 125, tokenHeight: 156.25, ribbon: "Collected" },
-      { section: "Accessories", label: "No Hat", unlocked: true, texture: "oliveOverjoyed", tokenWidth: 74, tokenHeight: 74, ribbon: equippedItems.hat === null ? "Equipped" : "Click to unequip", accessoryKey: null },
+     
       ...HAT_CATALOG.map((hat) => ({
         section: "Accessories",
         label: hat.label,
@@ -775,6 +787,8 @@ class Inventory extends Phaser.Scene {
     this.scrollY = Phaser.Math.Clamp(this.initialScrollY, -this.maxScrollY, 0);
     this.isDraggingInventory = false;
     this.setInventoryScroll(this.scrollY);
+
+    this.add.rectangle(50, 550, 300, 300, 0xf8e7c4).setDepth(100).setStrokeStyle(3, 0xc99b52);
 
     this.input.on("wheel", (pointer, gameObjects, deltaX, deltaY) => {
       if (!Phaser.Geom.Rectangle.Contains(new Phaser.Geom.Rectangle(scrollArea.x, scrollArea.y, scrollArea.width, scrollArea.height), pointer.x, pointer.y)) {
@@ -928,6 +942,12 @@ class Inventory extends Phaser.Scene {
     this.scrollY = Phaser.Math.Clamp(nextY, -this.maxScrollY, 0);
     this.scrollContent.y = this.scrollY + this.scrollArea.y;
   }
+
+  fitInventoryOlive() {
+    const sourceImage = this.inventoryOlive.texture.getSourceImage();
+    const scale = 180 / sourceImage.height;
+    this.inventoryOlive.setScale(scale);
+  }
 }
 
 class Settings extends Phaser.Scene {
@@ -964,7 +984,8 @@ const config = {
   height: 600,
   render: {
     antialias: true,
-    pixelArt: false},
+    pixelArt: false
+  },
   physics: {
     default: "arcade",
     arcade: {
