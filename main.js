@@ -30,6 +30,7 @@ class StartScene extends Phaser.Scene {
     this.load.image("hatPropeller", "assets/hat_propeller.PNG");
     this.load.image("hatWizard", "assets/hat_wizard.PNG");
     this.load.audio("birthday_song", "assets/olive_birthday_song.MP3");
+    this.load.image("oliveParents", "assets/olive_parents.png");
   }
 
   create() {
@@ -142,6 +143,8 @@ class StartScene extends Phaser.Scene {
       delay: 560,
       ease: "Sine.easeOut"
     });
+
+    this.cutsceneDialogue();
   }
 
   _createSparkles(width, height) {
@@ -184,7 +187,11 @@ class IntroCutscene extends Phaser.Scene {
   create() {
     const width = this.scale.width;
     const height = this.scale.height;
-    this.slides = ["oliveFarmhouse", "oliveBirthday"];
+    this.slides = ["oliveFarmhouse", "oliveBirthday", "oliveParents"];
+    this.dialogueLines = [
+      "", 
+      "Today is Olive's birthday!"
+    ];
 
     this.cutsceneIndex = 0;
     this.isTransitioningSlide = false;
@@ -194,6 +201,7 @@ class IntroCutscene extends Phaser.Scene {
 
     this.cutsceneImage = this.add.image(width / 2, height / 2, this.slides[0]).setAlpha(0);
     this._fitCutsceneImage(this.cutsceneImage, width, height);
+    this.cutsceneDialogue();
 
     this.cutsceneCaption = this.add.text(width / 2, height - 44, "Click or press SPACE to continue", {
       fontSize: "22px",
@@ -202,7 +210,7 @@ class IntroCutscene extends Phaser.Scene {
       padding: { x: 14, y: 8 }
     }).setOrigin(0.5);
 
-    this.cutsceneProgress = this.add.text(width / 2, 36, "1 / 2", {
+    this.cutsceneProgress = this.add.text(width / 2, 36, "1 / 3", {
       fontSize: "24px",
       fill: "#fff4dd"
     }).setOrigin(0.5);
@@ -221,6 +229,20 @@ class IntroCutscene extends Phaser.Scene {
     this.input.keyboard.on("keydown-SPACE", () => this.advanceCutscene());
     this.input.keyboard.on("keydown-ENTER", () => this.advanceCutscene());
     this.events.once("shutdown", () => this.stopBirthdaySong());
+  }
+
+  cutsceneDialogue() {
+    const dialogueText = this.dialogueLines[this.cutsceneIndex] || "";
+
+    if (!this.dialogueText) {
+      this.dialogueText = this.add.text(this.scale.width / 2, this.scale.height - 100, dialogueText, {
+        fontSize: "24px",
+        fill: "#fff4dd"
+      }).setOrigin(0.5);
+      return;
+    }
+
+    this.dialogueText.setText(dialogueText);
   }
 
   _fitCutsceneImage(image, width, height) {
@@ -253,6 +275,7 @@ class IntroCutscene extends Phaser.Scene {
         this.cutsceneIndex = nextIndex;
         this.cutsceneImage.setTexture(this.slides[this.cutsceneIndex]);
         this._fitCutsceneImage(this.cutsceneImage, this.scale.width, this.scale.height);
+        this.cutsceneDialogue();
         this.cutsceneProgress.setText(`${this.cutsceneIndex + 1} / ${this.slides.length}`);
         this.tweens.add({
           targets: this.cutsceneImage,
