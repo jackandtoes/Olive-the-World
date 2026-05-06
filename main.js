@@ -441,6 +441,9 @@ class MapScene extends Phaser.Scene {
     if (!this.registry.has('wins')) {
       this.registry.set('wins', { mexico: false, italy: false, philippines: false, egypt: false, brazil: false });
     }
+    if (!this.registry.has('seenCutscenes')) {
+      this.registry.set('seenCutscenes', { italy: false });
+    }
   }
 
   create() {
@@ -572,7 +575,7 @@ class MapScene extends Phaser.Scene {
     this.createCountry("Mexico", width * 0.3, height * 0.44,
       "Whack piñatas.\nAvoid spicy chiles!", "MexicoScene", "MexicoStore", "flagMexico");
     this.createCountry("Italy", width * 0.70, height * 0.35,
-      "Fix pasta pipes.\nServe the perfect plate!", "ItalyScene", "ItalyStore", "flagItaly");
+      "Fix pasta pipes.\nServe the perfect plate!", "ItalyCutscene", "ItalyStore", "flagItaly");
     this.createCountry("Vietnam", width * 0.62, height * 0.27,
       "A quick visit to Vietnam.\nTry the Vietnam scene!", "VietnamScene", "VietnamStore");
     this.createCountry("Philippines", width * 1.1, height * 0.5,
@@ -625,10 +628,19 @@ class MapScene extends Phaser.Scene {
     }).setInteractive();
     playButton.on("pointerdown", () => {
       if (this.currentCountry) {
-        this.scene.start(this.currentCountry.sceneName);
+        this.scene.start(this.getCountrySceneName(this.currentCountry));
       }
     });
     this.infoPanel.add([bg, this.panelTitle, this.panelText, playButton]);
+  }
+
+  getCountrySceneName(country) {
+    const wins = this.registry.get('wins') || {};
+    const seenCutscenes = this.registry.get('seenCutscenes') || {};
+    if (country.name === "Italy" && (wins.italy || seenCutscenes.italy)) {
+      return "ItalyScene";
+    }
+    return country.sceneName;
   }
 
   positionInfoPanel(country) {
@@ -1109,6 +1121,7 @@ const config = {
     IntroCutscene,
     MapScene,
     MexicoScene,
+    ItalyCutscene,
     ItalyScene,
     PhilippinesScene,
     EgyptScene,
