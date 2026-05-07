@@ -45,10 +45,10 @@ class PhilippinesScene extends Phaser.Scene {
     this.maxLevel = 5;
     this.levelConfig = {
       1: { ingredient: "Pork", color: 0xf28a8a, needed: 3 },
-      2: { ingredient: "Water Chestnuts", color: 0xf8f4e8, needed: 4 },
+      2: { ingredient: "Onions", color: 0xf8f4e8, needed: 4 },
       3: { ingredient: "Carrots", color: 0xffa24d, needed: 5 },
-      4: { ingredient: "Spring Roll Wrappers", color: 0xffdf8a, needed: 6 },
-      5: { ingredient: "Green Onions", color: 0x7fd98c, needed: 7 },
+      4: { ingredient: "Cabbage", color: 0xffdf8a, needed: 6 },
+      5: { ingredient: "Spring Roll Wrappers", color: 0x7fd98c, needed: 7 },
     };
 
     this.palette = {
@@ -80,6 +80,14 @@ class PhilippinesScene extends Phaser.Scene {
     this.load.image("oliveHatJester", "assets/olive_hat_jester.PNG");
     this.load.image("oliveHatPropeller", "assets/olive_hat_propeller.PNG");
     this.load.image("oliveHatWizard", "assets/olive_hat_wizard.PNG");
+    this.load.image("itemcabbage", "assets/philippines/philippines_cabbage.PNG");
+    this.load.image("itemcarrots", "assets/philippines/philippines_carrots.PNG");
+    this.load.image("itemonion", "assets/philippines/philippines_onion.PNG");
+    this.load.image("itempork", "assets/philippines/philippines_pork.PNG");
+    this.load.image("itemwrappers", "assets/philippines/philippines_wrappers.PNG");
+    this.load.image("vehcar", "assets/philippines/car.PNG");
+    this.load.image("vehtricycle", "assets/philippines/tricycle.PNG");
+    this.load.image("vehjeepney", "assets/philippines/jeepney.PNG");
   }
 
   create() {
@@ -260,8 +268,8 @@ class PhilippinesScene extends Phaser.Scene {
     const cols = Math.ceil(this.gameWidth / this.GRID_SIZE);
     const vehicleTypes = [
       { width: 2, body: 0xf4b000, trim: 0xbd4b3e, roof: 0xffe082, name: "jeepney", speed: 1.25 },
-      { width: 1.5, body: 0x6c63ff, trim: 0xf4d35e, roof: 0xa29bfe, name: "tricycle", speed: 1.1 },
-      { width: 1, body: 0xf25f5c, trim: 0xffffff, roof: 0xff9b85, name: "car", speed: 1.35 },
+      { width: 1.5, body: 0x6c63ff, trim: 0xf4d35e, roof: 0xa29bfe, name: "tricycle", speed: 1.5 },
+      { width: 1, body: 0xf25f5c, trim: 0xffffff, roof: 0xff9b85, name: "car", speed: 1.7 },
     ];
 
     const GAP = 3;
@@ -277,84 +285,39 @@ class PhilippinesScene extends Phaser.Scene {
   }
 
   createVehicle(col, row, direction, type) {
-    const widthPx = this.GRID_SIZE * type.width - 8;
-    const heightPx = this.GRID_SIZE - 12;
+    const x = col * this.GRID_SIZE + this.GRID_SIZE / 2;
+    const y = row * this.GRID_SIZE + this.GRID_SIZE / 2;
 
-    const shadow = this.add.ellipse(0, 12, widthPx * 0.92, 8, 0x000000, 0.12);
-    const parts = [shadow];
+    const textureMap = {
+      car: "vehcar",
+      tricycle: "vehtricycle",
+      jeepney: "vehjeepney",
+    };
 
-    if (type.name === "jeepney") {
-      const body = this.add.rectangle(0, 1, widthPx * 0.96, heightPx * 0.5, type.body)
-        .setStrokeStyle(1, 0x4a2617, 0.2);
-      const roof = this.add.rectangle(0, -11, widthPx * 0.82, heightPx * 0.18, type.roof)
-        .setStrokeStyle(1, 0x70402a, 0.2);
-      const bumper = this.add.rectangle(0, 11, widthPx * 0.92, 3, 0xd9e1e8, 0.8);
-      const stripe = this.add.rectangle(0, 3, widthPx * 0.86, 3, type.trim, 0.9);
-      const windowA = this.add.rectangle(-widthPx * 0.24, -6, widthPx * 0.14, 8, 0xdff4ff, 0.84);
-      const windowB = this.add.rectangle(-widthPx * 0.06, -6, widthPx * 0.14, 8, 0xdff4ff, 0.84);
-      const windowC = this.add.rectangle(widthPx * 0.12, -6, widthPx * 0.14, 8, 0xdff4ff, 0.84);
-      const frontCab = this.add.rectangle(direction > 0 ? widthPx * 0.34 : -widthPx * 0.34, -4, widthPx * 0.18, 16, 0xc7d5df, 0.84);
-      const wheelLeft = this.add.circle(-widthPx * 0.28, 12, 5.5, 0x1f1f1f);
-      const wheelRight = this.add.circle(widthPx * 0.28, 12, 5.5, 0x1f1f1f);
-      const hubLeft = this.add.circle(-widthPx * 0.28, 12, 1.5, 0xcfd8dc);
-      const hubRight = this.add.circle(widthPx * 0.28, 12, 1.5, 0xcfd8dc);
+    const key = textureMap[type.name];
 
-      parts.push(
-        body, roof, bumper, stripe, frontCab,
-        windowA, windowB, windowC, wheelLeft, wheelRight, hubLeft, hubRight
-      );
-    } else if (type.name === "tricycle") {
-      const bikeBody = this.add.rectangle(widthPx * 0.08, 2, widthPx * 0.28, heightPx * 0.22, type.body)
-        .setStrokeStyle(1, 0x43211a, 0.2);
-      const canopy = this.add.rectangle(-widthPx * 0.02, -12, widthPx * 0.44, 8, type.roof)
-        .setStrokeStyle(1, 0x5f3b2d, 0.2);
-      const sidecar = this.add.rectangle(-widthPx * 0.22, 2, widthPx * 0.34, heightPx * 0.3, type.trim)
-        .setStrokeStyle(1, 0x43211a, 0.2);
-      const sidecarRoof = this.add.rectangle(-widthPx * 0.22, -9, widthPx * 0.28, 7, type.roof)
-        .setStrokeStyle(1, 0x5f3b2d, 0.2);
-      const frontShield = this.add.rectangle(widthPx * 0.2, -4, widthPx * 0.12, 11, 0xdff4ff, 0.9);
-      const sidecarWindow = this.add.rectangle(-widthPx * 0.22, -1, widthPx * 0.12, 7, 0xdff4ff, 0.8);
-      const connector = this.add.rectangle(-widthPx * 0.04, 5, widthPx * 0.16, 2, 0xcfd8dc, 0.8);
-      const wheelRear = this.add.circle(0, 12, 5.5, 0x1f1f1f);
-      const wheelFront = this.add.circle(widthPx * 0.22, 12, 5.5, 0x1f1f1f);
-      const wheelSidecar = this.add.circle(-widthPx * 0.22, 12, 5.5, 0x1f1f1f);
-      const hubRear = this.add.circle(0, 12, 1.5, 0xcfd8dc);
-      const hubFront = this.add.circle(widthPx * 0.22, 12, 1.5, 0xcfd8dc);
-      const hubSidecar = this.add.circle(-widthPx * 0.22, 12, 1.5, 0xcfd8dc);
+    const sprite = this.add.image(0, 0, key);
+    const scale = (this.GRID_SIZE * type.width) / sprite.width;
+    sprite.setScale(scale);
 
-      parts.push(
-        sidecar, sidecarRoof, connector, bikeBody, canopy,
-        frontShield, sidecarWindow,
-        wheelRear, wheelFront, wheelSidecar,
-        hubRear, hubFront, hubSidecar
-      );
+    const depthMap = {
+      car: 700,
+      jeepney: 750,
+      tricycle: 800,
+    };
+
+    if (direction > 0) {
+      sprite.setFlipX(true);
     } else {
-      const body = this.add.rectangle(0, 3, widthPx * 0.84, heightPx * 0.36, type.body)
-        .setStrokeStyle(1, 0x402319, 0.2);
-      const cabin = this.add.rectangle(-widthPx * 0.04, -7, widthPx * 0.42, heightPx * 0.2, type.roof)
-        .setStrokeStyle(1, 0x70402a, 0.2);
-      const hood = this.add.rectangle(direction > 0 ? widthPx * 0.2 : -widthPx * 0.2, 0, widthPx * 0.22, heightPx * 0.14, type.body);
-      const trim = this.add.rectangle(0, 7, widthPx * 0.68, 3, type.trim, 0.95);
-      const windowLeft = this.add.rectangle(-widthPx * 0.12, -7, widthPx * 0.12, 8, 0xe3f2fd, 0.82);
-      const windowRight = this.add.rectangle(widthPx * 0.02, -7, widthPx * 0.12, 8, 0xe3f2fd, 0.82);
-      const wheelLeft = this.add.circle(-widthPx * 0.22, 12, 5.5, 0x1f1f1f);
-      const wheelRight = this.add.circle(widthPx * 0.22, 12, 5.5, 0x1f1f1f);
-      const hubLeft = this.add.circle(-widthPx * 0.22, 12, 1.5, 0xcfd8dc);
-      const hubRight = this.add.circle(widthPx * 0.22, 12, 1.5, 0xcfd8dc);
-
-      parts.push(body, cabin, hood, trim, windowLeft, windowRight, wheelLeft, wheelRight, hubLeft, hubRight);
+      sprite.setFlipX(false);
     }
+    const shadow = this.add.ellipse(0, 12, sprite.displayWidth * 0.8, 8, 0x000000, 0.15);
 
-    const sprite = this.add.container(
-      col * this.GRID_SIZE + this.GRID_SIZE / 2,
-      row * this.GRID_SIZE + this.GRID_SIZE / 2,
-      parts
-    );
-
-    this.gameContainer.add(sprite);
+    const container = this.add.container(x, y, [shadow, sprite]).setDepth(depthMap[type.name]);
+    this.gameContainer.add(container);
 
     return {
-      sprite,
+      sprite: container,
       gridX: col,
       gridY: row,
       direction,
@@ -414,49 +377,20 @@ class PhilippinesScene extends Phaser.Scene {
   }
 
   createIngredientVisual(x, y) {
-    const shell = this.add.circle(0, 0, this.GRID_SIZE / 3.1, 0xffffff, 0.22);
-    const parts = [shell];
+    const textureMap = {
+      "Pork": "itempork",
+      "Onions": "itemonion",
+      "Carrots": "itemcarrots",
+      "Cabbage": "itemcabbage",
+      "Spring Roll Wrappers": "itemwrappers",
+    };
+    const key = textureMap[this.config.ingredient];
+    const sprite = this.add.image(0, 0, key);
+    const scale = (this.GRID_SIZE * 0.7) / sprite.texture.getSourceImage().width;
+    sprite.setScale(scale);
 
-    if (this.config.ingredient === "Pork") {
-      const slice = this.add.ellipse(0, 1, this.GRID_SIZE * 0.58, this.GRID_SIZE * 0.42, 0xf3a1a0)
-        .setStrokeStyle(2, 0xcc6e73, 0.7);
-      const fatBand = this.add.ellipse(-4, -2, this.GRID_SIZE * 0.24, this.GRID_SIZE * 0.3, 0xffddd8, 0.95);
-      const marbling1 = this.add.ellipse(4, 3, 8, 5, 0xffc8c2, 0.75);
-      const marbling2 = this.add.ellipse(0, -5, 6, 4, 0xffc8c2, 0.7);
-      parts.push(slice, fatBand, marbling1, marbling2);
-    } else if (this.config.ingredient === "Water Chestnuts") {
-      const bulb = this.add.circle(0, 2, this.GRID_SIZE * 0.19, 0x6b3f2b)
-        .setStrokeStyle(2, 0x452719, 0.65);
-      const cutTop = this.add.ellipse(0, -5, this.GRID_SIZE * 0.34, this.GRID_SIZE * 0.16, 0xf7f2e5, 0.98)
-        .setStrokeStyle(1, 0xd9d2c4, 0.7);
-      const shine = this.add.circle(4, 0, 3, 0xffffff, 0.3);
-      parts.push(bulb, cutTop, shine);
-    } else if (this.config.ingredient === "Carrots") {
-      const carrot = this.add.triangle(2, 4, 0, -12, 12, 10, -8, 8, 0xff9440, 0.98)
-        .setStrokeStyle(2, 0xd86d1f, 0.65)
-        .setRotation(0.35);
-      const leaf1 = this.add.ellipse(-5, -11, 7, 16, 0x72c55e).setRotation(-0.45);
-      const leaf2 = this.add.ellipse(0, -12, 7, 16, 0x5fad4e).setRotation(0.1);
-      const leaf3 = this.add.ellipse(5, -10, 7, 16, 0x7cd46a).setRotation(0.45);
-      parts.push(carrot, leaf1, leaf2, leaf3);
-    } else if (this.config.ingredient === "Spring Roll Wrapper" || this.config.ingredient === "Spring Roll Wrappers") {
-      const wrapper = this.add.rectangle(0, 0, this.GRID_SIZE * 0.46, this.GRID_SIZE * 0.46, 0xffefbf, 0.96)
-        .setStrokeStyle(2, 0xe0c88d, 0.8)
-        .setRotation(0.2);
-      const fold = this.add.line(0, 0, -10, 7, 10, -7, 0xe7d39d, 0.8).setLineWidth(2);
-      const shine = this.add.rectangle(-2, -2, this.GRID_SIZE * 0.2, 4, 0xffffff, 0.22).setRotation(0.2);
-      parts.push(wrapper, fold, shine);
-    } else if (this.config.ingredient === "Green Onions") {
-      const stalk1 = this.add.rectangle(-6, 2, 6, this.GRID_SIZE * 0.46, 0x7fd98c).setRotation(-0.28);
-      const stalk2 = this.add.rectangle(0, 0, 6, this.GRID_SIZE * 0.5, 0x94e58f).setRotation(-0.1);
-      const stalk3 = this.add.rectangle(6, 2, 6, this.GRID_SIZE * 0.46, 0x63c870).setRotation(0.22);
-      const root1 = this.add.rectangle(-6, 12, 5, 10, 0xf4f0d7).setRotation(-0.15);
-      const root2 = this.add.rectangle(0, 12, 5, 10, 0xf4f0d7);
-      const root3 = this.add.rectangle(6, 12, 5, 10, 0xf4f0d7).setRotation(0.15);
-      parts.push(stalk1, stalk2, stalk3, root1, root2, root3);
-    }
-
-    return this.add.container(x, y, parts).setDepth(500);
+    const shadow = this.add.ellipse(0, 10, this.GRID_SIZE * 0.5, 10, 0x000000, 0.15);
+    return this.add.container(x, y, [shadow, sprite]).setDepth(500);
   }
 
   spawnCoin() {
@@ -579,6 +513,7 @@ class PhilippinesScene extends Phaser.Scene {
     this.animateWater(time);
     this.updateObstacles(delta);
     this.handleInput();
+    this.gameContainer.sort("depth");
 
     if (this.isMoving) {
       return;
