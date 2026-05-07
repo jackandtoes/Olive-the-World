@@ -34,6 +34,8 @@ class StartScene extends Phaser.Scene {
     this.load.image("oliveConfession1", "assets/cutscene/olive_confession1.png");
     this.load.image("oliveConfession2", "assets/cutscene/olive_confession2.png");
     this.load.image("oliveConfession3", "assets/cutscene/olive_confession3.png");
+    this.load.image("oliveConcernedParents", "assets/cutscene/concerned_olive_parents.png");
+    this.load.image("oliveDetermined", "assets/cutscene/olive_determined.png");
   }
 
   create() {
@@ -220,14 +222,16 @@ class IntroCutscene extends Phaser.Scene {
   create() {
     const width = this.scale.width;
     const height = this.scale.height;
-    this.slides = ["oliveFarmhouse", "oliveBirthday", "oliveParents", "oliveConfession1", "oliveConfession2", "oliveConfession3"];
+    this.slides = ["oliveFarmhouse", "oliveBirthday", "oliveParents", "oliveConfession1", "oliveConfession2", "oliveConfession3", "oliveConcernedParents", "oliveDetermined"];
     this.dialogueLines = [
       "", 
       "",
       "... happy birthday to you ...",
       "Mama, papa, I want to leave this town",
-      "Mama, papa… I want to see the world.\n I'm done with this small lil town.",
-      "I want to experience what all olives should experience.\n I want to travel the world as a world class chef"
+      "I want to see the world!\n I'm done with this small lil' town.",
+      "I want to experience what all olives should!\n I want to travel the world as a world class chef",
+      "Oh, baby — that’s a big step to make! But if you are confident then—",
+      "I won’t let you down!"
     ];
 
     this.cutsceneIndex = 0;
@@ -441,6 +445,9 @@ class MapScene extends Phaser.Scene {
     if (!this.registry.has('wins')) {
       this.registry.set('wins', { mexico: false, italy: false, philippines: false, egypt: false, brazil: false });
     }
+    if (!this.registry.has('seenCutscenes')) {
+      this.registry.set('seenCutscenes', { italy: false });
+    }
   }
 
   create() {
@@ -572,7 +579,7 @@ class MapScene extends Phaser.Scene {
     this.createCountry("Mexico", width * 0.3, height * 0.44,
       "Whack piñatas.\nAvoid spicy chiles!", "MexicoScene", "MexicoStore", "flagMexico");
     this.createCountry("Italy", width * 0.70, height * 0.35,
-      "Fix pasta pipes.\nServe the perfect plate!", "ItalyScene", "ItalyStore", "flagItaly");
+      "Fix pasta pipes.\nServe the perfect plate!", "ItalyCutscene", "ItalyStore", "flagItaly");
     this.createCountry("Vietnam", width * 0.62, height * 0.27,
       "A quick visit to Vietnam.\nTry the Vietnam scene!", "VietnamScene", "VietnamStore");
     this.createCountry("Philippines", width * 1.1, height * 0.5,
@@ -625,10 +632,19 @@ class MapScene extends Phaser.Scene {
     }).setInteractive();
     playButton.on("pointerdown", () => {
       if (this.currentCountry) {
-        this.scene.start(this.currentCountry.sceneName);
+        this.scene.start(this.getCountrySceneName(this.currentCountry));
       }
     });
     this.infoPanel.add([bg, this.panelTitle, this.panelText, playButton]);
+  }
+
+  getCountrySceneName(country) {
+    const wins = this.registry.get('wins') || {};
+    const seenCutscenes = this.registry.get('seenCutscenes') || {};
+    if (country.name === "Italy" && (wins.italy || seenCutscenes.italy)) {
+      return "ItalyScene";
+    }
+    return country.sceneName;
   }
 
   positionInfoPanel(country) {
@@ -1109,6 +1125,7 @@ const config = {
     IntroCutscene,
     MapScene,
     MexicoScene,
+    ItalyCutscene,
     ItalyScene,
     PhilippinesScene,
     EgyptScene,
