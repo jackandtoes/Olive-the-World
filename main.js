@@ -259,6 +259,14 @@ class IntroCutscene extends Phaser.Scene {
       fill: "#fff4dd"
     }).setOrigin(0.5);
 
+    this.skipButton = this.add.text(width - 28, 28, "Skip", {
+      fontSize: "22px",
+      fill: "#fff4dd",
+      backgroundColor: "#5a341d",
+      padding: { x: 12, y: 8 }
+    }).setOrigin(1, 0).setInteractive({ useHandCursor: true });
+    this.skipButton.on("pointerdown", () => this.skipCutscene());
+
     this.tweens.add({
       targets: this.cutsceneImage,
       alpha: 1,
@@ -272,6 +280,7 @@ class IntroCutscene extends Phaser.Scene {
     this.input.on("pointerdown", () => this.advanceCutscene());
     this.input.keyboard.on("keydown-SPACE", () => this.advanceCutscene());
     this.input.keyboard.on("keydown-ENTER", () => this.advanceCutscene());
+    this.input.keyboard.on("keydown-ESC", () => this.skipCutscene());
     this.events.once("shutdown", () => this.stopBirthdaySong());
   }
 
@@ -351,6 +360,16 @@ advanceCutscene() {
     }
   });
 }
+
+  skipCutscene() {
+    if (this.isTransitioningSlide) return;
+    this.isTransitioningSlide = true;
+    this.stopBirthdaySong();
+    this.cameras.main.fadeOut(350, 19, 14, 11);
+    this.time.delayedCall(360, () => {
+      this.scene.start("MapScene");
+    });
+  }
 
   playBirthdaySong() {
     if (!this.birthdaySong) {
@@ -585,7 +604,7 @@ class MapScene extends Phaser.Scene {
     this.createCountry("Philippines", width * 1.1, height * 0.5,
       "Collect lumpia ingredients.\nAvoid traffic!", "PhilippinesScene", "PhilippinesStore", "flagPhilippines");
     this.createCountry("Egypt", width * 0.76, height * 0.42,
-      "Run in the desert.\nDodge palm trees and flying falafels!", "EgyptScene", "EgyptStore", "flagEgypt");
+      "Run in the desert.\nDodge palm trees and flying falafels!", "EgyptCutscene", "EgyptStore", "flagEgypt");
     this.createCountry("Brazil", width * 0.45, height * 0.65,
       "Collect carnival ingredients.\nJump past floats and hazards!", "BrazilScene", "BrazilStore", null, "star");
     this.createInfoPanel();
@@ -1128,6 +1147,7 @@ const config = {
     ItalyCutscene,
     ItalyScene,
     PhilippinesScene,
+    EgyptCutscene,
     EgyptScene,
     BrazilScene,
     VietnamScene,
