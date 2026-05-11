@@ -20,8 +20,8 @@ class StartScene extends Phaser.Scene {
     this.load.image("homeLogo", "assets/olive_main_logo.png");
     this.load.image("startBtn", "assets/start_button.png");
     this.load.image("settingsbutton", "assets/settingsbutton.png");
-    this.load.image("oliveFarmhouse", "assets/olive_farmhouse.png");
-    this.load.image("oliveBirthday", "assets/olive_birthday.png");
+    this.load.image("oliveFarmhouse", "assets/cutscene/olive_farmhouse.png");
+    this.load.image("oliveBirthday", "assets/cutscene/olive_birthday.png");
     this.load.image("philip_token", "assets/bronze_token_otw.png");
     this.load.image("italy_token", "assets/silver_token.png");
     this.load.image("mexico_token", "assets/gold_token_otw.png");
@@ -29,7 +29,13 @@ class StartScene extends Phaser.Scene {
     this.load.image("hatJester", "assets/hat_jester.PNG");
     this.load.image("hatPropeller", "assets/hat_propeller.PNG");
     this.load.image("hatWizard", "assets/hat_wizard.PNG");
-    this.load.audio("birthday_song", "assets/olive_birthday_song.MP3");
+    this.load.audio("birthday_song", "assets/cutscene/olive_birthday_song.MP3");
+    this.load.image("oliveParents", "assets/cutscene/olive_parents.png");
+    this.load.image("oliveConfession1", "assets/cutscene/olive_confession1.png");
+    this.load.image("oliveConfession2", "assets/cutscene/olive_confession2.png");
+    this.load.image("oliveConfession3", "assets/cutscene/olive_confession3.png");
+    this.load.image("oliveConcernedParents", "assets/cutscene/concerned_olive_parents.png");
+    this.load.image("oliveDetermined", "assets/cutscene/olive_determined.png");
   }
 
   create() {
@@ -142,8 +148,39 @@ class StartScene extends Phaser.Scene {
       delay: 560,
       ease: "Sine.easeOut"
     });
-  }
 
+    this.cutsceneDialogue();
+  }
+animateText(target, speedInMs = 25) {
+  const message = target.text;
+  const invisibleMessage = message.replace(/[^ ]/g, " ");
+
+  target.text = "";
+
+  let visibleText = "";
+  this.isTyping = true;
+
+  return new Promise((resolve) => {
+    const timer = this.time.addEvent({
+      delay: speedInMs,
+      loop: true,
+      callback: () => {
+        if (target.text === message) {
+          timer.destroy();
+          this.isTyping = false;
+          return resolve();
+        }
+
+        visibleText += message[visibleText.length];
+        const invisiblePart = invisibleMessage.substring(visibleText.length);
+        target.text = visibleText + invisiblePart;
+      },
+    });
+
+    this.currentTypingTimer = timer;
+    this.fullText = message;
+  });
+}
   _createSparkles(width, height) {
     const palette = [0xfff2b2, 0xffffff, 0x9fe7ff, 0xffc57a];
 
@@ -179,21 +216,36 @@ class StartScene extends Phaser.Scene {
 class IntroCutscene extends Phaser.Scene {
   constructor() {
     super("IntroCutscene");
+
   }
 
   create() {
     const width = this.scale.width;
     const height = this.scale.height;
-    this.slides = ["oliveFarmhouse", "oliveBirthday"];
+    this.slides = ["oliveFarmhouse", "oliveBirthday", "oliveParents", "oliveConfession1", "oliveConfession2", "oliveConfession3", "oliveConcernedParents", "oliveDetermined"];
+    this.dialogueLines = [
+      "", 
+      "",
+      "... happy birthday to you ...",
+      "Mama, papa, I want to leave this town",
+      "I want to see the world!\n I'm done with this small lil' town.",
+      "I want to experience what all olives should!\n I want to travel the world as a world class chef",
+      "Oh, baby — that’s a big step to make! But if you are confident then—",
+      "I won’t let you down!"
+    ];
 
     this.cutsceneIndex = 0;
     this.isTransitioningSlide = false;
     this.birthdaySong = null;
+    this.isTyping = false;
+    this.currentTypingTimer = null;
+    this.fullText = "";
 
     this.add.rectangle(width / 2, height / 2, width, height, 0x130e0b);
 
     this.cutsceneImage = this.add.image(width / 2, height / 2, this.slides[0]).setAlpha(0);
     this._fitCutsceneImage(this.cutsceneImage, width, height);
+    this.cutsceneDialogue();
 
     this.cutsceneCaption = this.add.text(width / 2, height - 44, "Click or press SPACE to continue", {
       fontSize: "22px",
@@ -202,10 +254,18 @@ class IntroCutscene extends Phaser.Scene {
       padding: { x: 14, y: 8 }
     }).setOrigin(0.5);
 
-    this.cutsceneProgress = this.add.text(width / 2, 36, "1 / 2", {
+    this.cutsceneProgress = this.add.text(width / 2, 36, `1 / ${this.slides.length}`, {
       fontSize: "24px",
       fill: "#fff4dd"
     }).setOrigin(0.5);
+
+    this.skipButton = this.add.text(width - 28, 28, "Skip", {
+      fontSize: "22px",
+      fill: "#fff4dd",
+      backgroundColor: "#5a341d",
+      padding: { x: 12, y: 8 }
+    }).setOrigin(1, 0).setInteractive({ useHandCursor: true });
+    this.skipButton.on("pointerdown", () => this.skipCutscene());
 
     this.tweens.add({
       targets: this.cutsceneImage,
@@ -220,7 +280,28 @@ class IntroCutscene extends Phaser.Scene {
     this.input.on("pointerdown", () => this.advanceCutscene());
     this.input.keyboard.on("keydown-SPACE", () => this.advanceCutscene());
     this.input.keyboard.on("keydown-ENTER", () => this.advanceCutscene());
+    this.input.keyboard.on("keydown-ESC", () => this.skipCutscene());
     this.events.once("shutdown", () => this.stopBirthdaySong());
+  }
+
+  cutsceneDialogue() {
+    const dialogueText = this.dialogueLines[this.cutsceneIndex] || "";
+
+    if (!this.dialogueText) {
+      this.dialogueText = this.add.text(
+        this.scale.width / 2,
+        this.scale.height - 100,
+        "",
+        {
+          fontSize: "24px",
+          fill: "#fff4dd",
+          align: "center",
+          wordWrap: { width: this.scale.width - 80 }
+        }
+      ).setOrigin(0.5);
+    }
+
+    this.animateText(this.dialogueText, dialogueText, 20);
   }
 
   _fitCutsceneImage(image, width, height) {
@@ -228,42 +309,65 @@ class IntroCutscene extends Phaser.Scene {
     image.setScale(scale);
   }
 
-  advanceCutscene() {
-    if (this.isTransitioningSlide) return;
+advanceCutscene() {
+  if (this.isTransitioningSlide) return;
 
-    const nextIndex = this.cutsceneIndex + 1;
-
-    if (nextIndex >= this.slides.length) {
-      this.isTransitioningSlide = true;
-      this.stopBirthdaySong();
-      this.cameras.main.fadeOut(350, 19, 14, 11);
-      this.time.delayedCall(360, () => {
-        this.scene.start("MapScene");
-      });
-      return;
+  // 👉 if still typing, finish instantly instead of advancing
+  if (this.isTyping) {
+    if (this.currentTypingTimer) {
+      this.currentTypingTimer.remove(false);
+      this.currentTypingTimer = null;
     }
+    this.dialogueText.setText(this.fullText);
+    this.isTyping = false;
+    return;
+  }
 
+  const nextIndex = this.cutsceneIndex + 1;
+
+  if (nextIndex >= this.slides.length) {
     this.isTransitioningSlide = true;
-    this.tweens.add({
-      targets: this.cutsceneImage,
-      alpha: 0,
-      duration: 250,
-      ease: "Sine.easeIn",
-      onComplete: () => {
-        this.cutsceneIndex = nextIndex;
-        this.cutsceneImage.setTexture(this.slides[this.cutsceneIndex]);
-        this._fitCutsceneImage(this.cutsceneImage, this.scale.width, this.scale.height);
-        this.cutsceneProgress.setText(`${this.cutsceneIndex + 1} / ${this.slides.length}`);
-        this.tweens.add({
-          targets: this.cutsceneImage,
-          alpha: 1,
-          duration: 300,
-          ease: "Sine.easeOut",
-          onComplete: () => {
-            this.isTransitioningSlide = false;
-          }
-        });
-      }
+    this.stopBirthdaySong();
+    this.cameras.main.fadeOut(350, 19, 14, 11);
+    this.time.delayedCall(360, () => {
+      this.scene.start("MapScene");
+    });
+    return;
+  }
+
+  this.isTransitioningSlide = true;
+  this.tweens.add({
+    targets: this.cutsceneImage,
+    alpha: 0,
+    duration: 260,
+    ease: "Sine.easeInOut",
+    onComplete: () => {
+      this.cutsceneIndex = nextIndex;
+      this.cutsceneImage.setTexture(this.slides[this.cutsceneIndex]);
+      this._fitCutsceneImage(this.cutsceneImage, this.scale.width, this.scale.height);
+      this.cutsceneProgress.setText(`${this.cutsceneIndex + 1} / ${this.slides.length}`);
+      this.cutsceneDialogue();
+
+      this.tweens.add({
+        targets: this.cutsceneImage,
+        alpha: 1,
+        duration: 320,
+        ease: "Sine.easeInOut",
+        onComplete: () => {
+          this.isTransitioningSlide = false;
+        }
+      });
+    }
+  });
+}
+
+  skipCutscene() {
+    if (this.isTransitioningSlide) return;
+    this.isTransitioningSlide = true;
+    this.stopBirthdaySong();
+    this.cameras.main.fadeOut(350, 19, 14, 11);
+    this.time.delayedCall(360, () => {
+      this.scene.start("MapScene");
     });
   }
 
@@ -280,6 +384,45 @@ class IntroCutscene extends Phaser.Scene {
     if (this.birthdaySong && this.birthdaySong.isPlaying) {
       this.birthdaySong.stop();
     }
+  }
+
+  animateText(target, message, speedInMs = 50) {
+    if (this.currentTypingTimer) {
+      this.currentTypingTimer.remove(false);
+      this.currentTypingTimer = null;
+    }
+
+    this.fullText = message;
+
+    if (!message) {
+      target.setText("");
+      this.isTyping = false;
+      return;
+    }
+
+    const invisibleMessage = message.replace(/[^\s]/g, " ");
+    target.setText("");
+
+    let visibleText = "";
+    this.isTyping = true;
+
+    this.currentTypingTimer = this.time.addEvent({
+      delay: speedInMs,
+      loop: true,
+      callback: () => {
+        if (visibleText.length >= message.length) {
+          target.setText(message);
+          this.currentTypingTimer.remove(false);
+          this.currentTypingTimer = null;
+          this.isTyping = false;
+          return;
+        }
+
+        visibleText += message[visibleText.length];
+        const invisiblePart = invisibleMessage.substring(visibleText.length);
+        target.setText(visibleText + invisiblePart);
+      },
+    });
   }
 }
 
@@ -320,6 +463,9 @@ class MapScene extends Phaser.Scene {
     }
     if (!this.registry.has('wins')) {
       this.registry.set('wins', { mexico: false, italy: false, philippines: false, egypt: false, brazil: false });
+    }
+    if (!this.registry.has('seenCutscenes')) {
+      this.registry.set('seenCutscenes', { italy: false });
     }
   }
 
@@ -452,11 +598,13 @@ class MapScene extends Phaser.Scene {
     this.createCountry("Mexico", width * 0.3, height * 0.44,
       "Whack piñatas.\nAvoid spicy chiles!", "MexicoScene", "MexicoStore", "flagMexico");
     this.createCountry("Italy", width * 0.70, height * 0.35,
-      "Fix pasta pipes.\nServe the perfect plate!", "ItalyScene", "ItalyStore", "flagItaly");
+      "Fix pasta pipes.\nServe the perfect plate!", "ItalyCutscene", "ItalyStore", "flagItaly");
+    this.createCountry("Vietnam", width * 0.62, height * 0.27,
+      "A quick visit to Vietnam.\nTry the Vietnam scene!", "VietnamScene", "VietnamStore");
     this.createCountry("Philippines", width * 1.1, height * 0.5,
       "Collect lumpia ingredients.\nAvoid traffic!", "PhilippinesScene", "PhilippinesStore", "flagPhilippines");
     this.createCountry("Egypt", width * 0.76, height * 0.42,
-      "Run in the desert.\nDodge palm trees and flying falafels!", "EgyptScene", "EgyptStore", "flagEgypt");
+      "Run in the desert.\nDodge palm trees and flying falafels!", "EgyptCutscene", "EgyptStore", "flagEgypt");
     this.createCountry("Brazil", width * 0.45, height * 0.65,
       "Collect carnival ingredients.\nJump past floats and hazards!", "BrazilScene", "BrazilStore", null, "star");
     this.createInfoPanel();
@@ -465,19 +613,8 @@ class MapScene extends Phaser.Scene {
     this.cameras.main.startFollow(this.player, true, 0.08, 0.08);
   }
 
-  createCountry(name, x, y, description, sceneName, storeName, flagKey, placeholder = null) {
-    let landmark;
-
-    if (placeholder === "star") {
-      landmark = this.add.star(x, y, 5, 7, 14, 0xf4d35e)
-        .setStrokeStyle(3, 0xc49a2d, 0.95)
-        .setDepth(1);
-    } else {
-      landmark = this.add.image(x, y, flagKey)
-        .setScale(0.6)
-        .setDepth(1);
-    }
-
+  createCountry(name, x, y, description, sceneName, storeName, flagKey) {
+    const landmark = this.add.image(x, y, flagKey).setScale(0.6).setDepth(1);
     this.add.text(x, y - 40, name, {
       fontSize: "18px",
       fill: "#000"
@@ -514,10 +651,19 @@ class MapScene extends Phaser.Scene {
     }).setInteractive();
     playButton.on("pointerdown", () => {
       if (this.currentCountry) {
-        this.scene.start(this.currentCountry.sceneName);
+        this.scene.start(this.getCountrySceneName(this.currentCountry));
       }
     });
     this.infoPanel.add([bg, this.panelTitle, this.panelText, playButton]);
+  }
+
+  getCountrySceneName(country) {
+    const wins = this.registry.get('wins') || {};
+    const seenCutscenes = this.registry.get('seenCutscenes') || {};
+    if (country.name === "Italy" && (wins.italy || seenCutscenes.italy)) {
+      return "ItalyScene";
+    }
+    return country.sceneName;
   }
 
   positionInfoPanel(country) {
@@ -998,10 +1144,13 @@ const config = {
     IntroCutscene,
     MapScene,
     MexicoScene,
+    ItalyCutscene,
     ItalyScene,
     PhilippinesScene,
+    EgyptCutscene,
     EgyptScene,
     BrazilScene,
+    VietnamScene,
     Store,
     Inventory,
     Settings
