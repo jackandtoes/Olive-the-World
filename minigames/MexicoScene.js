@@ -203,6 +203,8 @@ class MexicoScene extends Phaser.Scene {
         this.confettiPool = [];
         this.coinPool = [];
         this.explosionPool = [];
+        this.backgroundClouds = [];
+        this.backgroundBirds = [];
     }
 
     preload() {
@@ -220,13 +222,29 @@ class MexicoScene extends Phaser.Scene {
         this.pinatas = [];
         this.chiles = [];
         this.goldenPinatas = [];
+        this.backgroundClouds = [];
+        this.backgroundBirds = [];
 
         // Use Phaser's scale system, not window.innerWidth
         const width = this.scale.width;
         const height = this.scale.height;
 
-        // Background (optional, so it doesn't look like a black void)
-        this.add.rectangle(width/2, height/2, width, height, 0x87CEEB);
+        // Background sky and soft haze
+        this.add.rectangle(width / 2, height / 2, width, height, 0x8fd7ff).setDepth(-20);
+        this.add.circle(width * 0.84, height * 0.14, 48, 0xfff3b0, 0.92).setDepth(-19);
+        this.add.circle(width * 0.84, height * 0.14, 72, 0xffe17a, 0.16).setDepth(-21);
+
+        // Drifting clouds
+        this.createBackgroundCloud(width * 0.16, height * 0.18, 0.95, 18, 0xfff8ef, 1.1);
+        this.createBackgroundCloud(width * 0.43, height * 0.12, 1.15, 12, 0xfff4e5, 0.8);
+        this.createBackgroundCloud(width * 0.73, height * 0.22, 0.82, 14, 0xfffbf5, 1.6);
+        this.createBackgroundCloud(width * 0.02, height * 0.30, 0.72, 9, 0xfff0d8, 0.5);
+
+        // Birds gliding in the far background
+        this.createBackgroundBird(-40, height * 0.24, 0.9, 24, 0.9);
+        this.createBackgroundBird(width * 0.20, height * 0.16, 0.75, 18, 1.4);
+        this.createBackgroundBird(width * 0.62, height * 0.20, 0.8, 21, 0.4);
+        this.backgroundTicker = 0;
 
         // UI Text
         this.scoreText = this.add.text(10, 10, 'Score: 0', { fontSize: '24px', fill: '#fff' });
@@ -263,6 +281,49 @@ class MexicoScene extends Phaser.Scene {
         this.spawnPinata();
     }
 
+    createBackgroundCloud(x, y, scale = 1, speed = 2, color = 0xffffff, drift = 1) {
+        const cloud = this.add.graphics();
+        cloud.fillStyle(color, 0.9);
+        cloud.fillEllipse(0, 0, 82 * scale, 26 * scale);
+        cloud.fillEllipse(22 * scale, -10 * scale, 52 * scale, 18 * scale);
+        cloud.fillEllipse(-18 * scale, -8 * scale, 40 * scale, 14 * scale);
+        cloud.fillEllipse(34 * scale, 4 * scale, 30 * scale, 12 * scale);
+        cloud.setPosition(x, y);
+        cloud.setDepth(-18);
+
+        this.backgroundClouds.push({
+            el: cloud,
+            baseY: y,
+            speed,
+            drift
+        });
+
+        return cloud;
+    }
+
+    createBackgroundBird(x, y, scale = 1, speed = 5, drift = 1) {
+        const bird = this.add.graphics();
+        bird.lineStyle(3, 0x5d4b36, 0.55);
+        bird.beginPath();
+        bird.moveTo(-12 * scale, 0);
+        bird.lineTo(-3 * scale, -6 * scale);
+        bird.lineTo(0, -2 * scale);
+        bird.lineTo(3 * scale, -6 * scale);
+        bird.lineTo(12 * scale, 0);
+        bird.strokePath();
+        bird.setPosition(x, y);
+        bird.setDepth(-17);
+
+        this.backgroundBirds.push({
+            el: bird,
+            baseY: y,
+            speed,
+            drift,
+            scale
+        });
+
+        return bird;
+    }
     startMexicanMusic() {
     let mexicanMusic = this.sound.get("mexican_music");
     if (!mexicanMusic) {
@@ -663,11 +724,12 @@ class MexicoScene extends Phaser.Scene {
         }
     }
 
-    update() {
+    update(time, delta) {
         if (this.gameOver) return;
 
         const now = Date.now();
         const elapsedGameTime = this.levelDuration - this.timeLeft;
+        this.updateBackground(delta);
 
         // Spawn piñatas with decreasing interval
         if (now - this.lastPinataSpawnTime > this.pinataSpawnInterval && !this.gameOver) {
@@ -758,6 +820,33 @@ class MexicoScene extends Phaser.Scene {
         } 
 
     }
+
+    updateBackground(delta = 16.67) {
+        const width = this.scale.width;
+        this.backgroundTicker += delta / 1000;
+
+        for (const cloud of this.backgroundClouds) {
+            cloud.el.x -= cloud.speed * (delta / 1000);
+            cloud.el.y = cloud.baseY + Math.sin((this.backgroundTicker * 0.8) + cloud.drift) * 5;
+
+            if (cloud.el.x < -140) {
+                cloud.el.x = width + 140;
+                cloud.baseY = Phaser.Math.Between(this.scale.height * 0.08, this.scale.height * 0.34);
+            }
+        }
+
+        for (const bird of this.backgroundBirds) {
+            bird.el.x += bird.speed * (delta / 1000);
+            bird.el.y = bird.baseY + Math.sin((this.backgroundTicker * 1.6) + bird.drift) * 4;
+            bird.el.rotation = Math.sin((this.backgroundTicker * 2.2) + bird.drift) * 0.06;
+
+            if (bird.el.x > width + 50) {
+                bird.el.x = -50;
+                bird.baseY = Phaser.Math.Between(this.scale.height * 0.10, this.scale.height * 0.32);
+            }
+        }
+    }
+
     onSecondTick() {
         if (this.gameOver) return;
         this.timeLeft -= 1;
@@ -773,7 +862,7 @@ class MexicoScene extends Phaser.Scene {
         const width = this.scale.width;
         const height = this.scale.height;
 
-            if (this.score >= 500) {
+            if (this.score >= 1500) {
                 this.add.rectangle(width/2, height/2, 400, 400, 0x000000, 0.8);
                 this.add.text(width/2, height/2 - 40, 'YOU WIN!', 
                     { fontSize: '48px', fill: '#fff' }).setOrigin(0.5);
@@ -793,6 +882,9 @@ class MexicoScene extends Phaser.Scene {
                 playButton.on('pointerdown', () => {
                     this.scene.start('MexicoScene');
                 });
+                const wins = this.registry.get('wins');
+                wins.mexico = true;
+                this.registry.set('wins', wins);
             }
             else {
                 this.add.rectangle(width/2, height/2, 400, 400, 0x000000, 0.8);
@@ -815,5 +907,6 @@ class MexicoScene extends Phaser.Scene {
                     this.scene.start('MexicoScene');
                 });
             }
+        
     }
 }
