@@ -465,7 +465,7 @@ class MapScene extends Phaser.Scene {
       this.registry.set('wins', { mexico: false, italy: false, philippines: false, egypt: false, brazil: false });
     }
     if (!this.registry.has('seenCutscenes')) {
-      this.registry.set('seenCutscenes', { italy: false });
+      this.registry.set('seenCutscenes', { italy: false, egypt: false, mexico: false });
     }
   }
 
@@ -596,7 +596,7 @@ class MapScene extends Phaser.Scene {
     this.countries = [];
 
     this.createCountry("Mexico", width * 0.3, height * 0.44,
-      "Whack piñatas.\nAvoid spicy chiles!", "MexicoScene", "MexicoStore", "flagMexico");
+      "Whack piñatas.\nAvoid spicy chiles!", "MexicoCutscene", "MexicoStore", "flagMexico");
     this.createCountry("Italy", width * 0.70, height * 0.35,
       "Fix pasta pipes.\nServe the perfect plate!", "ItalyCutscene", "ItalyStore", "flagItaly");
     this.createCountry("Vietnam", width * 0.62, height * 0.27,
@@ -662,6 +662,12 @@ class MapScene extends Phaser.Scene {
     const seenCutscenes = this.registry.get('seenCutscenes') || {};
     if (country.name === "Italy" && (wins.italy || seenCutscenes.italy)) {
       return "ItalyScene";
+    }
+    if (country.name === "Egypt" && (wins.egypt || seenCutscenes.egypt)) {
+      return "EgyptScene";
+    }
+    if (country.name === "Mexico" && (wins.mexico || seenCutscenes.mexico)) {
+      return "MexicoScene";
     }
     return country.sceneName;
   }
@@ -1149,6 +1155,7 @@ const config = {
     PhilippinesScene,
     EgyptCutscene,
     EgyptScene,
+    MexicoCutscene,
     BrazilScene,
     VietnamScene,
     Store,
