@@ -20,7 +20,7 @@ class EgyptCutscene extends Phaser.Scene {
     this.dialogueLines = [
       "", 
       "",
-      "Mama mia... you want to learn how to make pasta!\n That's amore - let's go!"
+      "Habibi, do you want to make falafel? \n First you have to dodge them!"
     ];
 
     this.cutsceneIndex = 0;
