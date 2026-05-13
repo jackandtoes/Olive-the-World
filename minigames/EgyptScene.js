@@ -994,5 +994,13 @@ addCoin(amount) {
     // Update score display
     this.scoreText.setText("HI " + this.padScore(this.hiScore) + "  " + this.padScore(this.score));
     this.rewardCoins();
+
+    if (this.score >= 200) {
+      const wins = this.registry.get('wins');
+      wins.egypt = true;
+      this.registry.set('wins', wins);
+    }
+
+
   }
 }
