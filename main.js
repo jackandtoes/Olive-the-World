@@ -22,9 +22,12 @@ class StartScene extends Phaser.Scene {
     this.load.image("settingsbutton", "assets/settingsbutton.png");
     this.load.image("oliveFarmhouse", "assets/cutscene/olive_farmhouse.png");
     this.load.image("oliveBirthday", "assets/cutscene/olive_birthday.png");
-    this.load.image("philip_token", "assets/bronze_token_otw.png");
-    this.load.image("italy_token", "assets/silver_token.png");
-    this.load.image("mexico_token", "assets/gold_token_otw.png");
+    this.load.image("philip_token", "assets/badges/badge_philippines.png");
+    this.load.image("italy_token", "assets/badges/badge_italy.png");
+    this.load.image("mexico_token", "assets/badges/badge_mexico.png");
+    this.load.image("egypt_token", "assets/badges/badge_egypt.png");
+    this.load.image("india_token", "assets/badges/badge_india.png");
+    this.load.image("brazil_token", "assets/badges/badge_brazil.png");
     this.load.image("hatChef", "assets/hat_chef.PNG");
     this.load.image("hatJester", "assets/hat_jester.PNG");
     this.load.image("hatPropeller", "assets/hat_propeller.PNG");
@@ -912,9 +915,13 @@ class Inventory extends Phaser.Scene {
 
     const cards = [
        { section: "Accessories", label: "No Hat", unlocked: true, texture: "oliveOverjoyed", tokenWidth: 74, tokenHeight: 74, ribbon: equippedItems.hat === null ? "Equipped" : "Click to unequip", accessoryKey: null },
-      { section: "Country Tokens", label: "Mexico", unlocked: wins.mexico, texture: "mexico_token", tokenWidth: 118, tokenHeight: 118, ribbon: "Collected" },
-      { section: "Country Tokens", label: "Italy", unlocked: wins.italy, texture: "italy_token", tokenWidth: 125, tokenHeight: 156.25, ribbon: "Collected" },
-      { section: "Country Tokens", label: "Philippines", unlocked: wins.philippines, texture: "philip_token", tokenWidth: 125, tokenHeight: 156.25, ribbon: "Collected" },
+      { section: "Country Tokens", label: "Mexico", unlocked: wins.mexico, texture: "mexico_token", tokenWidth: 150, tokenHeight: 150, ribbon: "Collected" },
+      { section: "Country Tokens", label: "Italy", unlocked: wins.italy, texture: "italy_token", tokenWidth: 150, tokenHeight: 150, ribbon: "Collected" },
+      { section: "Country Tokens", label: "Philippines", unlocked: wins.philippines, texture: "philip_token", tokenWidth: 150, tokenHeight: 150, ribbon: "Collected" },
+      { section: "Country Tokens", label: "Egypt", unlocked: wins.egypt, texture: "egypt_token", tokenWidth: 150, tokenHeight: 150, ribbon: "Collected" },
+      { section: "Country Tokens", label: "India", unlocked: wins.india, texture: "india_token", tokenWidth: 150, tokenHeight: 150, ribbon: "Collected" },
+      { section: "Country Tokens", label: "Brazil", unlocked: wins.brazil, texture: "brazil_token", tokenWidth: 150, tokenHeight: 150, ribbon: "Collected" },
+
      
       ...HAT_CATALOG.map((hat) => ({
         section: "Accessories",
