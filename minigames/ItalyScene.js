@@ -1,3 +1,195 @@
+class ItalyCutscene extends Phaser.Scene {
+  constructor() {
+    super("ItalyCutscene");
+  }
+
+  preload() {
+    this.load.image("oliveCountryside", "assets/italy/cutscene/italian_countryside.png");
+    this.load.image("oliveItalianHouse", "assets/italy/cutscene/italian_house.png");
+    this.load.image("oliveTomatoChef", "assets/italy/cutscene/italian_tomato_chef.png");
+    this.load.audio("italian_music", "assets/italy/cutscene/italian_music.mp3");
+  }
+
+  create() {
+    const width = this.scale.width;
+    const height = this.scale.height;
+    const seenCutscenes = this.registry.get("seenCutscenes") || {};
+    seenCutscenes.italy = true;
+    this.registry.set("seenCutscenes", seenCutscenes);
+    this.slides = ["oliveCountryside", "oliveItalianHouse", "oliveTomatoChef"];
+    this.dialogueLines = [
+      "", 
+      "",
+      "Mama mia... you want to learn how to make pasta!\n That's amore - let's go!"
+    ];
+
+    this.cutsceneIndex = 0;
+    this.isTransitioningSlide = false;
+    this.isTyping = false;
+    this.currentTypingTimer = null;
+    this.fullText = "";
+
+    this.add.rectangle(width / 2, height / 2, width, height, 0x130e0b);
+
+    this.cutsceneImage = this.add.image(width / 2, height / 2, this.slides[0]).setAlpha(0);
+    this._fitCutsceneImage(this.cutsceneImage, width, height);
+    this.cutsceneDialogue();
+    this.startItalyMusic();
+
+    this.cutsceneCaption = this.add.text(width / 2, height - 44, "Click or press SPACE to continue", {
+      fontSize: "22px",
+      fill: "#fff4dd",
+      backgroundColor: "#5a341d",
+      padding: { x: 14, y: 8 }
+    }).setOrigin(0.5);
+
+    this.cutsceneProgress = this.add.text(width / 2, 36, `1 / ${this.slides.length}`, {
+      fontSize: "24px",
+      fill: "#fff4dd"
+    }).setOrigin(0.5);
+
+    this.tweens.add({
+      targets: this.cutsceneImage,
+      alpha: 1,
+      duration: 450,
+      ease: "Sine.easeOut"
+    });
+
+    this.input.on("pointerdown", () => this.advanceCutscene());
+    this.input.keyboard.on("keydown-SPACE", () => this.advanceCutscene());
+    this.input.keyboard.on("keydown-ENTER", () => this.advanceCutscene());
+
+  }
+    startItalyMusic() {
+    let italyMusic = this.sound.get("italian_music");
+    if (!italyMusic) {
+      italyMusic = this.sound.add("italian_music", { volume: 0.55, loop: true });
+    }
+    if (!italyMusic.isPlaying) {
+      italyMusic.play();
+    }
+  }
+
+  stopItalyMusic() {
+    this.sound.stopByKey("italian_music");
+  }
+
+  cutsceneDialogue() {
+    const dialogueText = this.dialogueLines[this.cutsceneIndex] || "";
+
+    if (!this.dialogueText) {
+      this.dialogueText = this.add.text(
+        this.scale.width / 2,
+        this.scale.height - 100,
+        "",
+        {
+          fontSize: "24px",
+          fill: "#fff4dd",
+          align: "center",
+          wordWrap: { width: this.scale.width - 80 }
+        }
+      ).setOrigin(0.5);
+    }
+
+    this.animateText(this.dialogueText, dialogueText, 20);
+  }
+
+  _fitCutsceneImage(image, width, height) {
+    const scale = Math.min((width - 80) / image.width, (height - 120) / image.height);
+    image.setScale(scale);
+  }
+
+advanceCutscene() {
+  if (this.isTransitioningSlide) return;
+
+  // 👉 if still typing, finish instantly instead of advancing
+  if (this.isTyping) {
+    if (this.currentTypingTimer) {
+      this.currentTypingTimer.remove(false);
+      this.currentTypingTimer = null;
+    }
+    this.dialogueText.setText(this.fullText);
+    this.isTyping = false;
+    return;
+  }
+
+  const nextIndex = this.cutsceneIndex + 1;
+
+  if (nextIndex >= this.slides.length) {
+    this.isTransitioningSlide = true;
+    this.cameras.main.fadeOut(350, 19, 14, 11);
+    this.time.delayedCall(360, () => {
+      this.scene.start("ItalyScene");
+    });
+    return;
+  }
+
+  this.isTransitioningSlide = true;
+  this.tweens.add({
+    targets: this.cutsceneImage,
+    alpha: 0,
+    duration: 260,
+    ease: "Sine.easeInOut",
+    onComplete: () => {
+      this.cutsceneIndex = nextIndex;
+      this.cutsceneImage.setTexture(this.slides[this.cutsceneIndex]);
+      this._fitCutsceneImage(this.cutsceneImage, this.scale.width, this.scale.height);
+      this.cutsceneProgress.setText(`${this.cutsceneIndex + 1} / ${this.slides.length}`);
+      this.cutsceneDialogue();
+
+      this.tweens.add({
+        targets: this.cutsceneImage,
+        alpha: 1,
+        duration: 320,
+        ease: "Sine.easeInOut",
+        onComplete: () => {
+          this.isTransitioningSlide = false;
+        }
+      });
+    }
+  });
+}
+
+  animateText(target, message, speedInMs = 50) {
+    if (this.currentTypingTimer) {
+      this.currentTypingTimer.remove(false);
+      this.currentTypingTimer = null;
+    }
+
+    this.fullText = message;
+
+    if (!message) {
+      target.setText("");
+      this.isTyping = false;
+      return;
+    }
+
+    const invisibleMessage = message.replace(/[^\s]/g, " ");
+    target.setText("");
+
+    let visibleText = "";
+    this.isTyping = true;
+
+    this.currentTypingTimer = this.time.addEvent({
+      delay: speedInMs,
+      loop: true,
+      callback: () => {
+        if (visibleText.length >= message.length) {
+          target.setText(message);
+          this.currentTypingTimer.remove(false);
+          this.currentTypingTimer = null;
+          this.isTyping = false;
+          return;
+        }
+
+        visibleText += message[visibleText.length];
+        const invisiblePart = invisibleMessage.substring(visibleText.length);
+        target.setText(visibleText + invisiblePart);
+      },
+    });
+  }
+}
+
 class ItalyScene extends Phaser.Scene {
  constructor() {
    super("ItalyScene");
@@ -10,10 +202,12 @@ class ItalyScene extends Phaser.Scene {
    this.load.image('crossed', 'assets/italy/crossed_pasta.png');
    this.load.image('t_shape', 'assets/italy/t-shaped_pasta.png');
    this.load.image('olive_mascot', 'assets/olive_favicon.png');
+   this.load.audio("italian_music", "assets/italy/cutscene/italian_music.mp3");
  }
 
 
- create(data) {
+	 create(data) {
+	  this.startItalyMusic();
   if (data.level) {
     this.level = data.level;
   } else {
@@ -199,19 +393,34 @@ this.levelLayouts = {
     }
   });
 
-  this.reset_button = reset_button;
-  this.reset_text = reset_text;
-  this.boardContainer.setDepth(2);
-  this.drawGrid();
-   this.addPipes();
-   this.input.keyboard.on("keydown-ESC", () => {
-     this.scene.start("MapScene");
-   });
+	  this.reset_button = reset_button;
+	  this.reset_text = reset_text;
+	  this.boardContainer.setDepth(2);
+	  this.drawGrid();
+	   this.addPipes();
+	   this.input.keyboard.on("keydown-ESC", () => {
+      this.stopItalyMusic();
+	     this.scene.start("MapScene");
+	   });
   
   
- }
+	 }
 
- createCheerOlive(boardX, boardY) {
+   startItalyMusic() {
+    let italyMusic = this.sound.get("italian_music");
+    if (!italyMusic) {
+      italyMusic = this.sound.add("italian_music", { volume: 0.55, loop: true });
+    }
+    if (!italyMusic.isPlaying) {
+      italyMusic.play();
+    }
+   }
+
+  stopItalyMusic() {
+    this.sound.stopByKey("italian_music");
+  }
+
+  createCheerOlive(boardX, boardY) {
   const mascotX = boardX - 82;
   const mascotY = boardY + 210;
   const shadow = this.add.ellipse(mascotX, mascotY + 52, 58, 16, 0xb98547, 0.28).setDepth(2);
@@ -516,12 +725,13 @@ pipe.tileData = tile;
     color: "#ffffff",
     backgroundColor: "#7c2d12",
     padding: { x: 20, y: 10 }
-  }).setOrigin(0.5).setDepth(21);
-
-  next_button.on("pointerdown", () => {
-    this.scene.start("MapScene");;
-  });
- }
+	  }).setOrigin(0.5).setDepth(21);
+	
+	  next_button.on("pointerdown", () => {
+    this.stopItalyMusic();
+	    this.scene.start("MapScene");
+	  });
+	 }
 
 	checkWin() {
 
@@ -861,6 +1071,7 @@ const pasta_41 = this.tileMapData[4][5];
       const wins = this.registry.get('wins');
       wins.italy = true;
       this.registry.set('wins', wins);
+
 
     }
   
