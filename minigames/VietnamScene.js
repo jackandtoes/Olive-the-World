@@ -5,15 +5,15 @@ class VietnamScene extends Phaser.Scene {
 
     preload() {
         this.load.image('chile', 'assets/mexico/mexico_minigame_chile.png');
-        this.load.spritesheet('biryani', 'assets/biryaniIngredients.png', {
-            frameWidth: 450,
-            frameHeight: 280
+        this.load.spritesheet('biryani', 'assets/india/biryaniIngredients.png', {
+            frameWidth: 200,
+            frameHeight: 200
         });
     }
 
      create() {
         this.score = 0;
-        this.physics.world.gravity.y = 500;
+        this.physics.world.gravity.y = 350;
 
         // create background
         this.add.rectangle(this.scale.width / 2, this.scale.height / 2, this.scale.width, this.scale.height, 0xf7d6b4).setDepth(0);
@@ -90,18 +90,17 @@ class VietnamScene extends Phaser.Scene {
 
         const ingredient = this.ingredientGroup.create(
             Phaser.Math.Between(50, this.scale.width - 50),
-            -20,
+            -40,
             'biryani',
             frameIndex
         );
 
-        ingredient.setScale(0.2);
+        ingredient.setScale(0.7);
         ingredient.body.setAllowGravity(true);
         ingredient.setVelocityY(0);
         ingredient.setVelocityX(0);
         ingredient.setImmovable(false);
     }
-
 
     handleBasketIngredientCollision(basket, ingredient) {
         ingredient.disableBody(true, true);
