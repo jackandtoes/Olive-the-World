@@ -32,19 +32,19 @@ class PhilippinesCutscene extends Phaser.Scene {
     this.add.rectangle(width / 2, height / 2, width, height, 0x130e0b);
 
     this.cutsceneImage = this.add.image(width / 2, height / 2, this.slides[0]).setAlpha(0);
-    this._fitCutSceneImage(this.cutsceneImage, width, height);
+    this._fitCutsceneImage(this.cutsceneImage, width, height);
     this.cutsceneDialogue();
     this.startPhilippinesMusic();
 
     this.cutsceneCaption = this.add.text(width / 2, height - 44, "Click or press SPACE to continue", {
-      fontsize: "22px",
+      fontSize: "22px",
       fill: "#fff4dd",
       backgroundColor: "#5a341d",
       padding: { x: 13, y: 8 }
     }).setOrigin(0.5);
 
     this.cutsceneProgress = this.add.text(width / 2, 36, `1 / ${this.slides.length}`, {
-      fontsize: "24px",
+      fontSize: "24px",
       fill: "#fff4dd"
     }).setOrigin(0.5);
 
@@ -52,7 +52,7 @@ class PhilippinesCutscene extends Phaser.Scene {
       targets: this.cutsceneImage,
       alpha: 1,
       duration: 450,
-      ease: "Sine.easeout"
+      ease: "Sine.easeOut"
     });
 
     this.input.on("pointerdown", () => this.advanceCutscene());
@@ -93,7 +93,7 @@ class PhilippinesCutscene extends Phaser.Scene {
     this.animateText(this.dialogueText, dialogueText, 20);
   }
 
-  _fitCutsceneIMage(image, width, height) {
+  _fitCutsceneImage(image, width, height) {
     const scale = Math.min((width - 80) / image.width, (height - 120) / image.height);
     image.setScale(scale);
   }
@@ -131,7 +131,7 @@ class PhilippinesCutscene extends Phaser.Scene {
       onComplete: () => {
         this.cutsceneIndex = nextIndex;
         this.cutsceneImage.setTexture(this.slides[this.cutsceneIndex]);
-        this._fitCutsceneIMage(this.cutsceneImage, this.scale.width, this.scale.height);
+        this._fitCutsceneImage(this.cutsceneImage, this.scale.width, this.scale.height);
         this.cutsceneProgress.setText(`${this.cutsceneIndex + 1} / ${this.slides.length}`);
         this.cutsceneDialogue();
 
@@ -149,7 +149,7 @@ class PhilippinesCutscene extends Phaser.Scene {
   }
 
   animateText(target, message, speedInMs = 50) {
-    if (this.currentTypingTImer) {
+    if (this.currentTypingTimer) {
       this.currentTypingTimer.remove(false);
       this.currentTypingTimer = null;
     }
@@ -265,11 +265,12 @@ class PhilippinesScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.image("oliveOverjoyed", "assets/olive_overjoyed.PNG");
-    this.load.image("oliveHatChef", "assets/olive_hat_chef.PNG");
-    this.load.image("oliveHatJester", "assets/olive_hat_jester.PNG");
-    this.load.image("oliveHatPropeller", "assets/olive_hat_propeller.PNG");
-    this.load.image("oliveHatWizard", "assets/olive_hat_wizard.PNG");
+    this.load.audio("filipino_music", "assets/philippines/cutscene/filipino_music.mp3");
+    this.load.image("oliveOverjoyed", "assets/olivesprites/olive_overjoyed.PNG");
+    this.load.image("oliveHatChef", "assets/olivesprites/olive_hat_chef.PNG");
+    this.load.image("oliveHatJester", "assets/olivesprites/olive_hat_jester.PNG");
+    this.load.image("oliveHatPropeller", "assets/olivesprites/olive_hat_propeller.PNG");
+    this.load.image("oliveHatWizard", "assets/olivesprites/olive_hat_wizard.PNG");
     this.load.image("itemcabbage", "assets/philippines/philippines_cabbage.PNG");
     this.load.image("itemcarrots", "assets/philippines/philippines_carrots.PNG");
     this.load.image("itemonion", "assets/philippines/philippines_onion.PNG");
@@ -281,6 +282,8 @@ class PhilippinesScene extends Phaser.Scene {
   }
 
   create() {
+    this.startPhilippinesMusic();
+
     const width = this.scale.width;
     const height = this.scale.height;
 
@@ -311,7 +314,26 @@ class PhilippinesScene extends Phaser.Scene {
     this.createUI();
 
     this.cursors = this.input.keyboard.createCursorKeys();
-    this.input.keyboard.on("keydown-ESC", () => this.scene.start("MapScene"));
+    this.input.keyboard.on("keydown-ESC", () => this.returnToMap());
+  }
+
+  startPhilippinesMusic() {
+    let philippinesMusic = this.sound.get("filipino_music");
+    if (!philippinesMusic) {
+      philippinesMusic = this.sound.add("filipino_music", { volume: 0.55, loop: true });
+    }
+    if (!philippinesMusic.isPlaying) {
+      philippinesMusic.play();
+    }
+  }
+
+  stopPhilippinesMusic() {
+    this.sound.stopByKey("filipino_music");
+  }
+
+  returnToMap() {
+    this.stopPhilippinesMusic();
+    this.scene.start("MapScene");
   }
 
   createBackdrop() {
@@ -1035,7 +1057,7 @@ class PhilippinesScene extends Phaser.Scene {
     ).setOrigin(0.5);
 
     this._button(width / 2, height / 2 + 78, "Retry Level", () => this.scene.restart({ level: this.currentLevel }));
-    this._button(width / 2, height / 2 + 132, "Back to Map", () => this.scene.start("MapScene"));
+    this._button(width / 2, height / 2 + 132, "Back to Map", () => this.returnToMap());
   }
 
   showLevelComplete() {
@@ -1055,7 +1077,7 @@ class PhilippinesScene extends Phaser.Scene {
       color: "#82553a",
     }).setOrigin(0.5);
     this._button(width / 2, height / 2 + 78, "Next Level", () => this.scene.restart({ level: this.currentLevel + 1 }));
-    this._button(width / 2, height / 2 + 132, "Back to Map", () => this.scene.start("MapScene"));
+    this._button(width / 2, height / 2 + 132, "Back to Map", () => this.returnToMap());
   }
 
   showVictory() {
@@ -1077,6 +1099,6 @@ class PhilippinesScene extends Phaser.Scene {
       color: "#82553a",
     }).setOrigin(0.5);
     this._button(width / 2, height / 2 + 78, "Play Again", () => this.scene.restart({ level: 1 }));
-    this._button(width / 2, height / 2 + 132, "Back to Map", () => this.scene.start("MapScene"));
+    this._button(width / 2, height / 2 + 132, "Back to Map", () => this.returnToMap());
   }
 }
