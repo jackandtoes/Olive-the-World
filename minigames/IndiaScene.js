@@ -1,12 +1,12 @@
-const VIETNAM_LEVELS = {
+const INDIA_LEVELS = {
   1: { targetScore: 50, spawnDelay: 1000, timeLimit: 10 },
   2: { targetScore: 70, spawnDelay: 850, timeLimit: 25 },
   3: { targetScore: 90, spawnDelay: 700, timeLimit: 20 }
 };
 
-class VietnamScene extends Phaser.Scene {
+class IndiaScene extends Phaser.Scene {
     constructor() {
-        super("VietnamScene");
+        super("IndiaScene");
     }
 
     init(data) {
@@ -26,7 +26,7 @@ class VietnamScene extends Phaser.Scene {
      create() {
         this.gameIsOver = false;
         this.levelComplete = false;
-        
+
         this.score = 0;
         this.physics.world.gravity.y = 350;
 
@@ -76,7 +76,7 @@ class VietnamScene extends Phaser.Scene {
         });
 
         // Initialize level parameters
-        const level = VIETNAM_LEVELS[this.currentLevel];
+        const level = INDIA_LEVELS[this.currentLevel];
         this.score = 0;
         this.levelComplete = false;
 
@@ -147,7 +147,7 @@ class VietnamScene extends Phaser.Scene {
     }
 
     checkWinCondition() {
-        if (this.score >= VIETNAM_LEVELS[this.currentLevel].targetScore) {
+        if (this.score >= INDIA_LEVELS[this.currentLevel].targetScore) {
             this.endLevel(true);
         }
     }

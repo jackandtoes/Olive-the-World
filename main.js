@@ -462,7 +462,7 @@ class MapScene extends Phaser.Scene {
       this.registry.set('ownedItems', {});
     }
     if (!this.registry.has('wins')) {
-      this.registry.set('wins', { mexico: false, italy: false, philippines: false, egypt: false, brazil: false, vietnam: false });
+      this.registry.set('wins', { mexico: false, italy: false, philippines: false, egypt: false, brazil: false, india: false });
     }
     if (!this.registry.has('seenCutscenes')) {
       this.registry.set('seenCutscenes', { italy: false, egypt: false, mexico: false });
@@ -599,8 +599,8 @@ class MapScene extends Phaser.Scene {
       "Whack piñatas.\nAvoid spicy chiles!", "MexicoCutscene", "MexicoStore", "flagMexico");
     this.createCountry("Italy", width * 0.70, height * 0.35,
       "Fix pasta pipes.\nServe the perfect plate!", "ItalyCutscene", "ItalyStore", "flagItaly");
-    this.createCountry("Vietnam", width * 0.62, height * 0.27,
-      "A quick visit to Vietnam.\nTry the Vietnam scene!", "VietnamScene", "VietnamStore");
+    this.createCountry("India", width * 0.62, height * 0.27,
+      "A quick visit to India.\nTry the India scene!", "IndiaScene", "IndiaStore", "flagIndia");
     this.createCountry("Philippines", width * 1.1, height * 0.5,
       "Collect lumpia ingredients.\nAvoid traffic!", "PhilippinesScene", "PhilippinesStore", "flagPhilippines");
     this.createCountry("Egypt", width * 0.76, height * 0.42,
@@ -1157,7 +1157,7 @@ const config = {
     EgyptScene,
     MexicoCutscene,
     BrazilScene,
-    VietnamScene,
+    IndiaScene,
     Store,
     Inventory,
     Settings
