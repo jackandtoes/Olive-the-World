@@ -61,6 +61,9 @@ class BrazilScene extends Phaser.Scene {
 
   preload() {
     this.load.image("oliveOverjoyed", "assets/olive_overjoyed.PNG");
+    this.load.image("background", "assets/brazil/brazil_background.PNG");
+    this.load.image("skyline", "assets/brazil/brazil_skyline.PNG");
+    this.load.image("buildings", "assets/brazil/brazil_buildings.PNG");
   }
 
   create() {
@@ -135,42 +138,6 @@ class BrazilScene extends Phaser.Scene {
     graphics.generateTexture("brazilParticle", 12, 12);
     graphics.clear();
 
-    graphics.fillStyle(0x7fb3d5, 1);
-    graphics.fillRect(0, 0, 1400, 600);
-    graphics.fillStyle(0x9ad1d4, 1);
-    graphics.fillEllipse(240, 440, 420, 220);
-    graphics.fillEllipse(820, 400, 500, 210);
-    graphics.fillEllipse(1180, 445, 360, 180);
-    graphics.generateTexture("brazilBgFar", 1400, 600);
-    graphics.clear();
-
-    graphics.fillStyle(0x6d9dc5, 1);
-    graphics.fillRect(0, 0, 1700, 600);
-    for (let i = 0; i < 14; i++) {
-      graphics.fillStyle(i % 2 === 0 ? 0x4d7ea8 : 0x7f5539, 1);
-      graphics.fillRect(i * 120, 260 - (i % 3) * 25, 90, 300);
-      graphics.fillStyle(0xfefae0, 0.55);
-      graphics.fillRect(i * 120 + 16, 320, 14, 18);
-      graphics.fillRect(i * 120 + 42, 350, 14, 18);
-      graphics.fillRect(i * 120 + 60, 390, 14, 18);
-    }
-    graphics.generateTexture("brazilBgMid", 1700, 600);
-    graphics.clear();
-
-    graphics.fillStyle(0xcdb4db, 1);
-    graphics.fillRect(0, 0, 2000, 600);
-    for (let i = 0; i < 18; i++) {
-      graphics.fillStyle(i % 2 === 0 ? 0xffafcc : 0xbde0fe, 1);
-      graphics.fillRect(i * 112, 430, 88, 120);
-      graphics.fillStyle(0xffffff, 0.85);
-      graphics.fillRect(i * 112 + 18, 450, 12, 12);
-      graphics.fillRect(i * 112 + 42, 470, 12, 12);
-      graphics.fillRect(i * 112 + 56, 492, 12, 12);
-    }
-    graphics.fillStyle(0x5b4b49, 1);
-    graphics.fillRect(0, 552, 2000, 48);
-    graphics.generateTexture("brazilBgNear", 2000, 600);
-
     graphics.destroy();
   }
 
@@ -185,23 +152,51 @@ class BrazilScene extends Phaser.Scene {
         0xffffff
       );
       star.setScrollFactor(Math.random() * 0.1);
+      star.setDepth(-24);
       star.setVisible(false);
       this.stars.push(star);
     }
   }
 
   createParallaxBackgrounds() {
-    this.bgColor = this.add.rectangle(0, 0, this.scale.width, this.scale.height, 0x0571ff)
+    const viewportWidth = this.scale.width;
+    const viewportHeight = this.scale.height;
+    const maxCameraScroll = this.sceneWidth - viewportWidth;
+    const backgroundFactor = 0.18;
+    const skylineFactor = 0.38;
+    const buildingsFactor = 0.62;
+    const backgroundSource = this.textures.get("background").getSourceImage();
+    const skylineSource = this.textures.get("skyline").getSourceImage();
+    const buildingsSource = this.textures.get("buildings").getSourceImage();
+    const backgroundWidth = viewportWidth + maxCameraScroll * backgroundFactor;
+    const skylineWidth = viewportWidth + maxCameraScroll * skylineFactor;
+    const buildingsWidth = viewportWidth + maxCameraScroll * buildingsFactor;
+    const backgroundHeight = backgroundWidth * (backgroundSource.height / backgroundSource.width);
+    const skylineHeight = skylineWidth * (skylineSource.height / skylineSource.width);
+    const buildingsHeight = buildingsWidth * (buildingsSource.height / buildingsSource.width);
+
+    this.bgColor = this.add.rectangle(0, 0, viewportWidth, viewportHeight, 0x0571ff)
       .setOrigin(0, 0)
-      .setScrollFactor(0);
+      .setScrollFactor(0)
+      .setDepth(-30);
 
-    this.bg1 = this.add.image(0, 0, "brazilBgFar").setOrigin(0, 0);
-    this.bg2 = this.add.image(0, 0, "brazilBgMid").setOrigin(0, 0);
-    this.bg3 = this.add.image(0, 0, "brazilBgNear").setOrigin(0, 0);
+    this.bg1 = this.add.image(0, 0, "background")
+      .setOrigin(0, 0)
+      .setScrollFactor(backgroundFactor)
+      .setDepth(-28)
+      .setDisplaySize(backgroundWidth, backgroundHeight);
 
-    this.bg1.setScrollFactor(0.2);
-    this.bg2.setScrollFactor(0.5);
-    this.bg3.setScrollFactor(1);
+    this.bg2 = this.add.image(0, -180, "skyline")
+      .setOrigin(0, 0)
+      .setScrollFactor(skylineFactor)
+      .setDepth(-22)
+      .setDisplaySize(skylineWidth, skylineHeight);
+
+    this.bg3 = this.add.image(0, viewportHeight + 28, "buildings")
+      .setOrigin(0, 1)
+      .setScrollFactor(buildingsFactor)
+      .setDepth(-18)
+      .setDisplaySize(buildingsWidth, buildingsHeight);
   }
 
   createPlatforms() {
@@ -575,7 +570,7 @@ class BrazilScene extends Phaser.Scene {
       this.player.anims.play("brazilJump", true);
     }
 
-    if (this.player.y > this.bg3.height) {
+    if (this.player.y > this.scale.height + 120) {
       this.active = false;
       this.cameras.main.shake(240, 0.01, false, (camera, progress) => {
         if (progress > 0.9) {
