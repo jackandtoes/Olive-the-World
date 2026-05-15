@@ -28,10 +28,10 @@ class StartScene extends Phaser.Scene {
     this.load.image("egypt_token", "assets/badges/badge_egypt.png");
     this.load.image("india_token", "assets/badges/badge_india.png");
     this.load.image("brazil_token", "assets/badges/badge_brazil.png");
-    this.load.image("hatChef", "assets/hat_chef.PNG");
-    this.load.image("hatJester", "assets/hat_jester.PNG");
-    this.load.image("hatPropeller", "assets/hat_propeller.PNG");
-    this.load.image("hatWizard", "assets/hat_wizard.PNG");
+    this.load.image("hatChef", "assets/hats/hat_chef.PNG");
+    this.load.image("hatJester", "assets/hats/hat_jester.PNG");
+    this.load.image("hatPropeller", "assets/hats/hat_propeller.PNG");
+    this.load.image("hatWizard", "assets/hats/hat_wizard.PNG");
     this.load.audio("birthday_song", "assets/cutscene/olive_birthday_song.MP3");
     this.load.image("oliveParents", "assets/cutscene/olive_parents.png");
     this.load.image("oliveConfession1", "assets/cutscene/olive_confession1.png");
@@ -443,15 +443,15 @@ class MapScene extends Phaser.Scene {
     this.load.image("flagMexico", "assets/Mexico_flag.png");
     this.load.image("flagEgypt", "assets/Egypt_flag.png");
     this.load.image("flagItaly", "assets/Italy_flag.png");
-    this.load.image("hatChef", "assets/hat_chef.PNG");
-    this.load.image("hatJester", "assets/hat_jester.PNG");
-    this.load.image("hatPropeller", "assets/hat_propeller.PNG");
-    this.load.image("hatWizard", "assets/hat_wizard.PNG");
-    this.load.image("oliveOverjoyed", "assets/olive_overjoyed.PNG");
-    this.load.image("oliveHatChef", "assets/olive_hat_chef.PNG");
-    this.load.image("oliveHatJester", "assets/olive_hat_jester.PNG");
-    this.load.image("oliveHatPropeller", "assets/olive_hat_propeller.PNG");
-    this.load.image("oliveHatWizard", "assets/olive_hat_wizard.PNG");
+    this.load.image("hatChef", "assets/hats/hat_chef.PNG");
+    this.load.image("hatJester", "assets/hats/hat_jester.PNG");
+    this.load.image("hatPropeller", "assets/hats/hat_propeller.PNG");
+    this.load.image("hatWizard", "assets/hats/hat_wizard.PNG");
+    this.load.image("oliveOverjoyed", "assets/olivesprites/olive_overjoyed.PNG");
+    this.load.image("oliveHatChef", "assets/olivesprites/olive_hat_chef.PNG");
+    this.load.image("oliveHatJester", "assets/olivesprites/olive_hat_jester.PNG");
+    this.load.image("oliveHatPropeller", "assets/olivesprites/olive_hat_propeller.PNG");
+    this.load.image("oliveHatWizard", "assets/olivesprites/olive_hat_wizard.PNG");
   }
 
   init(data) {
@@ -465,7 +465,7 @@ class MapScene extends Phaser.Scene {
       this.registry.set('ownedItems', {});
     }
     if (!this.registry.has('wins')) {
-      this.registry.set('wins', { mexico: false, italy: false, philippines: false, egypt: false, brazil: false });
+      this.registry.set('wins', { mexico: false, italy: false, philippines: false, egypt: false, brazil: false, india: false });
     }
     if (!this.registry.has('seenCutscenes')) {
       this.registry.set('seenCutscenes', { italy: false, egypt: false, mexico: false });
@@ -602,10 +602,10 @@ class MapScene extends Phaser.Scene {
       "Whack piñatas.\nAvoid spicy chiles!", "MexicoCutscene", "MexicoStore", "flagMexico");
     this.createCountry("Italy", width * 0.70, height * 0.35,
       "Fix pasta pipes.\nServe the perfect plate!", "ItalyCutscene", "ItalyStore", "flagItaly");
-    this.createCountry("Vietnam", width * 0.62, height * 0.27,
-      "A quick visit to Vietnam.\nTry the Vietnam scene!", "VietnamScene", "VietnamStore");
+    this.createCountry("India", width * 0.62, height * 0.27,
+      "A quick visit to India.\nTry the India scene!", "IndiaScene", "IndiaStore", "flagIndia");
     this.createCountry("Philippines", width * 1.1, height * 0.5,
-      "Collect lumpia ingredients.\nAvoid traffic!", "PhilippinesScene", "PhilippinesStore", "flagPhilippines");
+      "Collect lumpia ingredients.\nAvoid traffic!", "PhilippinesCutscene", "PhilippinesStore", "flagPhilippines");
     this.createCountry("Egypt", width * 0.76, height * 0.42,
       "Run in the desert.\nDodge palm trees and flying falafels!", "EgyptCutscene", "EgyptStore", "flagEgypt");
     this.createCountry("Brazil", width * 0.45, height * 0.65,
@@ -671,6 +671,9 @@ class MapScene extends Phaser.Scene {
     }
     if (country.name === "Mexico" && (wins.mexico || seenCutscenes.mexico)) {
       return "MexicoScene";
+    }
+    if (country.name === "Philippines" && (wins.philippines || seenCutscenes.philippines)) {
+      return "PhilippinesScene";
     }
     return country.sceneName;
   }
@@ -1159,12 +1162,13 @@ const config = {
     MexicoScene,
     ItalyCutscene,
     ItalyScene,
+    PhilippinesCutscene,
     PhilippinesScene,
     EgyptCutscene,
     EgyptScene,
     MexicoCutscene,
     BrazilScene,
-    VietnamScene,
+    IndiaScene,
     Store,
     Inventory,
     Settings
