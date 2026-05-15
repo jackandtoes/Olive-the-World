@@ -14,7 +14,6 @@ class IndiaScene extends Phaser.Scene {
         this.maxLevel = data?.maxLevel || 3;
     }
 
-
     preload() {
         this.load.image('chile', 'assets/mexico/mexico_minigame_chile.png');
         this.load.spritesheet('biryani', 'assets/india/biryaniIngredients.png', {
@@ -43,14 +42,6 @@ class IndiaScene extends Phaser.Scene {
         
         // Create Ingredient group
         this.ingredientGroup = this.physics.add.group();
-
-        // // time event to spawn candy
-        // this.timedEvent = this.time.addEvent({
-        //     delay: 1000,
-        //     loop: true,
-        //     callback: this.spawnRandomIngredient,
-        //     callbackScope: this,
-        // });
 
         // collision detection
         this.physics.add.overlap(this.basket, this.ingredientGroup, this.handleBasketIngredientCollision, null, this);
@@ -154,10 +145,17 @@ class IndiaScene extends Phaser.Scene {
 
     endLevel(success = false) {
         this.gameIsOver = true;
+
         if (this.timedEvent) {
             this.timedEvent.remove(false);
             this.timedEvent = null;
         }
+
+        if (this.levelTimer) {
+            this.levelTimer.remove(false);
+            this.levelTimer = null;
+        }
+
         this.ingredientGroup.clear(true, true);
 
         if (success) {
@@ -214,18 +212,18 @@ class IndiaScene extends Phaser.Scene {
             fontStyle: "bold"
         }).setOrigin(0.5);
 
-        this.add.text(this.scale.width / 2, this.scale.height / 2 - 10, "Great job!", {
+        this.add.text(this.scale.width / 2, this.scale.height / 2 - 10, "Next Level", {
             fontSize: "24px",
             color: "#5a341d"
-        }).setOrigin(0.5);
-
-        this.add.text(this.scale.width / 2, this.scale.height / 2 + 30, "Next level loading...", {
+        }).setOrigin(0.5).setInteractive({ useHandCursor: true }).on('pointerdown', () => {
+            this.scene.restart({ level: this.currentLevel + 1, maxLevel: this.maxLevel });
+        });
+        
+        this.add.text(this.scale.width / 2, this.scale.height / 2 + 30, "Return to Map", {
             fontSize: "22px",
             color: "#5a341d"
-        }).setOrigin(0.5);
-
-        this.time.delayedCall(1200, () => {
-            this.scene.restart({ level: this.currentLevel + 1, maxLevel: this.maxLevel });
+        }).setOrigin(0.5).setInteractive({ useHandCursor: true }).on('pointerdown', () => {
+                this.scene.start("MapScene");
         });
     }
 
@@ -281,5 +279,38 @@ class IndiaScene extends Phaser.Scene {
             this.scene.start("MapScene");
         });
     }  
+
+    showVictory() {
+        this.add.rectangle(
+            this.scale.width / 2,
+            this.scale.height / 2,
+            this.scale.width,
+            this.scale.height,
+            0x000000,
+            0.35
+        );
+
+        this.add.rectangle(
+            this.scale.width / 2,
+            this.scale.height / 2,
+            480,
+            260,
+            0xfff8ef,
+            0.98
+        ).setStrokeStyle(3, 0x8d6237);
+
+        this.add.text(this.scale.width / 2, this.scale.height / 2 - 70, "You Win!", {
+            fontSize: "44px",
+            color: "#2f9e44",
+            fontStyle: "bold"
+        }).setOrigin(0.5);
+
+        this.add.text(this.scale.width / 2, this.scale.height / 2 + 30, "Return to Map", {
+            fontSize: "22px",
+            color: "#5a341d"
+        }).setOrigin(0.5).setInteractive({ useHandCursor: true }).on('pointerdown', () => {
+            this.scene.start("MapScene");
+        });
+    }
 
 }
