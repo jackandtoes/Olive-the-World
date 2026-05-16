@@ -1,8 +1,9 @@
 const INDIA_LEVELS = {
-  1: { targetScore: 50, spawnDelay: 1000, timeLimit: 10 },
-  2: { targetScore: 70, spawnDelay: 850, timeLimit: 25 },
-  3: { targetScore: 90, spawnDelay: 700, timeLimit: 20 }
+  1: { targetScore: 50, spawnDelay: 1000, timeLimit: 10, ingredientKey: "biryaniIngredients", frames: [0, 1, 2, 3, 4, 5, 6, 7] },
+  2: { targetScore: 70, spawnDelay: 850, timeLimit: 25, ingredientKey: "palakPaneerIngredients", frames: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] },
+  3: { targetScore: 90, spawnDelay: 700, timeLimit: 20, ingredientKey: "palakPaneerIngredients", frames: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] },
 };
+
 
 class IndiaScene extends Phaser.Scene {
     constructor() {
@@ -16,7 +17,13 @@ class IndiaScene extends Phaser.Scene {
 
     preload() {
         this.load.image('chile', 'assets/mexico/mexico_minigame_chile.png');
-        this.load.spritesheet('biryani', 'assets/india/biryaniIngredients.png', {
+
+        this.load.spritesheet('biryaniIngredients', 'assets/india/biryaniIngredients.png', {
+            frameWidth: 200,
+            frameHeight: 200
+        });
+
+        this.load.spritesheet('palakPaneerIngredients', 'assets/india/palakPaneerIngredients.png', {
             frameWidth: 200,
             frameHeight: 200
         });
@@ -110,21 +117,24 @@ class IndiaScene extends Phaser.Scene {
     }
 
     spawnRandomIngredient() {
-        const frameIndex = Phaser.Math.Between(0, 7);
+        const level = INDIA_LEVELS[this.currentLevel];
+        if (!level) {
+            return;
+        }
+
+        const frame = Phaser.Utils.Array.GetRandom(level.frames);
 
         const ingredient = this.ingredientGroup.create(
             Phaser.Math.Between(50, this.scale.width - 50),
             -40,
-            'biryani',
-            frameIndex
+            level.ingredientKey,
+            frame
         );
 
         ingredient.setScale(0.7);
         ingredient.body.setAllowGravity(true);
-        ingredient.setVelocityY(0);
-        ingredient.setVelocityX(0);
-        ingredient.setImmovable(false);
     }
+
 
     handleBasketIngredientCollision(basket, ingredient) {
         ingredient.disableBody(true, true);
