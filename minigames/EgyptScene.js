@@ -1,3 +1,195 @@
+class EgyptCutscene extends Phaser.Scene {
+  constructor() {
+    super("EgyptCutscene");
+  }
+
+  preload() {
+    this.load.image("olivePyramid", "assets/egypt/cutscene/olive_pyramids.png");
+    this.load.image("oliveEgyptRest", "assets/egypt/cutscene/olive_falafel_rest.png");
+    this.load.image("oliveChickpeaChef", "assets/egypt/cutscene/chickpea_chef.png");
+    // this.load.audio("egyptian_music", "assets/italy/cutscene/italian_music.mp3");
+  }
+
+  create() {
+    const width = this.scale.width;
+    const height = this.scale.height;
+    const seenCutscenes = this.registry.get("seenCutscenes") || {};
+    seenCutscenes.egypt = true;
+    this.registry.set("seenCutscenes", seenCutscenes);
+    this.slides = ["olivePyramid", "oliveEgyptRest", "oliveChickpeaChef"];
+    this.dialogueLines = [
+      "", 
+      "",
+      "Habibi, do you want to make falafel? \n First you have to dodge them!"
+    ];
+
+    this.cutsceneIndex = 0;
+    this.isTransitioningSlide = false;
+    this.isTyping = false;
+    this.currentTypingTimer = null;
+    this.fullText = "";
+
+    this.add.rectangle(width / 2, height / 2, width, height, 0x130e0b);
+
+    this.cutsceneImage = this.add.image(width / 2, height / 2, this.slides[0]).setAlpha(0);
+    this._fitCutsceneImage(this.cutsceneImage, width, height);
+    this.cutsceneDialogue();
+    // this.startEgyptianMusic();
+
+    this.cutsceneCaption = this.add.text(width / 2, height - 44, "Click or press SPACE to continue", {
+      fontSize: "22px",
+      fill: "#fff4dd",
+      backgroundColor: "#5a341d",
+      padding: { x: 14, y: 8 }
+    }).setOrigin(0.5);
+
+    this.cutsceneProgress = this.add.text(width / 2, 36, `1 / ${this.slides.length}`, {
+      fontSize: "24px",
+      fill: "#fff4dd"
+    }).setOrigin(0.5);
+
+    this.tweens.add({
+      targets: this.cutsceneImage,
+      alpha: 1,
+      duration: 450,
+      ease: "Sine.easeOut"
+    });
+
+    this.input.on("pointerdown", () => this.advanceCutscene());
+    this.input.keyboard.on("keydown-SPACE", () => this.advanceCutscene());
+    this.input.keyboard.on("keydown-ENTER", () => this.advanceCutscene());
+
+  }
+  // startEgyptianMusic() {
+  //   let egyptianMusic = this.sound.get("egyptian_music");
+  //   if (!egyptianMusic) {
+  //     egyptianMusic = this.sound.add("egyptian_music", { volume: 0.55, loop: true });
+  //   }
+  //   if (!egyptianMusic.isPlaying) {
+  //     egyptianMusic.play();
+  //   }
+  // }
+
+  // stopEgyptianMusic() {
+  //   this.sound.stopByKey("italian_music");
+  // }
+
+  cutsceneDialogue() {
+    const dialogueText = this.dialogueLines[this.cutsceneIndex] || "";
+
+    if (!this.dialogueText) {
+      this.dialogueText = this.add.text(
+        this.scale.width / 2,
+        this.scale.height - 100,
+        "",
+        {
+          fontSize: "24px",
+          fill: "#fff4dd",
+          align: "center",
+          wordWrap: { width: this.scale.width - 80 }
+        }
+      ).setOrigin(0.5);
+    }
+
+    this.animateText(this.dialogueText, dialogueText, 20);
+  }
+
+  _fitCutsceneImage(image, width, height) {
+    const scale = Math.min((width - 80) / image.width, (height - 120) / image.height);
+    image.setScale(scale);
+  }
+
+advanceCutscene() {
+  if (this.isTransitioningSlide) return;
+
+  // 👉 if still typing, finish instantly instead of advancing
+  if (this.isTyping) {
+    if (this.currentTypingTimer) {
+      this.currentTypingTimer.remove(false);
+      this.currentTypingTimer = null;
+    }
+    this.dialogueText.setText(this.fullText);
+    this.isTyping = false;
+    return;
+  }
+
+  const nextIndex = this.cutsceneIndex + 1;
+
+  if (nextIndex >= this.slides.length) {
+    this.isTransitioningSlide = true;
+    this.cameras.main.fadeOut(350, 19, 14, 11);
+    this.time.delayedCall(360, () => {
+      this.scene.start("EgyptScene");
+    });
+    return;
+  }
+
+  this.isTransitioningSlide = true;
+  this.tweens.add({
+    targets: this.cutsceneImage,
+    alpha: 0,
+    duration: 260,
+    ease: "Sine.easeInOut",
+    onComplete: () => {
+      this.cutsceneIndex = nextIndex;
+      this.cutsceneImage.setTexture(this.slides[this.cutsceneIndex]);
+      this._fitCutsceneImage(this.cutsceneImage, this.scale.width, this.scale.height);
+      this.cutsceneProgress.setText(`${this.cutsceneIndex + 1} / ${this.slides.length}`);
+      this.cutsceneDialogue();
+
+      this.tweens.add({
+        targets: this.cutsceneImage,
+        alpha: 1,
+        duration: 320,
+        ease: "Sine.easeInOut",
+        onComplete: () => {
+          this.isTransitioningSlide = false;
+        }
+      });
+    }
+  });
+}
+
+  animateText(target, message, speedInMs = 50) {
+    if (this.currentTypingTimer) {
+      this.currentTypingTimer.remove(false);
+      this.currentTypingTimer = null;
+    }
+
+    this.fullText = message;
+
+    if (!message) {
+      target.setText("");
+      this.isTyping = false;
+      return;
+    }
+
+    const invisibleMessage = message.replace(/[^\s]/g, " ");
+    target.setText("");
+
+    let visibleText = "";
+    this.isTyping = true;
+
+    this.currentTypingTimer = this.time.addEvent({
+      delay: speedInMs,
+      loop: true,
+      callback: () => {
+        if (visibleText.length >= message.length) {
+          target.setText(message);
+          this.currentTypingTimer.remove(false);
+          this.currentTypingTimer = null;
+          this.isTyping = false;
+          return;
+        }
+
+        visibleText += message[visibleText.length];
+        const invisiblePart = invisibleMessage.substring(visibleText.length);
+        target.setText(visibleText + invisiblePart);
+      },
+    });
+  }
+}
+
 class EgyptScene extends Phaser.Scene {
  constructor() {
    super("EgyptScene");
@@ -6,7 +198,11 @@ class EgyptScene extends Phaser.Scene {
   preload() {
     // Generate all assets procedurally using graphics
     this.generateAssets();
-    this.load.image('olive', 'assets/olive_favicon.png');
+    this.load.image('oliveOverjoyed', 'assets/olive_overjoyed.PNG');
+    this.load.image('oliveHatChef', 'assets/olive_hat_chef.PNG');
+    this.load.image('oliveHatJester', 'assets/olive_hat_jester.PNG');
+    this.load.image('oliveHatPropeller', 'assets/olive_hat_propeller.PNG');
+    this.load.image('oliveHatWizard', 'assets/olive_hat_wizard.PNG');
   }
  
   generateAssets() {
@@ -16,6 +212,7 @@ class EgyptScene extends Phaser.Scene {
   create(data) {
     const width = this.scale.width;
     const height = this.scale.height;
+
  
     this.palette = {
       bg:         0xfaf0cf,
@@ -151,7 +348,22 @@ class EgyptScene extends Phaser.Scene {
       this.scene.start("MapScene");
     });
   }
- 
+  
+  // startEgyptianMusic() {
+  //   let egyptianMusic = this.sound.get("egyptian_music");
+  //   if (!egyptianMusic) {
+  //     egyptianMusic = this.sound.add("egyptian_music", { volume: 0.55, loop: true });
+  //   }
+  //   if (!egyptianMusic.isPlaying) {
+  //     egyptianMusic.play();
+  //   }
+  //  }
+
+  // stopEgyptianMusic() {
+  //   this.sound.stopByKey("egyptian_music");
+  // }
+
+
   padScore(n) {
     return String(n).padStart(5, "0");
   }
@@ -195,7 +407,15 @@ class EgyptScene extends Phaser.Scene {
   // ─── Asset Creation ───────────────────────────────────────────────────────
  
 createDino() {
-  const olive = this.add.image(0, 0, 'olive');
+  const equippedHat = (this.registry.get('equippedItems') || { hat: null }).hat;
+  const oliveTextureByHat = {
+    chef: 'oliveHatChef',
+    jester: 'oliveHatJester',
+    propeller: 'oliveHatPropeller',
+    wizard: 'oliveHatWizard'
+  };
+  const oliveTexture = oliveTextureByHat[equippedHat] || 'oliveOverjoyed';
+  const olive = this.add.image(0, 0, oliveTexture);
   olive.setDisplaySize(64, 64);
   olive.setOrigin(0.5, 1); // 👈 important
   olive.setDepth(5);
@@ -529,7 +749,7 @@ createDino() {
     this.frameCount++;
  
     // Speed ramp
-    this.speed = 6 + Math.floor(this.score / 300) * 0.5;
+    this.speed = 6 + Math.floor(this.score / 100) * 0.5;
     if (this.speed > 18) this.speed = 18;
  
     // Score
@@ -538,11 +758,7 @@ createDino() {
       if (this.score > this.hiScore) this.hiScore = this.score;
       this.scoreText.setText("HI " + this.padScore(this.hiScore) + "  " + this.padScore(this.score));
     }
- 
-    // Milestone flash
-    if (this.score > 0 && this.score % 100 === 0 && this.frameCount % 6 === 0) {
-      this.cameras.main.flash(200, 255, 255, 255, false);
-    }
+
  
     // Clouds
     for (const cloud of this.clouds) {
@@ -690,7 +906,6 @@ createDino() {
         this.pteros.splice(i, 1);
       }
     }
- 
     // Collision detection
     this.checkCollisions();
   }
@@ -745,7 +960,23 @@ createDino() {
       }
     }
   }
- 
+
+addCoin(amount) {
+  let current = this.registry.get('currency');
+
+  if (current === undefined || current === null) {
+    current = 0;
+  }
+
+  current+= amount;
+  this.registry.set('currency', current);
+
+}
+  rewardCoins(){
+    if (this.score >= 200) {
+      this.addCoin(Math.floor(this.score/200));
+    }
+  }
   triggerGameOver() {
     this.gameOver = true;
  
@@ -762,5 +993,6 @@ createDino() {
  
     // Update score display
     this.scoreText.setText("HI " + this.padScore(this.hiScore) + "  " + this.padScore(this.score));
+    this.rewardCoins();
   }
 }

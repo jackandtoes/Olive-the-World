@@ -22,13 +22,16 @@ class StartScene extends Phaser.Scene {
     this.load.image("settingsbutton", "assets/settingsbutton.png");
     this.load.image("oliveFarmhouse", "assets/cutscene/olive_farmhouse.png");
     this.load.image("oliveBirthday", "assets/cutscene/olive_birthday.png");
-    this.load.image("philip_token", "assets/bronze_token_otw.png");
-    this.load.image("italy_token", "assets/silver_token.png");
-    this.load.image("mexico_token", "assets/gold_token_otw.png");
-    this.load.image("hatChef", "assets/hat_chef.PNG");
-    this.load.image("hatJester", "assets/hat_jester.PNG");
-    this.load.image("hatPropeller", "assets/hat_propeller.PNG");
-    this.load.image("hatWizard", "assets/hat_wizard.PNG");
+    this.load.image("philip_token", "assets/badges/badge_philippines.png");
+    this.load.image("italy_token", "assets/badges/badge_italy.png");
+    this.load.image("mexico_token", "assets/badges/badge_mexico.png");
+    this.load.image("egypt_token", "assets/badges/badge_egypt.png");
+    this.load.image("india_token", "assets/badges/badge_india.png");
+    this.load.image("brazil_token", "assets/badges/badge_brazil.png");
+    this.load.image("hatChef", "assets/hats/hat_chef.PNG");
+    this.load.image("hatJester", "assets/hats/hat_jester.PNG");
+    this.load.image("hatPropeller", "assets/hats/hat_propeller.PNG");
+    this.load.image("hatWizard", "assets/hats/hat_wizard.PNG");
     this.load.audio("birthday_song", "assets/cutscene/olive_birthday_song.MP3");
     this.load.image("oliveParents", "assets/cutscene/olive_parents.png");
     this.load.image("oliveConfession1", "assets/cutscene/olive_confession1.png");
@@ -259,6 +262,14 @@ class IntroCutscene extends Phaser.Scene {
       fill: "#fff4dd"
     }).setOrigin(0.5);
 
+    this.skipButton = this.add.text(width - 28, 28, "Skip", {
+      fontSize: "22px",
+      fill: "#fff4dd",
+      backgroundColor: "#5a341d",
+      padding: { x: 12, y: 8 }
+    }).setOrigin(1, 0).setInteractive({ useHandCursor: true });
+    this.skipButton.on("pointerdown", () => this.skipCutscene());
+
     this.tweens.add({
       targets: this.cutsceneImage,
       alpha: 1,
@@ -272,6 +283,7 @@ class IntroCutscene extends Phaser.Scene {
     this.input.on("pointerdown", () => this.advanceCutscene());
     this.input.keyboard.on("keydown-SPACE", () => this.advanceCutscene());
     this.input.keyboard.on("keydown-ENTER", () => this.advanceCutscene());
+    this.input.keyboard.on("keydown-ESC", () => this.skipCutscene());
     this.events.once("shutdown", () => this.stopBirthdaySong());
   }
 
@@ -352,6 +364,16 @@ advanceCutscene() {
   });
 }
 
+  skipCutscene() {
+    if (this.isTransitioningSlide) return;
+    this.isTransitioningSlide = true;
+    this.stopBirthdaySong();
+    this.cameras.main.fadeOut(350, 19, 14, 11);
+    this.time.delayedCall(360, () => {
+      this.scene.start("MapScene");
+    });
+  }
+
   playBirthdaySong() {
     if (!this.birthdaySong) {
       this.birthdaySong = this.sound.add("birthday_song", { volume: 0.55 });
@@ -421,15 +443,15 @@ class MapScene extends Phaser.Scene {
     this.load.image("flagMexico", "assets/Mexico_flag.png");
     this.load.image("flagEgypt", "assets/Egypt_flag.png");
     this.load.image("flagItaly", "assets/Italy_flag.png");
-    this.load.image("hatChef", "assets/hat_chef.PNG");
-    this.load.image("hatJester", "assets/hat_jester.PNG");
-    this.load.image("hatPropeller", "assets/hat_propeller.PNG");
-    this.load.image("hatWizard", "assets/hat_wizard.PNG");
-    this.load.image("oliveOverjoyed", "assets/olive_overjoyed.PNG");
-    this.load.image("oliveHatChef", "assets/olive_hat_chef.PNG");
-    this.load.image("oliveHatJester", "assets/olive_hat_jester.PNG");
-    this.load.image("oliveHatPropeller", "assets/olive_hat_propeller.PNG");
-    this.load.image("oliveHatWizard", "assets/olive_hat_wizard.PNG");
+    this.load.image("hatChef", "assets/hats/hat_chef.PNG");
+    this.load.image("hatJester", "assets/hats/hat_jester.PNG");
+    this.load.image("hatPropeller", "assets/hats/hat_propeller.PNG");
+    this.load.image("hatWizard", "assets/hats/hat_wizard.PNG");
+    this.load.image("oliveOverjoyed", "assets/olivesprites/olive_overjoyed.PNG");
+    this.load.image("oliveHatChef", "assets/olivesprites/olive_hat_chef.PNG");
+    this.load.image("oliveHatJester", "assets/olivesprites/olive_hat_jester.PNG");
+    this.load.image("oliveHatPropeller", "assets/olivesprites/olive_hat_propeller.PNG");
+    this.load.image("oliveHatWizard", "assets/olivesprites/olive_hat_wizard.PNG");
   }
 
   init(data) {
@@ -443,10 +465,10 @@ class MapScene extends Phaser.Scene {
       this.registry.set('ownedItems', {});
     }
     if (!this.registry.has('wins')) {
-      this.registry.set('wins', { mexico: false, italy: false, philippines: false, egypt: false, brazil: false });
+      this.registry.set('wins', { mexico: false, italy: false, philippines: false, egypt: false, brazil: false, india: false });
     }
     if (!this.registry.has('seenCutscenes')) {
-      this.registry.set('seenCutscenes', { italy: false });
+      this.registry.set('seenCutscenes', { italy: false, egypt: false, mexico: false });
     }
   }
 
@@ -577,15 +599,15 @@ class MapScene extends Phaser.Scene {
     this.countries = [];
 
     this.createCountry("Mexico", width * 0.3, height * 0.44,
-      "Whack piñatas.\nAvoid spicy chiles!", "MexicoScene", "MexicoStore", "flagMexico");
+      "Whack piñatas.\nAvoid spicy chiles!", "MexicoCutscene", "MexicoStore", "flagMexico");
     this.createCountry("Italy", width * 0.70, height * 0.35,
       "Fix pasta pipes.\nServe the perfect plate!", "ItalyCutscene", "ItalyStore", "flagItaly");
-    this.createCountry("Vietnam", width * 0.62, height * 0.27,
-      "A quick visit to Vietnam.\nTry the Vietnam scene!", "VietnamScene", "VietnamStore");
+    this.createCountry("India", width * 0.62, height * 0.27,
+      "A quick visit to India.\nTry the India scene!", "IndiaScene", "IndiaStore", "flagIndia");
     this.createCountry("Philippines", width * 1.1, height * 0.5,
-      "Collect lumpia ingredients.\nAvoid traffic!", "PhilippinesScene", "PhilippinesStore", "flagPhilippines");
+      "Collect lumpia ingredients.\nAvoid traffic!", "PhilippinesCutscene", "PhilippinesStore", "flagPhilippines");
     this.createCountry("Egypt", width * 0.76, height * 0.42,
-      "Run in the desert.\nDodge palm trees and flying falafels!", "EgyptScene", "EgyptStore", "flagEgypt");
+      "Run in the desert.\nDodge palm trees and flying falafels!", "EgyptCutscene", "EgyptStore", "flagEgypt");
     this.createCountry("Brazil", width * 0.45, height * 0.65,
       "Collect carnival ingredients.\nJump past floats and hazards!", "BrazilScene", "BrazilStore", null, "star");
     this.createInfoPanel();
@@ -643,6 +665,15 @@ class MapScene extends Phaser.Scene {
     const seenCutscenes = this.registry.get('seenCutscenes') || {};
     if (country.name === "Italy" && (wins.italy || seenCutscenes.italy)) {
       return "ItalyScene";
+    }
+    if (country.name === "Egypt" && (wins.egypt || seenCutscenes.egypt)) {
+      return "EgyptScene";
+    }
+    if (country.name === "Mexico" && (wins.mexico || seenCutscenes.mexico)) {
+      return "MexicoScene";
+    }
+    if (country.name === "Philippines" && (wins.philippines || seenCutscenes.philippines)) {
+      return "PhilippinesScene";
     }
     return country.sceneName;
   }
@@ -887,9 +918,13 @@ class Inventory extends Phaser.Scene {
 
     const cards = [
        { section: "Accessories", label: "No Hat", unlocked: true, texture: "oliveOverjoyed", tokenWidth: 74, tokenHeight: 74, ribbon: equippedItems.hat === null ? "Equipped" : "Click to unequip", accessoryKey: null },
-      { section: "Country Tokens", label: "Mexico", unlocked: wins.mexico, texture: "mexico_token", tokenWidth: 118, tokenHeight: 118, ribbon: "Collected" },
-      { section: "Country Tokens", label: "Italy", unlocked: wins.italy, texture: "italy_token", tokenWidth: 125, tokenHeight: 156.25, ribbon: "Collected" },
-      { section: "Country Tokens", label: "Philippines", unlocked: wins.philippines, texture: "philip_token", tokenWidth: 125, tokenHeight: 156.25, ribbon: "Collected" },
+      { section: "Country Tokens", label: "Mexico", unlocked: wins.mexico, texture: "mexico_token", tokenWidth: 150, tokenHeight: 150, ribbon: "Collected" },
+      { section: "Country Tokens", label: "Italy", unlocked: wins.italy, texture: "italy_token", tokenWidth: 150, tokenHeight: 150, ribbon: "Collected" },
+      { section: "Country Tokens", label: "Philippines", unlocked: wins.philippines, texture: "philip_token", tokenWidth: 150, tokenHeight: 150, ribbon: "Collected" },
+      { section: "Country Tokens", label: "Egypt", unlocked: wins.egypt, texture: "egypt_token", tokenWidth: 150, tokenHeight: 150, ribbon: "Collected" },
+      { section: "Country Tokens", label: "India", unlocked: wins.india, texture: "india_token", tokenWidth: 150, tokenHeight: 150, ribbon: "Collected" },
+      { section: "Country Tokens", label: "Brazil", unlocked: wins.brazil, texture: "brazil_token", tokenWidth: 150, tokenHeight: 150, ribbon: "Collected" },
+
      
       ...HAT_CATALOG.map((hat) => ({
         section: "Accessories",
@@ -1127,10 +1162,13 @@ const config = {
     MexicoScene,
     ItalyCutscene,
     ItalyScene,
+    PhilippinesCutscene,
     PhilippinesScene,
+    EgyptCutscene,
     EgyptScene,
+    MexicoCutscene,
     BrazilScene,
-    VietnamScene,
+    IndiaScene,
     Store,
     Inventory,
     Settings
