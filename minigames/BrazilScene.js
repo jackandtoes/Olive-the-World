@@ -638,10 +638,10 @@ class BrazilScene extends Phaser.Scene {
     const panel = this.add.rectangle(width / 2, height / 2, 530, 380, 0xf6f4eb, 0.98)
       .setStrokeStyle(3, this.palette.uiBorder, 1)
       .setScrollFactor(0).setDepth(depth + 2);
-    const accent = this.add.rectangle(width / 2, height / 2 - 140, 440, 6, this.palette.uiAccent, 0.95)
-      .setScrollFactor(0).setDepth(depth + 3);
+    // const accent = this.add.rectangle(width / 2, height / 2 - 140, 440, 6, this.palette.uiAccent, 0.95)
+    //   .setScrollFactor(0).setDepth(depth + 3);
 
-    return { width, height, depth, fade, panelShadow, panel, accent };
+    return { width, height, depth, fade, panelShadow, panel };
   }
 
   showVictory() {
