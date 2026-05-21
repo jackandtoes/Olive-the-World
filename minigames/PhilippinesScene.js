@@ -1,39 +1,229 @@
-const LEVEL_LAYOUTS = {
-  1: ["G", "G", "R", "G", "R", "R", "G", "R", "G", "G"],
-  2: ["G", "G", "W", "G", "W", "W", "G", "W", "G", "G"],
-  3: ["G", "W", "R", "G", "R", "W", "G", "W", "R", "G"],
-  4: ["G", "W", "R", "W", "G", "G", "R", "W", "R", "G"],
-  5: ["G", "W", "R", "R", "W", "W", "R", "R", "W", "G"],
-};
+class PhilippinesCutscene extends Phaser.Scene {
+  constructor() {
+    super("PhilippinesCutscene");
+  }
 
-const LANE_STYLES = {
-  G: {
-    base: 0x8fd694,
-    alt: 0x77c87e,
-    accent: 0xb7e4a6,
-    border: 0x5da565,
-  },
-  W: {
-    base: 0x2f8fcb,
-    alt: 0x2277ac,
-    accent: 0x7ad7f0,
-    border: 0x14557f,
-  },
-  R: {
-    base: 0x505861,
-    alt: 0x3f4650,
-    accent: 0xbcc2c9,
-    border: 0x292e35,
-  },
-};
+  preload() {
+    this.load.audio("filipino_music", "assets/philippines/cutscene/filipino_music.mp3");
+    this.load.image("oliveManila", "assets/philippines/cutscene/oliveManila.png");
+    this.load.image("oliveRest", "assets/philippines/cutscene/oliveRest.png");
+    this.load.image("oliveMangoChef", "assets/philippines/cutscene/oliveMangoChef.png");
+  }
 
-const OLIVE_TEXTURES = {
-  default: "oliveOverjoyed",
-  chef: "oliveHatChef",
-  jester: "oliveHatJester",
-  propeller: "oliveHatPropeller",
-  wizard: "oliveHatWizard",
-};
+  create() {
+    const width = this.scale.width;
+    const height = this.scale.height;
+    const seenCutscenes = this.registry.get("seenCutscenes") || {};
+    seenCutscenes.philippines = true;
+    this.registry.set("seenCutscenes", seenCutscenes);
+    this.slides = ["oliveManila", "oliveRest", "oliveMangoChef"];
+    this.dialogueLines = [
+      "",
+      "",
+      "Philippines"
+    ];
+
+    this.cutsceneIndex = 0;
+    this.isTransitioningSlide = false;
+    this.isTyping = false;
+    this.currentTypingTimer = null;
+    this.fullText = "";
+
+    this.add.rectangle(width / 2, height / 2, width, height, 0x130e0b);
+
+    this.cutsceneImage = this.add.image(width / 2, height / 2, this.slides[0]).setAlpha(0);
+    this._fitCutsceneImage(this.cutsceneImage, width, height);
+    this.cutsceneDialogue();
+    this.startPhilippinesMusic();
+
+    this.cutsceneCaption = this.add.text(width / 2, height - 44, "Click or press SPACE to continue", {
+      fontSize: "22px",
+      fill: "#fff4dd",
+      backgroundColor: "#5a341d",
+      padding: { x: 13, y: 8 }
+    }).setOrigin(0.5);
+
+    this.cutsceneProgress = this.add.text(width / 2, 36, `1 / ${this.slides.length}`, {
+      fontSize: "24px",
+      fill: "#fff4dd"
+    }).setOrigin(0.5);
+
+    this.tweens.add({
+      targets: this.cutsceneImage,
+      alpha: 1,
+      duration: 450,
+      ease: "Sine.easeOut"
+    });
+
+    this.input.on("pointerdown", () => this.advanceCutscene());
+    this.input.keyboard.on("keydown-SPACE", () => this.advanceCutscene());
+    this.input.keyboard.on("keydown-ENTER", () => this.advanceCutscene());
+  }
+
+  startPhilippinesMusic() {
+    let philippinesMusic = this.sound.get("filipino_music");
+    if (!philippinesMusic) {
+      philippinesMusic = this.sound.add("filipino_music", { volume: 0.55, loop: true });
+    }
+    if (!philippinesMusic.isPlaying) {
+      philippinesMusic.play();
+    }
+  }
+
+  stopPhilippinesMusic() {
+    this.sound.stopByKey("filipino_music");
+  }
+
+  cutsceneDialogue() {
+    const dialogueText = this.dialogueLines[this.cutsceneIndex] || "";
+
+    if (!this.dialogueText) {
+      this.dialogueText = this.add.text(
+        this.scale.width / 2,
+        this.scale.height - 100,
+        "",
+        {
+          fontSize: "24px",
+          fill: "#fff4dd",
+          align: "center",
+          wordWrap: { width: this.scale.width - 80 }
+        }
+      ).setOrigin(0.5);
+    }
+    this.animateText(this.dialogueText, dialogueText, 20);
+  }
+
+  _fitCutsceneImage(image, width, height) {
+    const scale = Math.min((width - 80) / image.width, (height - 120) / image.height);
+    image.setScale(scale);
+  }
+
+  advanceCutscene() {
+    if (this.isTransitioningSlide) return;
+
+    if (this.isTyping) {
+      if (this.currentTypingTimer) {
+        this.currentTypingTimer.remove(false);
+        this.currentTypingTimer = null;
+      }
+      this.dialogueText.setText(this.fullText);
+      this.isTyping = false;
+      return;
+    }
+
+    const nextIndex = this.cutsceneIndex + 1;
+
+    if (nextIndex >= this.slides.length) {
+      this.isTransitioningSlide = true;
+      this.cameras.main.fadeOut(350, 19, 14, 11);
+      this.time.delayedCall(360, () => {
+        this.scene.start("PhilippinesScene");
+      });
+      return;
+    }
+
+    this.isTransitioningSlide = true;
+    this.tweens.add({
+      targets: this.cutsceneImage,
+      alpha: 0,
+      duration: 260,
+      ease: "Sine.easeInOut",
+      onComplete: () => {
+        this.cutsceneIndex = nextIndex;
+        this.cutsceneImage.setTexture(this.slides[this.cutsceneIndex]);
+        this._fitCutsceneImage(this.cutsceneImage, this.scale.width, this.scale.height);
+        this.cutsceneProgress.setText(`${this.cutsceneIndex + 1} / ${this.slides.length}`);
+        this.cutsceneDialogue();
+
+        this.tweens.add({
+          targets: this.cutsceneImage,
+          alpha: 1,
+          duration: 320,
+          ease: "Sine.easeInOut",
+          onComplete: () => {
+            this.isTransitioningSlide = false;
+          }
+        });
+      }
+    });
+  }
+
+  animateText(target, message, speedInMs = 50) {
+    if (this.currentTypingTimer) {
+      this.currentTypingTimer.remove(false);
+      this.currentTypingTimer = null;
+    }
+
+    this.fullText = message;
+
+    if (!message) {
+      target.setText("");
+      this.isTyping = false;
+      return;
+    }
+
+    const invisibleMessage = message.replace(/[^\s]/g, " ");
+    target.setText("");
+
+    let visibleText = "";
+    this.isTyping = true;
+
+    this.currentTypingTimer = this.time.addEvent({
+      delay: speedInMs,
+      loop: true,
+      callback: () => {
+        if (visibleText.length >= message.length) {
+          target.setText(message);
+          this.currentTypingTimer.remove(false);
+          this.currentTypingTimer = null;
+          this.isTyping = false;
+          return;
+        }
+
+        visibleText += message[visibleText.length];
+        const invisiblePart = invisibleMessage.substring(visibleText.length);
+        target.setText(visibleText + invisiblePart);
+      },
+    });
+  }
+}
+
+  const LEVEL_LAYOUTS = {
+    1: ["G", "G", "R", "G", "R", "R", "G", "R", "G", "G"],
+    2: ["G", "G", "W", "G", "W", "W", "G", "W", "G", "G"],
+    3: ["G", "W", "R", "G", "R", "W", "G", "W", "R", "G"],
+    4: ["G", "W", "R", "W", "G", "G", "R", "W", "R", "G"],
+    5: ["G", "W", "R", "R", "W", "W", "R", "R", "W", "G"],
+  };
+
+  const LANE_STYLES = {
+    G: {
+      base: 0x8fd694,
+      alt: 0x77c87e,
+      accent: 0xb7e4a6,
+      border: 0x5da565,
+    },
+    W: {
+      base: 0x2f8fcb,
+      alt: 0x2277ac,
+      accent: 0x7ad7f0,
+      border: 0x14557f,
+    },
+    R: {
+      base: 0x505861,
+      alt: 0x3f4650,
+      accent: 0xbcc2c9,
+      border: 0x292e35,
+    },
+  };
+
+  const OLIVE_TEXTURES = {
+    default: "oliveOverjoyed",
+    chef: "oliveHatChef",
+    jester: "oliveHatJester",
+    propeller: "oliveHatPropeller",
+    wizard: "oliveHatWizard",
+  };
 
 class PhilippinesScene extends Phaser.Scene {
   constructor() {
@@ -75,11 +265,12 @@ class PhilippinesScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.image("oliveOverjoyed", "assets/olive_overjoyed.PNG");
-    this.load.image("oliveHatChef", "assets/olive_hat_chef.PNG");
-    this.load.image("oliveHatJester", "assets/olive_hat_jester.PNG");
-    this.load.image("oliveHatPropeller", "assets/olive_hat_propeller.PNG");
-    this.load.image("oliveHatWizard", "assets/olive_hat_wizard.PNG");
+    this.load.audio("filipino_music", "assets/philippines/cutscene/filipino_music.mp3");
+    this.load.image("oliveOverjoyed", "assets/olivesprites/olive_overjoyed.PNG");
+    this.load.image("oliveHatChef", "assets/olivesprites/olive_hat_chef.PNG");
+    this.load.image("oliveHatJester", "assets/olivesprites/olive_hat_jester.PNG");
+    this.load.image("oliveHatPropeller", "assets/olivesprites/olive_hat_propeller.PNG");
+    this.load.image("oliveHatWizard", "assets/olivesprites/olive_hat_wizard.PNG");
     this.load.image("itemcabbage", "assets/philippines/philippines_cabbage.PNG");
     this.load.image("itemcarrots", "assets/philippines/philippines_carrots.PNG");
     this.load.image("itemonion", "assets/philippines/philippines_onion.PNG");
@@ -91,6 +282,8 @@ class PhilippinesScene extends Phaser.Scene {
   }
 
   create() {
+    this.startPhilippinesMusic();
+
     const width = this.scale.width;
     const height = this.scale.height;
 
@@ -121,7 +314,26 @@ class PhilippinesScene extends Phaser.Scene {
     this.createUI();
 
     this.cursors = this.input.keyboard.createCursorKeys();
-    this.input.keyboard.on("keydown-ESC", () => this.scene.start("MapScene"));
+    this.input.keyboard.on("keydown-ESC", () => this.returnToMap());
+  }
+
+  startPhilippinesMusic() {
+    let philippinesMusic = this.sound.get("filipino_music");
+    if (!philippinesMusic) {
+      philippinesMusic = this.sound.add("filipino_music", { volume: 0.55, loop: true });
+    }
+    if (!philippinesMusic.isPlaying) {
+      philippinesMusic.play();
+    }
+  }
+
+  stopPhilippinesMusic() {
+    this.sound.stopByKey("filipino_music");
+  }
+
+  returnToMap() {
+    this.stopPhilippinesMusic();
+    this.scene.start("MapScene");
   }
 
   createBackdrop() {
@@ -845,7 +1057,7 @@ class PhilippinesScene extends Phaser.Scene {
     ).setOrigin(0.5);
 
     this._button(width / 2, height / 2 + 78, "Retry Level", () => this.scene.restart({ level: this.currentLevel }));
-    this._button(width / 2, height / 2 + 132, "Back to Map", () => this.scene.start("MapScene"));
+    this._button(width / 2, height / 2 + 132, "Back to Map", () => this.returnToMap());
   }
 
   showLevelComplete() {
@@ -865,7 +1077,7 @@ class PhilippinesScene extends Phaser.Scene {
       color: "#82553a",
     }).setOrigin(0.5);
     this._button(width / 2, height / 2 + 78, "Next Level", () => this.scene.restart({ level: this.currentLevel + 1 }));
-    this._button(width / 2, height / 2 + 132, "Back to Map", () => this.scene.start("MapScene"));
+    this._button(width / 2, height / 2 + 132, "Back to Map", () => this.returnToMap());
   }
 
   showVictory() {
@@ -887,6 +1099,6 @@ class PhilippinesScene extends Phaser.Scene {
       color: "#82553a",
     }).setOrigin(0.5);
     this._button(width / 2, height / 2 + 78, "Play Again", () => this.scene.restart({ level: 1 }));
-    this._button(width / 2, height / 2 + 132, "Back to Map", () => this.scene.start("MapScene"));
+    this._button(width / 2, height / 2 + 132, "Back to Map", () => this.returnToMap());
   }
 }

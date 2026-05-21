@@ -198,7 +198,11 @@ class EgyptScene extends Phaser.Scene {
   preload() {
     // Generate all assets procedurally using graphics
     this.generateAssets();
-    this.load.image('olive', 'assets/olive_favicon.png');
+    this.load.image('oliveOverjoyed', 'assets/olive_overjoyed.PNG');
+    this.load.image('oliveHatChef', 'assets/olive_hat_chef.PNG');
+    this.load.image('oliveHatJester', 'assets/olive_hat_jester.PNG');
+    this.load.image('oliveHatPropeller', 'assets/olive_hat_propeller.PNG');
+    this.load.image('oliveHatWizard', 'assets/olive_hat_wizard.PNG');
   }
  
   generateAssets() {
@@ -403,7 +407,15 @@ class EgyptScene extends Phaser.Scene {
   // ─── Asset Creation ───────────────────────────────────────────────────────
  
 createDino() {
-  const olive = this.add.image(0, 0, 'olive');
+  const equippedHat = (this.registry.get('equippedItems') || { hat: null }).hat;
+  const oliveTextureByHat = {
+    chef: 'oliveHatChef',
+    jester: 'oliveHatJester',
+    propeller: 'oliveHatPropeller',
+    wizard: 'oliveHatWizard'
+  };
+  const oliveTexture = oliveTextureByHat[equippedHat] || 'oliveOverjoyed';
+  const olive = this.add.image(0, 0, oliveTexture);
   olive.setDisplaySize(64, 64);
   olive.setOrigin(0.5, 1); // 👈 important
   olive.setDepth(5);
@@ -737,7 +749,7 @@ createDino() {
     this.frameCount++;
  
     // Speed ramp
-    this.speed = 6 + Math.floor(this.score / 300) * 0.5;
+    this.speed = 6 + Math.floor(this.score / 100) * 0.5;
     if (this.speed > 18) this.speed = 18;
  
     // Score
@@ -746,11 +758,7 @@ createDino() {
       if (this.score > this.hiScore) this.hiScore = this.score;
       this.scoreText.setText("HI " + this.padScore(this.hiScore) + "  " + this.padScore(this.score));
     }
- 
-    // Milestone flash
-    if (this.score > 0 && this.score % 100 === 0 && this.frameCount % 6 === 0) {
-      this.cameras.main.flash(200, 255, 255, 255, false);
-    }
+
  
     // Clouds
     for (const cloud of this.clouds) {
@@ -898,7 +906,6 @@ createDino() {
         this.pteros.splice(i, 1);
       }
     }
- 
     // Collision detection
     this.checkCollisions();
   }
@@ -953,7 +960,23 @@ createDino() {
       }
     }
   }
- 
+
+addCoin(amount) {
+  let current = this.registry.get('currency');
+
+  if (current === undefined || current === null) {
+    current = 0;
+  }
+
+  current+= amount;
+  this.registry.set('currency', current);
+
+}
+  rewardCoins(){
+    if (this.score >= 200) {
+      this.addCoin(Math.floor(this.score/200));
+    }
+  }
   triggerGameOver() {
     this.gameOver = true;
  
@@ -970,5 +993,6 @@ createDino() {
  
     // Update score display
     this.scoreText.setText("HI " + this.padScore(this.hiScore) + "  " + this.padScore(this.score));
+    this.rewardCoins();
   }
 }
