@@ -20,7 +20,7 @@ class PhilippinesCutscene extends Phaser.Scene {
     this.dialogueLines = [
       "",
       "",
-      "Philippines"
+      "Philippines" // change this later
     ];
 
     this.cutsceneIndex = 0;
