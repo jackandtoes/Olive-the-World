@@ -1,3 +1,190 @@
+class BrazilCutscene extends Phaser.Scene {
+  constructor() {
+    super("BrazilCutscene");
+  }
+
+  preload() {
+    this.load.audio("brazil_music", "assets/brazil/cutscene/brazil_music.mp3");
+  }
+
+  create() {
+    const width = this.scale.width;
+    const height = this.scale.height;
+    const seenCutscenes = this.registry.get("seenCutscenes") || {};
+    seenCutscenes.brazil = true;
+    this.registry.set("seenCutscenes", seenCutscenes);
+    this.slides = ["1", "2", "3"];
+    this.dialogueLines = [
+      "",
+      "",
+      "Brazil" // change this later
+    ];
+
+    this.cutsceneIndex = 0;
+    this.isTransitioningSlide = false;
+    this.isTyping = false;
+    this.currentTypingTimer = null;
+    this.fullText = "";
+
+    this.add.rectangle(width / 2, height / 2, width, height, 0x130e0b);
+
+    this.cutsceneImage = this.add.image(width / 2, height / 2, this.slides[0]).setAlpha(0);
+    this._fitCutsceneImage(this.cutsceneImage, width, height);
+    this.cutsceneDialogue();
+    this.startBrazilMusic();
+
+    this.cutsceneCaption = this.add.text(width / 2, height - 44, "Click or press SPACE to continue", {
+      fontSize: "22px",
+      fill: "#fff4dd",
+      backgroundColor: "#5a341d",
+      padding: { x: 13, y: 8 }
+    }).setOrigin(0.5);
+
+    this.cutsceneProgress = this.add.text(width / 2, 36, `1 / ${this.slides.length}`, {
+      fontSize: "24px",
+      fill: "#fff4dd"
+    }).setOrigin(0.5);
+
+    this.tweens.add({
+      targets: this.cutsceneImage,
+      alpha: 1,
+      duration: 450,
+      ease: "Sine.easeOut"
+    });
+
+    this.input.on("pointerdown", () => this.advanceCutscene());
+    this.input.keyboard.on("keydown-SPACE", () => this.advanceCutscene());
+    this.input.keyboard.on("keydown-ENTER", () => this.advanceCutscene());
+  }
+
+  startBrazilMusic() {
+    let brazilMusic = this.sound.get("brazil_music");
+    if (!brazilMusic) {
+      brazilMusic = this.sound.add("brazil_music", { volume: 0.55, loop: true });
+    }
+    if (!brazilMusic.isPlaying) {
+      brazilMusic.play();
+    }
+  }
+
+  stopBrazilMusic() {
+    this.sound.stopByKey("brazil_music");
+  }
+
+  cutsceneDialogue() {
+    const dialogueText = this.dialogueLines[this.cutsceneIndex] || "";
+
+    if (!this.dialogueText) {
+      this.dialogueText = this.add.text(
+        this.scale.width / 2,
+        this.scale.height - 100,
+        "",
+        {
+          fontSize: "24px",
+          fill: "#fff4dd",
+          align: "center",
+          wordWrap: { width: this.scale.width - 80 }
+        }
+      ).setOrigin(0.5);
+    }
+    this.animateText(this.dialogueText, dialogueText, 20);
+  }
+
+  _fitCutsceneImage(image, width, height) {
+    const scale = Math.min((width - 80) / image.width, (height - 120) / image.height);
+    image.setScale(scale);
+  }
+
+  advanceCutscene() {
+    if (this.isTransitioningSlide) return;
+
+    if (this.isTyping) {
+      if (this.currentTypingTimer) {
+        this.currentTypingTimer.remove(false);
+        this.currentTypingTimer = null;
+      }
+      this.dialogueText.setText(this.fullText);
+      this.isTyping = false;
+      return;
+    }
+
+    const nextIndex = this.cutsceneIndex + 1;
+
+    if (nextIndex >= this.slides.length) {
+      this.isTransitioningSlide = true;
+      this.cameras.main.fadeOut(350, 19, 14, 11);
+      this.time.delayedCall(360, () => {
+        this.scene.start("BrazilScene");
+      });
+      return;
+    }
+
+    this.isTransitioningSlide = true;
+    this.tweens.add({
+      targets: this.cutsceneImage,
+      alpha: 0,
+      duration: 260,
+      ease: "Sine.easeInOut",
+      onComplete: () => {
+        this.cutsceneIndex = nextIndex;
+        this.cutsceneImage.setTexture(this.slides[this.cutsceneIndex]);
+        this._fitCutsceneImage(this.cutsceneImage, this.scale.width, this.scale.height);
+        this.cutsceneProgress.setText(`${this.cutsceneIndex + 1} / ${this.slides.length}`);
+        this.cutsceneDialogue();
+
+        this.tweens.add({
+          targets: this.cutsceneImage,
+          alpha: 1,
+          duration: 320,
+          ease: "Sine.easeInOut",
+          onComplete: () => {
+            this.isTransitioningSlide = false;
+          }
+        });
+      }
+    });
+  }
+
+  animateText(target, message, speedInMs = 50) {
+    if (this.currentTypingTimer) {
+      this.currentTypingTimer.remove(false);
+      this.currentTypingTimer = null;
+    }
+
+    this.fullText = message;
+
+    if (!message) {
+      target.setText("");
+      this.isTyping = false;
+      return;
+    }
+
+    const invisibleMessage = message.replace(/[^\s]/g, " ");
+    target.setText("");
+
+    let visibleText = "";
+    this.isTyping = true;
+
+    this.currentTypingTimer = this.time.addEvent({
+      delay: speedInMs,
+      loop: true,
+      callback: () => {
+        if (visibleText.length >= message.length) {
+          target.setText(message);
+          this.currentTypingTimer.remove(false);
+          this.currentTypingTimer = null;
+          this.isTyping = false;
+          return;
+        }
+
+        visibleText += message[visibleText.length];
+        const invisiblePart = invisibleMessage.substring(visibleText.length);
+        target.setText(visibleText + invisiblePart);
+      },
+    });
+  }
+}
+
 const BRAZIL_PLATFORM_LEVELS = [
   {
     heights: [4, 7, 5, null, 5, 4, null, 4, 4], // larger number = lower platform, null = no platform
@@ -61,6 +248,9 @@ class BrazilScene extends Phaser.Scene {
 
   preload() {
     this.load.image("oliveOverjoyed", "assets/olive_overjoyed.PNG");
+    this.load.image("background", "assets/brazil/brazil_background.PNG");
+    this.load.image("skyline", "assets/brazil/brazil_skyline.PNG");
+    this.load.image("buildings", "assets/brazil/brazil_buildings.PNG");
   }
 
   create() {
@@ -135,42 +325,6 @@ class BrazilScene extends Phaser.Scene {
     graphics.generateTexture("brazilParticle", 12, 12);
     graphics.clear();
 
-    graphics.fillStyle(0x7fb3d5, 1);
-    graphics.fillRect(0, 0, 1400, 600);
-    graphics.fillStyle(0x9ad1d4, 1);
-    graphics.fillEllipse(240, 440, 420, 220);
-    graphics.fillEllipse(820, 400, 500, 210);
-    graphics.fillEllipse(1180, 445, 360, 180);
-    graphics.generateTexture("brazilBgFar", 1400, 600);
-    graphics.clear();
-
-    graphics.fillStyle(0x6d9dc5, 1);
-    graphics.fillRect(0, 0, 1700, 600);
-    for (let i = 0; i < 14; i++) {
-      graphics.fillStyle(i % 2 === 0 ? 0x4d7ea8 : 0x7f5539, 1);
-      graphics.fillRect(i * 120, 260 - (i % 3) * 25, 90, 300);
-      graphics.fillStyle(0xfefae0, 0.55);
-      graphics.fillRect(i * 120 + 16, 320, 14, 18);
-      graphics.fillRect(i * 120 + 42, 350, 14, 18);
-      graphics.fillRect(i * 120 + 60, 390, 14, 18);
-    }
-    graphics.generateTexture("brazilBgMid", 1700, 600);
-    graphics.clear();
-
-    graphics.fillStyle(0xcdb4db, 1);
-    graphics.fillRect(0, 0, 2000, 600);
-    for (let i = 0; i < 18; i++) {
-      graphics.fillStyle(i % 2 === 0 ? 0xffafcc : 0xbde0fe, 1);
-      graphics.fillRect(i * 112, 430, 88, 120);
-      graphics.fillStyle(0xffffff, 0.85);
-      graphics.fillRect(i * 112 + 18, 450, 12, 12);
-      graphics.fillRect(i * 112 + 42, 470, 12, 12);
-      graphics.fillRect(i * 112 + 56, 492, 12, 12);
-    }
-    graphics.fillStyle(0x5b4b49, 1);
-    graphics.fillRect(0, 552, 2000, 48);
-    graphics.generateTexture("brazilBgNear", 2000, 600);
-
     graphics.destroy();
   }
 
@@ -185,23 +339,51 @@ class BrazilScene extends Phaser.Scene {
         0xffffff
       );
       star.setScrollFactor(Math.random() * 0.1);
+      star.setDepth(-24);
       star.setVisible(false);
       this.stars.push(star);
     }
   }
 
   createParallaxBackgrounds() {
-    this.bgColor = this.add.rectangle(0, 0, this.scale.width, this.scale.height, 0x0571ff)
+    const viewportWidth = this.scale.width;
+    const viewportHeight = this.scale.height;
+    const maxCameraScroll = this.sceneWidth - viewportWidth;
+    const backgroundFactor = 0.18;
+    const skylineFactor = 0.38;
+    const buildingsFactor = 0.62;
+    const backgroundSource = this.textures.get("background").getSourceImage();
+    const skylineSource = this.textures.get("skyline").getSourceImage();
+    const buildingsSource = this.textures.get("buildings").getSourceImage();
+    const backgroundWidth = viewportWidth + maxCameraScroll * backgroundFactor;
+    const skylineWidth = viewportWidth + maxCameraScroll * skylineFactor;
+    const buildingsWidth = viewportWidth + maxCameraScroll * buildingsFactor;
+    const backgroundHeight = backgroundWidth * (backgroundSource.height / backgroundSource.width);
+    const skylineHeight = skylineWidth * (skylineSource.height / skylineSource.width);
+    const buildingsHeight = buildingsWidth * (buildingsSource.height / buildingsSource.width);
+
+    this.bgColor = this.add.rectangle(0, 0, viewportWidth, viewportHeight, 0x0571ff)
       .setOrigin(0, 0)
-      .setScrollFactor(0);
+      .setScrollFactor(0)
+      .setDepth(-30);
 
-    this.bg1 = this.add.image(0, 0, "brazilBgFar").setOrigin(0, 0);
-    this.bg2 = this.add.image(0, 0, "brazilBgMid").setOrigin(0, 0);
-    this.bg3 = this.add.image(0, 0, "brazilBgNear").setOrigin(0, 0);
+    this.bg1 = this.add.image(0, 0, "background")
+      .setOrigin(0, 0)
+      .setScrollFactor(backgroundFactor)
+      .setDepth(-28)
+      .setDisplaySize(backgroundWidth, backgroundHeight);
 
-    this.bg1.setScrollFactor(0.2);
-    this.bg2.setScrollFactor(0.5);
-    this.bg3.setScrollFactor(1);
+    this.bg2 = this.add.image(0, -180, "skyline")
+      .setOrigin(0, 0)
+      .setScrollFactor(skylineFactor)
+      .setDepth(-22)
+      .setDisplaySize(skylineWidth, skylineHeight);
+
+    this.bg3 = this.add.image(0, viewportHeight + 28, "buildings")
+      .setOrigin(0, 1)
+      .setScrollFactor(buildingsFactor)
+      .setDepth(-18)
+      .setDisplaySize(buildingsWidth, buildingsHeight);
   }
 
   createPlatforms() {
@@ -283,7 +465,7 @@ class BrazilScene extends Phaser.Scene {
     });
   }
 
-  createParticles() {
+  createParticles() { // confetti
     this.emitter = this.add.particles(0, 0, "brazilParticle", {
       x: { min: 0, max: this.scale.width * 2 },
       y: -5,
@@ -456,10 +638,10 @@ class BrazilScene extends Phaser.Scene {
     const panel = this.add.rectangle(width / 2, height / 2, 530, 380, 0xf6f4eb, 0.98)
       .setStrokeStyle(3, this.palette.uiBorder, 1)
       .setScrollFactor(0).setDepth(depth + 2);
-    const accent = this.add.rectangle(width / 2, height / 2 - 140, 440, 6, this.palette.uiAccent, 0.95)
-      .setScrollFactor(0).setDepth(depth + 3);
+    // const accent = this.add.rectangle(width / 2, height / 2 - 140, 440, 6, this.palette.uiAccent, 0.95)
+    //   .setScrollFactor(0).setDepth(depth + 3);
 
-    return { width, height, depth, fade, panelShadow, panel, accent };
+    return { width, height, depth, fade, panelShadow, panel };
   }
 
   showVictory() {
@@ -575,7 +757,7 @@ class BrazilScene extends Phaser.Scene {
       this.player.anims.play("brazilJump", true);
     }
 
-    if (this.player.y > this.bg3.height) {
+    if (this.player.y > this.scale.height + 120) {
       this.active = false;
       this.cameras.main.shake(240, 0.01, false, (camera, progress) => {
         if (progress > 0.9) {
