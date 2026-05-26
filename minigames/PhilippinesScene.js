@@ -20,7 +20,7 @@ class PhilippinesCutscene extends Phaser.Scene {
     this.dialogueLines = [
       "",
       "",
-      "Philippines"
+      "Philippines" // change this later
     ];
 
     this.cutsceneIndex = 0;
@@ -993,8 +993,8 @@ class PhilippinesScene extends Phaser.Scene {
     const panelShadow = this.add.rectangle(width / 2 + 6, height / 2 + 8, 530, 380, 0x5e685d, 0.14);
     const panel = this.add.rectangle(width / 2, height / 2, 530, 380, 0xf6f4eb, 0.98)
       .setStrokeStyle(3, this.palette.uiBorder, 1);
-    const accent = this.add.rectangle(width / 2, height / 2 - 140, 440, 6, this.palette.uiAccent, 0.95);
-    return { width, height, fade, panelShadow, panel, accent };
+    //const accent = this.add.rectangle(width / 2, height / 2 - 140, 440, 6, this.palette.uiAccent, 0.95);
+    return { width, height, fade, panelShadow, panel };
   }
 
   _button(x, y, label, cb, depth = 30) {

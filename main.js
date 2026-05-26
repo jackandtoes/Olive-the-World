@@ -6,6 +6,23 @@ const HAT_CATALOG = [
 ];
 
 const MAP_OLIVE_TARGET_HEIGHT = 38;
+let backgroundMusic = null;
+
+function startBackgroundMusic(scene) {
+  if (!backgroundMusic) {
+    backgroundMusic = scene.sound.add("background_music", { volume: 0.55, loop: true });
+  }
+
+  if (!backgroundMusic.isPlaying) {
+    backgroundMusic.play();
+  }
+}
+
+function stopBackgroundMusic() {
+  if (backgroundMusic && backgroundMusic.isPlaying) {
+    backgroundMusic.stop();
+  }
+}
 
 // ===============================
 // START SCENE
@@ -39,9 +56,13 @@ class StartScene extends Phaser.Scene {
     this.load.image("oliveConfession3", "assets/cutscene/olive_confession3.png");
     this.load.image("oliveConcernedParents", "assets/cutscene/concerned_olive_parents.png");
     this.load.image("oliveDetermined", "assets/cutscene/olive_determined.png");
+    this.load.audio("background_music", "assets/background_music.mp3");
   }
 
   create() {
+
+    startBackgroundMusic(this);
+
     const width = this.scale.width;
     const height = this.scale.height;
 
@@ -154,6 +175,7 @@ class StartScene extends Phaser.Scene {
 
     this.cutsceneDialogue();
   }
+
 animateText(target, speedInMs = 25) {
   const message = target.text;
   const invisibleMessage = message.replace(/[^ ]/g, " ");
@@ -219,10 +241,11 @@ animateText(target, speedInMs = 25) {
 class IntroCutscene extends Phaser.Scene {
   constructor() {
     super("IntroCutscene");
-
   }
 
   create() {
+    startBackgroundMusic(this);
+
     const width = this.scale.width;
     const height = this.scale.height;
     this.slides = ["oliveFarmhouse", "oliveBirthday", "oliveParents", "oliveConfession1", "oliveConfession2", "oliveConfession3", "oliveConcernedParents", "oliveDetermined"];
@@ -473,6 +496,8 @@ class MapScene extends Phaser.Scene {
   }
 
   create() {
+    startBackgroundMusic(this);
+
     //Sets the background
     const width = this.scale.width;
     const height = this.scale.height;
@@ -654,6 +679,7 @@ class MapScene extends Phaser.Scene {
     }).setInteractive();
     playButton.on("pointerdown", () => {
       if (this.currentCountry) {
+        stopBackgroundMusic();
         this.scene.start(this.getCountrySceneName(this.currentCountry));
       }
     });
