@@ -491,7 +491,7 @@ class MapScene extends Phaser.Scene {
       this.registry.set('wins', { mexico: false, italy: false, philippines: false, egypt: false, brazil: false, india: false });
     }
     if (!this.registry.has('seenCutscenes')) {
-      this.registry.set('seenCutscenes', { italy: false, egypt: false, mexico: false });
+      this.registry.set('seenCutscenes', { mexico: false, italy: false, philippines: false, egypt: false, brazil: false, india: false });
     }
   }
 
@@ -624,17 +624,17 @@ class MapScene extends Phaser.Scene {
     this.countries = [];
 
     this.createCountry("Mexico", width * 0.3, height * 0.44,
-      "Whack piñatas.\nAvoid spicy chiles!", "MexicoCutscene", "MexicoStore", "flagMexico");
+      "Whack piñatas.\nAvoid spicy chiles!", "MexicoCutscene", "flagMexico");
     this.createCountry("Italy", width * 0.70, height * 0.35,
-      "Fix pasta pipes.\nServe the perfect plate!", "ItalyCutscene", "ItalyStore", "flagItaly");
+      "Fix pasta pipes.\nServe the perfect plate!", "ItalyCutscene", "flagItaly");
     this.createCountry("India", width * 0.62, height * 0.27,
-      "A quick visit to India.\nTry the India scene!", "IndiaScene", "IndiaStore", "flagIndia");
+      "A quick visit to India.\nTry the India scene!", "IndiaScene", "flagIndia");
     this.createCountry("Philippines", width * 1.1, height * 0.5,
-      "Collect lumpia ingredients.\nAvoid traffic!", "PhilippinesCutscene", "PhilippinesStore", "flagPhilippines");
+      "Collect lumpia ingredients.\nAvoid traffic!", "PhilippinesCutscene", "flagPhilippines");
     this.createCountry("Egypt", width * 0.76, height * 0.42,
-      "Run in the desert.\nDodge palm trees and flying falafels!", "EgyptCutscene", "EgyptStore", "flagEgypt");
+      "Run in the desert.\nDodge palm trees and flying falafels!", "EgyptCutscene", "flagEgypt");
     this.createCountry("Brazil", width * 0.45, height * 0.65,
-      "Collect carnival ingredients.\nJump past floats and hazards!", "BrazilScene", "BrazilStore", null, "star");
+      "Collect carnival ingredients.\nJump past floats and hazards!", "BrazilCutscene", "BrazilScene", "flagBrazil");
     this.createInfoPanel();
     this.updatePlayerAppearance();
 
@@ -700,6 +700,9 @@ class MapScene extends Phaser.Scene {
     }
     if (country.name === "Philippines" && (wins.philippines || seenCutscenes.philippines)) {
       return "PhilippinesScene";
+    }
+    if (country.name === "Brazil" && (wins.brazil || seenCutscenes.brazil)) {
+      return "BrazilScene";
     }
     return country.sceneName;
   }
