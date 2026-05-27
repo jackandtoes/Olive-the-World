@@ -208,7 +208,6 @@ class StartScene extends Phaser.Scene {
       });
     });
 
-    this.cutsceneDialogue();
   }
 
 animateText(target, speedInMs = 25) {
@@ -549,13 +548,53 @@ class MapScene extends Phaser.Scene {
     this.cameras.main.setBounds(0, 0, worldWidth, worldHeight);
     this.cameras.main.setZoom(2.5);
 
-    //Store Button
-    const storeButton = this.add.text(250, 190, "Store", {
+    // Top-left navigation buttons
+    const navButtonStyle = {
       fontSize: "10px",
       fill: "#000000",
       backgroundColor: "#ffc4e3",
       padding: { x: 10, y: 5 }
-    }).setOrigin(0, 0).setInteractive().setScrollFactor(0).setDepth(30);
+    };
+
+    const returnButton = this.add.text(250, 190, "Return", navButtonStyle)
+      .setOrigin(0, 0)
+      .setInteractive({ useHandCursor: true })
+      .setScrollFactor(0)
+      .setDepth(30);
+
+    returnButton.on("pointerover", () => {
+      this.tweens.add({
+        targets: returnButton,
+        scaleX: 1.05,
+        scaleY: 1.05,
+        duration: 140,
+        ease: "Sine.easeOut"
+      });
+      returnButton.setBackgroundColor("#ef7cac");
+    });
+
+    returnButton.on("pointerout", () => {
+      this.tweens.add({
+        targets: returnButton,
+        scaleX: 1,
+        scaleY: 1,
+        duration: 140,
+        ease: "Sine.easeOut",
+      });
+      returnButton.setBackgroundColor("#ffc4e3");
+    });
+
+    returnButton.on("pointerdown", () => {
+      this.scene.start("StartScene");
+    });
+
+
+    //Store Button
+    const storeButton = this.add.text(310, 190, "Store", navButtonStyle)
+      .setOrigin(0, 0)
+      .setInteractive({ useHandCursor: true })
+      .setScrollFactor(0)
+      .setDepth(30);
 
     storeButton.on("pointerover", () => {
       this.tweens.add({
@@ -584,12 +623,11 @@ class MapScene extends Phaser.Scene {
     });
 
     //Inventory Button
-    const inventoryButton = this.add.text(350, 200, "Inventory", {
-      fontSize: "10px",
-      fill: "#000000",
-      backgroundColor: "#ffc4e3",
-      padding: { x: 10, y: 5 }
-    }).setOrigin(0.5).setInteractive().setScrollFactor(0).setDepth(20);
+    const inventoryButton = this.add.text(365, 190, "Inventory", navButtonStyle)
+      .setOrigin(0, 0)
+      .setInteractive({ useHandCursor: true })
+      .setScrollFactor(0)
+      .setDepth(30);
     inventoryButton.on("pointerdown", () => {
       this.scene.start("Inventory");
     });
@@ -620,7 +658,7 @@ class MapScene extends Phaser.Scene {
     const settingsButton = this.add.image(540, 200, "settingsbutton")
       .setOrigin(0.5)
       .setScale(0.03)
-      .setInteractive()
+      .setInteractive({ useHandCursor: true })
       .setScrollFactor(0)
       .setDepth(30);
     settingsButton.on("pointerdown", () => {
