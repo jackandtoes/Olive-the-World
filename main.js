@@ -61,11 +61,13 @@ class StartScene extends Phaser.Scene {
 
   create() {
 
-    startBackgroundMusic(this);
-
     const width = this.scale.width;
     const height = this.scale.height;
 
+    // Start background music for the start scene
+    startBackgroundMusic(this);
+
+    // Adds background 
     this.add.rectangle(width / 2, height / 2, width, height, 0x1a140f).setDepth(-30);
 
     const backdrop = this.add.image(width / 2, height / 2 + 10, "homeBg");
@@ -88,9 +90,11 @@ class StartScene extends Phaser.Scene {
     const buttonShadow = this.add.ellipse(width / 2, height * 0.81 + 18, 320, 62, 0x000000, 0.28)
       .setDepth(7);
     buttonShadow.setAlpha(0);
+    
     const startButton = this.add.image(width / 2, height * 0.81, "startBtn")
       .setInteractive({ useHandCursor: true })
       .setDepth(8);
+    
     const buttonScale = Math.min(0.62, (width * 0.44) / startButton.width);
     startButton.setScale(buttonScale);
     startButton.setAlpha(0);
@@ -171,6 +175,37 @@ class StartScene extends Phaser.Scene {
       duration: 520,
       delay: 560,
       ease: "Sine.easeOut"
+    });
+
+    //Settings Button
+    const settingsButton = this.add.image(750, 550, "settingsbutton")
+      .setOrigin(0.5)
+      .setScale(0.08)
+      .setInteractive()
+      .setScrollFactor(0)
+      .setDepth(30);
+    settingsButton.on("pointerdown", () => {
+      this.scene.start("Settings", { returnTo: "StartScene" });
+    });
+
+    settingsButton.on("pointerover", () => {
+      this.tweens.add({
+        targets: settingsButton,
+        scaleX: 0.08 * 1.06,
+        scaleY: 0.08 * 1.06,
+        duration: 140,
+        ease: "Sine.easeOut"
+      });
+    });
+
+    settingsButton.on("pointerout", () => {
+      this.tweens.add({
+        targets: settingsButton,
+        scaleX: 0.08,
+        scaleY: 0.08,
+        duration: 140,
+        ease: "Sine.easeOut",
+      });
     });
 
     this.cutsceneDialogue();
@@ -589,7 +624,7 @@ class MapScene extends Phaser.Scene {
       .setScrollFactor(0)
       .setDepth(30);
     settingsButton.on("pointerdown", () => {
-      this.scene.start("Settings");
+      this.scene.start("Settings", { returnTo: "MapScene" });
     });
 
     settingsButton.on("pointerover", () => {
@@ -1143,23 +1178,77 @@ class Settings extends Phaser.Scene {
     super("Settings");
   }
 
+  init(data) {
+    this.returnTo = data?.returnTo || "MapScene";
+  }
+
   create() {
     const width = this.scale.width;
     const height = this.scale.height;
-    this.add.rectangle(width / 2, height / 2, width, height, 0xffeaa7);
-    this.add.text(width / 2, 60, "Settings", {
-      fontSize: "36px",
-      fill: "#ffffff"
+
+    this.add.rectangle(width / 2, height / 2, width, height, 0x000000, 0.45);
+
+    const panel = this.add.rectangle(width / 2, height / 2, 420, 300, 0xfff4e3)
+      .setStrokeStyle(4, 0x6b3e1f);
+
+    this.add.text(width / 2, height / 2 - 110, "Settings", {
+      fontSize: "40px",
+      color: "#6b3e1f",
+      fontStyle: "bold"
     }).setOrigin(0.5);
 
-    this.add.text(width / 2, height - 50, "Press ESC to return to map", {
-      fontSize: "20px",
-      fill: "#000"
+    const musicText = this.add.text(width / 2, height / 2 - 25, "", {
+      fontSize: "24px",
+      color: "#5a341d"
     }).setOrigin(0.5);
 
-    this.input.keyboard.on("keydown-ESC", () => {
-      this.scene.start("MapScene");
+    const refreshMusicLabel = () => {
+      const isMuted = backgroundMusic ? backgroundMusic.mute : false;
+      musicText.setText(`Music: ${isMuted ? "Off" : "On"}`);
+    };
+
+    const toggleMusicButton = this.add.text(width / 2, height / 2 + 25, "Toggle Music", {
+      fontSize: "22px",
+      color: "#ffffff",
+      backgroundColor: "#5a341d",
+      padding: { x: 14, y: 8 }
+    }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+
+    toggleMusicButton.on("pointerdown", () => {
+      if (backgroundMusic) {
+        backgroundMusic.setMute(!backgroundMusic.mute);
+      }
+      refreshMusicLabel();
     });
+
+    const backButton = this.add.text(width / 2, height / 2 + 85, this.returnTo === "StartScene" ? "Back to Start" : "Back to Map", {
+      fontSize: "22px",
+      color: "#ffffff",
+      backgroundColor: "#5a341d",
+      padding: { x: 14, y: 8 }
+    }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+
+    const goBack = () => {
+      if (this.isReturning) return;
+      this.isReturning = true;
+      this.cameras.main.fadeOut(220, 0, 0, 0);
+      this.time.delayedCall(240, () => {
+        this.scene.stop();
+        this.scene.start(this.returnTo);
+      });
+    };
+
+    backButton.on("pointerdown", goBack);
+
+    this.input.keyboard.on("keydown-ESC", goBack);
+
+    this.cameras.main.fadeIn(180, 0, 0, 0);
+
+    refreshMusicLabel();
+    this.add.text(width / 2, height / 2 + 145, "ESC to return", {
+      fontSize: "16px",
+      color: "#8a5d34"
+    }).setOrigin(0.5);
   }
 }
 
