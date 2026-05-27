@@ -1211,6 +1211,10 @@ class Inventory extends Phaser.Scene {
   }
 }
 
+// ===============================
+// Settings Scene
+// ===============================
+
 class Settings extends Phaser.Scene {
   constructor() {
     super("Settings");
@@ -1218,6 +1222,11 @@ class Settings extends Phaser.Scene {
 
   init(data) {
     this.returnTo = data?.returnTo || "MapScene";
+    this.isReturning = false;
+
+    if (!this.registry.has("musicVolume")) {
+      this.registry.set("musicVolume", backgroundMusic ? backgroundMusic.volume : 0.55);
+    }
   }
 
   create() {
@@ -1245,17 +1254,41 @@ class Settings extends Phaser.Scene {
       musicText.setText(`Music: ${isMuted ? "Off" : "On"}`);
     };
 
-    const toggleMusicButton = this.add.text(width / 2, height / 2 + 25, "Toggle Music", {
-      fontSize: "22px",
-      color: "#ffffff",
-      backgroundColor: "#5a341d",
-      padding: { x: 14, y: 8 }
-    }).setOrigin(0.5).setInteractive({ useHandCursor: true });
-
-    toggleMusicButton.on("pointerdown", () => {
+    const applyMusicVolume = (volume) => {
+      const clampedVolume = Phaser.Math.Clamp(volume, 0, 1);
+      this.registry.set("musicVolume", clampedVolume);
+      this.sound.volume = clampedVolume;
       if (backgroundMusic) {
-        backgroundMusic.setMute(!backgroundMusic.mute);
+        backgroundMusic.setVolume(clampedVolume);
       }
+      return clampedVolume;
+    };
+
+    const scrollBar = this.add.rectangle(width / 2, height / 2 + 15, 200, 8, 0xd9b97d)
+      .setStrokeStyle(2, 0x000000, 0.6)
+      .setOrigin(0.5);
+
+    const scrollHandle = this.add.circle(width / 2, height / 2 + 15, 12, 0xe0bb67)
+      .setStrokeStyle(2, 0x000000, 0.6)
+      .setInteractive({ useHandCursor: true })
+      .setOrigin(0.5);
+
+    this.input.setDraggable(scrollHandle);
+
+    const minX = scrollBar.x - scrollBar.width / 2;
+    const maxX = scrollBar.x + scrollBar.width / 2;
+    const savedVolume = Phaser.Math.Clamp(this.registry.get("musicVolume") ?? 0.55, 0, 1);
+
+    applyMusicVolume(savedVolume);
+    scrollHandle.x = Phaser.Math.Linear(minX, maxX, savedVolume);
+
+    scrollHandle.on("drag", (pointer, dragX) => {
+      const clampedX = Phaser.Math.Clamp(dragX, minX, maxX);
+
+      const volume = (clampedX - minX) / scrollBar.width;
+
+      applyMusicVolume(volume);
+      scrollHandle.x = clampedX;
       refreshMusicLabel();
     });
 
@@ -1271,7 +1304,6 @@ class Settings extends Phaser.Scene {
       this.isReturning = true;
       this.cameras.main.fadeOut(220, 0, 0, 0);
       this.time.delayedCall(240, () => {
-        this.scene.stop();
         this.scene.start(this.returnTo);
       });
     };
