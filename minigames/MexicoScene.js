@@ -874,6 +874,7 @@ class MexicoScene extends Phaser.Scene {
                     .setInteractive();
                 backButton.on('pointerdown', () => {
                     this.scene.start('MapScene');
+                    this.stopMexicanMusic();
                 });
                 const playButton = this.add.text(width/2, height/2 + 120, 'Play Again', 
                     { fontSize: '24px', fill: '#00ff00' })
@@ -898,6 +899,7 @@ class MexicoScene extends Phaser.Scene {
                     .setInteractive();
                 backButton.on('pointerdown', () => {
                     this.scene.start('MapScene');
+                    this.stopMexicanMusic();
                 });
                 const playButton = this.add.text(width/2, height/2 + 120, 'Play Again', 
                     { fontSize: '24px', fill: '#00ff00' })

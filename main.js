@@ -894,6 +894,14 @@ class MapScene extends Phaser.Scene {
       this.infoPanel.setVisible(false);
     }
   }
+
+  checkOliveWin() {
+    const wins = this.registry.get('wins') || {};
+    if (wins.italy) {
+      this.scene.start("StartScene");
+    }
+  }
+
 }
 
 // ===============================
@@ -1364,6 +1372,223 @@ class Settings extends Phaser.Scene {
   }
 }
 
+class OliveWinScene extends Phaser.Scene {
+  constructor() {
+    super("OliveWinScene");
+  }
+
+  create() {
+    const width = this.scale.width;
+    const height = this.scale.height;
+    this.slides = ["oliveFarmhouse", "oliveBirthday", "oliveParents", "oliveConfession1", "oliveConfession2", "oliveConfession3", "oliveConcernedParents", "oliveDetermined"];
+    this.dialogueLines = [
+      "", 
+      "",
+      "... happy birthday to you ...",
+      "Mama, papa, I want to leave this town",
+      "I want to see the world!\n I'm done with this small lil' town.",
+      "I want to experience what all olives should!\n I want to travel the world as a world class chef",
+      "Oh, baby — that’s a big step to make! But if you are confident then—",
+      "I won’t let you down!"
+    ];
+
+    this.cutsceneIndex = 0;
+    this.isTransitioningSlide = false;
+    this.birthdaySong = null;
+    this.isTyping = false;
+    this.currentTypingTimer = null;
+    this.fullText = "";
+
+    this.add.rectangle(width / 2, height / 2, width, height, 0x130e0b);
+
+    this.cutsceneImage = this.add.image(width / 2, height / 2, this.slides[0]).setAlpha(0);
+    this._fitCutsceneImage(this.cutsceneImage, width, height);
+    this.cutsceneDialogue();
+
+    this.cutsceneCaption = this.add.text(width / 2, height - 44, "Click or press SPACE to continue", {
+      fontSize: "22px",
+      fill: "#fff4dd",
+      backgroundColor: "#5a341d",
+      padding: { x: 14, y: 8 }
+    }).setOrigin(0.5);
+
+    this.cutsceneProgress = this.add.text(width / 2, 36, `1 / ${this.slides.length}`, {
+      fontSize: "24px",
+      fill: "#fff4dd"
+    }).setOrigin(0.5);
+
+    this.skipButton = this.add.text(width - 28, 28, "Skip", {
+      fontSize: "22px",
+      fill: "#fff4dd",
+      backgroundColor: "#5a341d",
+      padding: { x: 12, y: 8 }
+    }).setOrigin(1, 0).setInteractive({ useHandCursor: true });
+    this.skipButton.on("pointerdown", () => this.skipCutscene());
+
+    this.tweens.add({
+      targets: this.cutsceneImage,
+      alpha: 1,
+      duration: 450,
+      ease: "Sine.easeOut",
+      onComplete: () => {
+        //this.playBirthdaySong();
+      }
+    });
+
+    this.input.on("pointerdown", () => this.advanceCutscene());
+    this.input.keyboard.on("keydown-SPACE", () => this.advanceCutscene());
+    this.input.keyboard.on("keydown-ENTER", () => this.advanceCutscene());
+    this.input.keyboard.on("keydown-ESC", () => this.skipCutscene());
+    this.events.once("shutdown", () => this.stopBirthdaySong());
+  }
+
+  cutsceneDialogue() {
+    const dialogueText = this.dialogueLines[this.cutsceneIndex] || "";
+
+    if (!this.dialogueText) {
+      this.dialogueText = this.add.text(
+        this.scale.width / 2,
+        this.scale.height - 100,
+        "",
+        {
+          fontSize: "24px",
+          fill: "#fff4dd",
+          align: "center",
+          wordWrap: { width: this.scale.width - 80 }
+        }
+      ).setOrigin(0.5);
+    }
+
+    this.animateText(this.dialogueText, dialogueText, 20);
+  }
+
+  _fitCutsceneImage(image, width, height) {
+    const scale = Math.min((width - 80) / image.width, (height - 120) / image.height);
+    image.setScale(scale);
+  }
+
+advanceCutscene() {
+  if (this.isTransitioningSlide) return;
+
+  // 👉 if still typing, finish instantly instead of advancing
+  if (this.isTyping) {
+    if (this.currentTypingTimer) {
+      this.currentTypingTimer.remove(false);
+      this.currentTypingTimer = null;
+    }
+    this.dialogueText.setText(this.fullText);
+    this.isTyping = false;
+    return;
+  }
+
+  const nextIndex = this.cutsceneIndex + 1;
+
+  if (nextIndex >= this.slides.length) {
+    this.isTransitioningSlide = true;
+    this.stopBirthdaySong();
+    this.cameras.main.fadeOut(350, 19, 14, 11);
+    this.time.delayedCall(360, () => {
+      this.scene.start("MapScene");
+    });
+    return;
+  }
+
+  this.isTransitioningSlide = true;
+  this.tweens.add({
+    targets: this.cutsceneImage,
+    alpha: 0,
+    duration: 260,
+    ease: "Sine.easeInOut",
+    onComplete: () => {
+      this.cutsceneIndex = nextIndex;
+      this.cutsceneImage.setTexture(this.slides[this.cutsceneIndex]);
+      this._fitCutsceneImage(this.cutsceneImage, this.scale.width, this.scale.height);
+      this.cutsceneProgress.setText(`${this.cutsceneIndex + 1} / ${this.slides.length}`);
+      this.cutsceneDialogue();
+
+      this.tweens.add({
+        targets: this.cutsceneImage,
+        alpha: 1,
+        duration: 320,
+        ease: "Sine.easeInOut",
+        onComplete: () => {
+          this.isTransitioningSlide = false;
+        }
+      });
+    }
+  });
+}
+
+  skipCutscene() {
+    if (this.isTransitioningSlide) return;
+    this.isTransitioningSlide = true;
+    this.stopBirthdaySong();
+    this.cameras.main.fadeOut(350, 19, 14, 11);
+    this.time.delayedCall(360, () => {
+      this.scene.start("MapScene");
+    });
+  }
+
+  playBirthdaySong() {
+    if (!this.birthdaySong) {
+      this.birthdaySong = this.sound.add("birthday_song", { volume: 0.55 });
+    }
+    if (!this.birthdaySong.isPlaying) {
+      this.birthdaySong.play();
+    }
+  }
+
+  stopBirthdaySong() {
+    if (this.birthdaySong && this.birthdaySong.isPlaying) {
+      this.birthdaySong.stop();
+    }
+  }
+
+  animateText(target, message, speedInMs = 50) {
+    if (this.currentTypingTimer) {
+      this.currentTypingTimer.remove(false);
+      this.currentTypingTimer = null;
+    }
+
+    this.fullText = message;
+
+    if (!message) {
+      target.setText("");
+      this.isTyping = false;
+      return;
+    }
+
+    const invisibleMessage = message.replace(/[^\s]/g, " ");
+    target.setText("");
+
+    let visibleText = "";
+    this.isTyping = true;
+
+    this.currentTypingTimer = this.time.addEvent({
+      delay: speedInMs,
+      loop: true,
+      callback: () => {
+        if (visibleText.length >= message.length) {
+          target.setText(message);
+          this.currentTypingTimer.remove(false);
+          this.currentTypingTimer = null;
+          this.isTyping = false;
+          return;
+        }
+
+        visibleText += message[visibleText.length];
+        const invisiblePart = invisibleMessage.substring(visibleText.length);
+        target.setText(visibleText + invisiblePart);
+      },
+    });
+  }
+
+}
+
+
+
+
+
 // ===============================
 // GAME CONFIG
 // ===============================
@@ -1394,11 +1619,13 @@ const config = {
     EgyptCutscene,
     EgyptScene,
     MexicoCutscene,
+    BrazilCutscene,
     BrazilScene,
     IndiaScene,
     Store,
     Inventory,
-    Settings
+    Settings,
+    OliveWinScene
   ],
   scale: {
     mode: Phaser.Scale.FIT,
