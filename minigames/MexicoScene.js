@@ -881,6 +881,7 @@ class MexicoScene extends Phaser.Scene {
                     .setOrigin(0.5)
                     .setInteractive();
                 playButton.on('pointerdown', () => {
+                    playButtonClickSfx(this);
                     this.scene.start('MexicoScene');
                 });
                 const wins = this.registry.get('wins');
@@ -906,6 +907,7 @@ class MexicoScene extends Phaser.Scene {
                     .setOrigin(0.5)
                     .setInteractive();
                 playButton.on('pointerdown', () => {
+                    playButtonClickSfx(this);
                     this.scene.start('MexicoScene');
                 });
             }
