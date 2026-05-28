@@ -60,6 +60,7 @@ class EgyptCutscene extends Phaser.Scene {
     this.input.keyboard.on("keydown-ENTER", () => this.advanceCutscene());
 
   }
+  
   startEgyptMusic() {
     let egyptMusic = this.sound.get("egypt_music");
     if (!egyptMusic) {
@@ -202,7 +203,7 @@ class EgyptScene extends Phaser.Scene {
     this.load.image('oliveHatJester', 'assets/olive_hat_jester.PNG');
     this.load.image('oliveHatPropeller', 'assets/olive_hat_propeller.PNG');
     this.load.image('oliveHatWizard', 'assets/olive_hat_wizard.PNG');
-    this.load.audio('egypt_music', 'assets/egypt/egypt_music.mp3');
+    this.load.audio('egypt_music', 'assets/egypt/cutscene/egypt_music.mp3');
   }
 
   generateAssets() {
@@ -383,10 +384,6 @@ class EgyptScene extends Phaser.Scene {
     if (!egyptMusic.isPlaying) {
       egyptMusic.play();
     }
-    this.input.keyboard.on("keydown-ESC", () => {
-      this.scene.start("MapScene");
-      this.checkOliveWin();
-    });
   }
 
   stopEgyptMusic() {
@@ -1157,8 +1154,6 @@ class EgyptScene extends Phaser.Scene {
     }
   }
 
-  addCoin(amount) {
-    let current = this.registry.get('currency');
   showWinBanner() {
     this.winBannerShown = true;
     this.winBanner.setVisible(true);
@@ -1193,8 +1188,8 @@ class EgyptScene extends Phaser.Scene {
     });
   }
 
-addCoin(amount) {
-  let current = this.registry.get('currency');
+  addCoin(amount) {
+    let current = this.registry.get('currency');
 
     if (current === undefined || current === null) {
       current = 0;
@@ -1202,8 +1197,8 @@ addCoin(amount) {
 
     current += amount;
     this.registry.set('currency', current);
-
   }
+
   rewardCoins() {
     if (this.score >= 200) {
       this.addCoin(Math.floor(this.score / 200));
@@ -1241,6 +1236,7 @@ addCoin(amount) {
     if (wins.italy && wins.philippines && wins.egypt && wins.mexico) {
       return true;
     }
+    return false;
   }
 
 }
