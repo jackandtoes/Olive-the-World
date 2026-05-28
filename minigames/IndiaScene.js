@@ -432,6 +432,7 @@ class IndiaScene extends Phaser.Scene {
             fontSize: "24px",
             color: "#5a341d"
         }).setOrigin(0.5).setInteractive({ useHandCursor: true }).on('pointerdown', () => {
+            playButtonClickSfx(this);
             this.scene.restart({ level: this.currentLevel + 1, maxLevel: this.maxLevel });
         });
         
@@ -439,7 +440,8 @@ class IndiaScene extends Phaser.Scene {
             fontSize: "22px",
             color: "#5a341d"
         }).setOrigin(0.5).setInteractive({ useHandCursor: true }).on('pointerdown', () => {
-                this.scene.start("MapScene");
+            playButtonClickSfx(this);
+            this.returnToMap();
         });
     }
 
@@ -485,6 +487,7 @@ class IndiaScene extends Phaser.Scene {
             fontSize: "24px",
             color: "#5a341d"
         }).setOrigin(0.5).setInteractive({ useHandCursor: true }).on('pointerdown', () => {
+            playButtonClickSfx(this);
             this.scene.restart({ level: this.currentLevel, maxLevel: this.maxLevel });
         });
 
@@ -492,7 +495,8 @@ class IndiaScene extends Phaser.Scene {
             fontSize: "22px",
             color: "#5a341d"
         }).setOrigin(0.5).setInteractive({ useHandCursor: true }).on('pointerdown', () => {
-            this.scene.start("MapScene");
+            playButtonClickSfx(this);
+            this.returnToMap();
         });
     }
 
@@ -525,7 +529,8 @@ class IndiaScene extends Phaser.Scene {
             fontSize: "22px",
             color: "#5a341d"
         }).setOrigin(0.5).setInteractive({ useHandCursor: true }).on('pointerdown', () => {
-            this.scene.start("MapScene");
+            playButtonClickSfx(this);
+            this.returnToMap();
         });
     }
 
