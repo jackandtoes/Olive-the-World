@@ -215,6 +215,11 @@ class IndiaScene extends Phaser.Scene {
             frameWidth: 200,
             frameHeight: 200
         });
+
+        this.load.spritesheet('samosasIngredients', 'assets/india/samosasIngredients.png', {
+            frameWidth: 200,
+            frameHeight: 200
+        });
     }
 
     create() {
@@ -532,6 +537,10 @@ class IndiaScene extends Phaser.Scene {
             playButtonClickSfx(this);
             this.returnToMap();
         });
+
+        const wins = this.registry.get('wins');
+        wins.india = true;
+        this.registry.set('wins', wins);
     }
 
 }
