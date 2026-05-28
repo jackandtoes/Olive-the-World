@@ -640,8 +640,13 @@ class BrazilScene extends Phaser.Scene {
     text.on("pointerover", activateHover);
     bg.on("pointerout", deactivateHover);
     text.on("pointerout", deactivateHover);
-    bg.on("pointerdown", cb);
-    text.on("pointerdown", cb);
+    const handleClick = () => {
+      playButtonClickSfx(this);
+      cb();
+    };
+
+    bg.on("pointerdown", handleClick);
+    text.on("pointerdown", handleClick);
 
     return this.add.container(0, 0, [shadow, bg, text]).setScrollFactor(0).setDepth(depth);
   }
