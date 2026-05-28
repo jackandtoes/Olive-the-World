@@ -186,10 +186,11 @@ class IndiaCutscene extends Phaser.Scene {
 }
 
 const INDIA_LEVELS = {
-    1: { targetScore: 50, spawnDelay: 1000, timeLimit: 10 },
-    2: { targetScore: 70, spawnDelay: 850, timeLimit: 25 },
-    3: { targetScore: 90, spawnDelay: 700, timeLimit: 20 }
+  1: { targetScore: 50, spawnDelay: 1000, timeLimit: 10, ingredientKey: "biryaniIngredients", frames: [0, 1, 2, 3, 4, 5, 6, 7] },
+  2: { targetScore: 70, spawnDelay: 850, timeLimit: 25, ingredientKey: "palakPaneerIngredients", frames: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] },
+  3: { targetScore: 90, spawnDelay: 700, timeLimit: 20, ingredientKey: "palakPaneerIngredients", frames: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] },
 };
+
 
 class IndiaScene extends Phaser.Scene {
     constructor() {
@@ -201,11 +202,16 @@ class IndiaScene extends Phaser.Scene {
         this.maxLevel = data?.maxLevel || 3;
     }
 
-
     preload() {
         this.load.audio("india_music", "assets/india/cutscene/india_music.mp3");
         this.load.image('chile', 'assets/mexico/mexico_minigame_chile.png');
-        this.load.spritesheet('biryani', 'assets/india/biryaniIngredients.png', {
+
+        this.load.spritesheet('biryaniIngredients', 'assets/india/biryaniIngredients.png', {
+            frameWidth: 200,
+            frameHeight: 200
+        });
+
+        this.load.spritesheet('palakPaneerIngredients', 'assets/india/palakPaneerIngredients.png', {
             frameWidth: 200,
             frameHeight: 200
         });
@@ -231,14 +237,6 @@ class IndiaScene extends Phaser.Scene {
         this.input.keyboard.on("keydown-ESC", () => this.returnToMap());
         // Create Ingredient group
         this.ingredientGroup = this.physics.add.group();
-
-        // // time event to spawn candy
-        // this.timedEvent = this.time.addEvent({
-        //     delay: 1000,
-        //     loop: true,
-        //     callback: this.spawnRandomIngredient,
-        //     callbackScope: this,
-        // });
 
         // collision detection
         this.physics.add.overlap(this.basket, this.ingredientGroup, this.handleBasketIngredientCollision, null, this);
@@ -326,21 +324,24 @@ class IndiaScene extends Phaser.Scene {
     }
 
     spawnRandomIngredient() {
-        const frameIndex = Phaser.Math.Between(0, 7);
+        const level = INDIA_LEVELS[this.currentLevel];
+        if (!level) {
+            return;
+        }
+
+        const frame = Phaser.Utils.Array.GetRandom(level.frames);
 
         const ingredient = this.ingredientGroup.create(
             Phaser.Math.Between(50, this.scale.width - 50),
             -40,
-            'biryani',
-            frameIndex
+            level.ingredientKey,
+            frame
         );
 
         ingredient.setScale(0.7);
         ingredient.body.setAllowGravity(true);
-        ingredient.setVelocityY(0);
-        ingredient.setVelocityX(0);
-        ingredient.setImmovable(false);
     }
+
 
     handleBasketIngredientCollision(basket, ingredient) {
         ingredient.disableBody(true, true);
@@ -361,10 +362,17 @@ class IndiaScene extends Phaser.Scene {
 
     endLevel(success = false) {
         this.gameIsOver = true;
+
         if (this.timedEvent) {
             this.timedEvent.remove(false);
             this.timedEvent = null;
         }
+
+        if (this.levelTimer) {
+            this.levelTimer.remove(false);
+            this.levelTimer = null;
+        }
+
         this.ingredientGroup.clear(true, true);
 
         if (success) {
@@ -420,18 +428,18 @@ class IndiaScene extends Phaser.Scene {
             fontStyle: "bold"
         }).setOrigin(0.5);
 
-        this.add.text(this.scale.width / 2, this.scale.height / 2 - 10, "Great job!", {
+        this.add.text(this.scale.width / 2, this.scale.height / 2 - 10, "Next Level", {
             fontSize: "24px",
             color: "#5a341d"
-        }).setOrigin(0.5);
-
-        this.add.text(this.scale.width / 2, this.scale.height / 2 + 30, "Next level loading...", {
+        }).setOrigin(0.5).setInteractive({ useHandCursor: true }).on('pointerdown', () => {
+            this.scene.restart({ level: this.currentLevel + 1, maxLevel: this.maxLevel });
+        });
+        
+        this.add.text(this.scale.width / 2, this.scale.height / 2 + 30, "Return to Map", {
             fontSize: "22px",
             color: "#5a341d"
-        }).setOrigin(0.5);
-
-        this.time.delayedCall(1200, () => {
-            this.scene.restart({ level: this.currentLevel + 1, maxLevel: this.maxLevel });
+        }).setOrigin(0.5).setInteractive({ useHandCursor: true }).on('pointerdown', () => {
+                this.scene.start("MapScene");
         });
     }
 
@@ -479,6 +487,39 @@ class IndiaScene extends Phaser.Scene {
         }).setOrigin(0.5).setInteractive({ useHandCursor: true }).on('pointerdown', () => {
             this.scene.restart({ level: this.currentLevel, maxLevel: this.maxLevel });
         });
+
+        this.add.text(this.scale.width / 2, this.scale.height / 2 + 30, "Return to Map", {
+            fontSize: "22px",
+            color: "#5a341d"
+        }).setOrigin(0.5).setInteractive({ useHandCursor: true }).on('pointerdown', () => {
+            this.scene.start("MapScene");
+        });
+    }
+
+    showVictory() {
+        this.add.rectangle(
+            this.scale.width / 2,
+            this.scale.height / 2,
+            this.scale.width,
+            this.scale.height,
+            0x000000,
+            0.35
+        );
+
+        this.add.rectangle(
+            this.scale.width / 2,
+            this.scale.height / 2,
+            480,
+            260,
+            0xfff8ef,
+            0.98
+        ).setStrokeStyle(3, 0x8d6237);
+
+        this.add.text(this.scale.width / 2, this.scale.height / 2 - 70, "You Win!", {
+            fontSize: "44px",
+            color: "#2f9e44",
+            fontStyle: "bold"
+        }).setOrigin(0.5);
 
         this.add.text(this.scale.width / 2, this.scale.height / 2 + 30, "Return to Map", {
             fontSize: "22px",
