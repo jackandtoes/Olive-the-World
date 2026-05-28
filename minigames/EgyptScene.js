@@ -7,7 +7,7 @@ class EgyptCutscene extends Phaser.Scene {
     this.load.image("olivePyramid", "assets/egypt/cutscene/olive_pyramids.png");
     this.load.image("oliveEgyptRest", "assets/egypt/cutscene/olive_falafel_rest.png");
     this.load.image("oliveChickpeaChef", "assets/egypt/cutscene/chickpea_chef.png");
-    // this.load.audio("egyptian_music", "assets/italy/cutscene/italian_music.mp3");
+    this.load.audio("egypt_music", "assets/egypt/cutscene/egypt_music.mp3");
   }
 
   create() {
@@ -18,7 +18,7 @@ class EgyptCutscene extends Phaser.Scene {
     this.registry.set("seenCutscenes", seenCutscenes);
     this.slides = ["olivePyramid", "oliveEgyptRest", "oliveChickpeaChef"];
     this.dialogueLines = [
-      "", 
+      "",
       "",
       "Habibi, do you want to make falafel? \n First you have to dodge them!"
     ];
@@ -34,7 +34,7 @@ class EgyptCutscene extends Phaser.Scene {
     this.cutsceneImage = this.add.image(width / 2, height / 2, this.slides[0]).setAlpha(0);
     this._fitCutsceneImage(this.cutsceneImage, width, height);
     this.cutsceneDialogue();
-    // this.startEgyptianMusic();
+    this.startEgyptMusic();
 
     this.cutsceneCaption = this.add.text(width / 2, height - 44, "Click or press SPACE to continue", {
       fontSize: "22px",
@@ -60,19 +60,19 @@ class EgyptCutscene extends Phaser.Scene {
     this.input.keyboard.on("keydown-ENTER", () => this.advanceCutscene());
 
   }
-  // startEgyptianMusic() {
-  //   let egyptianMusic = this.sound.get("egyptian_music");
-  //   if (!egyptianMusic) {
-  //     egyptianMusic = this.sound.add("egyptian_music", { volume: 0.55, loop: true });
-  //   }
-  //   if (!egyptianMusic.isPlaying) {
-  //     egyptianMusic.play();
-  //   }
-  // }
+  startEgyptMusic() {
+    let egyptMusic = this.sound.get("egypt_music");
+    if (!egyptMusic) {
+      egyptMusic = this.sound.add("egypt_music", { volume: 0.55, loop: true });
+    }
+    if (!egyptMusic.isPlaying) {
+      egyptMusic.play();
+    }
+  }
 
-  // stopEgyptianMusic() {
-  //   this.sound.stopByKey("italian_music");
-  // }
+  stopEgyptMusic() {
+    this.sound.stopByKey("egypt_music");
+  }
 
   cutsceneDialogue() {
     const dialogueText = this.dialogueLines[this.cutsceneIndex] || "";
@@ -99,56 +99,55 @@ class EgyptCutscene extends Phaser.Scene {
     image.setScale(scale);
   }
 
-advanceCutscene() {
-  if (this.isTransitioningSlide) return;
+  advanceCutscene() {
+    if (this.isTransitioningSlide) return;
 
-  // 👉 if still typing, finish instantly instead of advancing
-  if (this.isTyping) {
-    if (this.currentTypingTimer) {
-      this.currentTypingTimer.remove(false);
-      this.currentTypingTimer = null;
+    if (this.isTyping) {
+      if (this.currentTypingTimer) {
+        this.currentTypingTimer.remove(false);
+        this.currentTypingTimer = null;
+      }
+      this.dialogueText.setText(this.fullText);
+      this.isTyping = false;
+      return;
     }
-    this.dialogueText.setText(this.fullText);
-    this.isTyping = false;
-    return;
-  }
 
-  const nextIndex = this.cutsceneIndex + 1;
+    const nextIndex = this.cutsceneIndex + 1;
 
-  if (nextIndex >= this.slides.length) {
-    this.isTransitioningSlide = true;
-    this.cameras.main.fadeOut(350, 19, 14, 11);
-    this.time.delayedCall(360, () => {
-      this.scene.start("EgyptScene");
-    });
-    return;
-  }
-
-  this.isTransitioningSlide = true;
-  this.tweens.add({
-    targets: this.cutsceneImage,
-    alpha: 0,
-    duration: 260,
-    ease: "Sine.easeInOut",
-    onComplete: () => {
-      this.cutsceneIndex = nextIndex;
-      this.cutsceneImage.setTexture(this.slides[this.cutsceneIndex]);
-      this._fitCutsceneImage(this.cutsceneImage, this.scale.width, this.scale.height);
-      this.cutsceneProgress.setText(`${this.cutsceneIndex + 1} / ${this.slides.length}`);
-      this.cutsceneDialogue();
-
-      this.tweens.add({
-        targets: this.cutsceneImage,
-        alpha: 1,
-        duration: 320,
-        ease: "Sine.easeInOut",
-        onComplete: () => {
-          this.isTransitioningSlide = false;
-        }
+    if (nextIndex >= this.slides.length) {
+      this.isTransitioningSlide = true;
+      this.cameras.main.fadeOut(350, 19, 14, 11);
+      this.time.delayedCall(360, () => {
+        this.scene.start("EgyptScene");
       });
+      return;
     }
-  });
-}
+
+    this.isTransitioningSlide = true;
+    this.tweens.add({
+      targets: this.cutsceneImage,
+      alpha: 0,
+      duration: 260,
+      ease: "Sine.easeInOut",
+      onComplete: () => {
+        this.cutsceneIndex = nextIndex;
+        this.cutsceneImage.setTexture(this.slides[this.cutsceneIndex]);
+        this._fitCutsceneImage(this.cutsceneImage, this.scale.width, this.scale.height);
+        this.cutsceneProgress.setText(`${this.cutsceneIndex + 1} / ${this.slides.length}`);
+        this.cutsceneDialogue();
+
+        this.tweens.add({
+          targets: this.cutsceneImage,
+          alpha: 1,
+          duration: 320,
+          ease: "Sine.easeInOut",
+          onComplete: () => {
+            this.isTransitioningSlide = false;
+          }
+        });
+      }
+    });
+  }
 
   animateText(target, message, speedInMs = 50) {
     if (this.currentTypingTimer) {
@@ -191,10 +190,10 @@ advanceCutscene() {
 }
 
 class EgyptScene extends Phaser.Scene {
- constructor() {
-   super("EgyptScene");
- }
- 
+  constructor() {
+    super("EgyptScene");
+  }
+
   preload() {
     // Generate all assets procedurally using graphics
     this.generateAssets();
@@ -203,35 +202,37 @@ class EgyptScene extends Phaser.Scene {
     this.load.image('oliveHatJester', 'assets/olive_hat_jester.PNG');
     this.load.image('oliveHatPropeller', 'assets/olive_hat_propeller.PNG');
     this.load.image('oliveHatWizard', 'assets/olive_hat_wizard.PNG');
+    this.load.audio('egypt_music', 'assets/egypt/egypt_music.mp3');
   }
- 
+
   generateAssets() {
     // We'll use Phaser Graphics to draw everything in create()
   }
- 
+
   create(data) {
+    this.startEgyptMusic();
     const width = this.scale.width;
     const height = this.scale.height;
 
- 
+
     this.palette = {
-      bg:         0xfaf0cf,
-      skyAccent:  0xf4c95d,
-      dune:       0xd8b06b,
-      ground:     0x7a4e22,
-      obstacle:   0xbe8a3f,
+      bg: 0xfaf0cf,
+      skyAccent: 0xf4c95d,
+      dune: 0xd8b06b,
+      ground: 0x7a4e22,
+      obstacle: 0xbe8a3f,
       obstacleDark: 0x8d622b,
-      cactus:     0x4f8b3a,
+      cactus: 0x4f8b3a,
       cactusDark: 0x356327,
-      falafel:    0x8a5a27,
+      falafel: 0x8a5a27,
       falafelDark: 0x5f3b17,
-      cloud:      0xf7ebcf,
-      text:       "#5a3b1d",
-      score:      "#5a3b1d",
-      shadow:     0xc79a57,
-      highlight:  0xf0cc8b,
+      cloud: 0xf7ebcf,
+      text: "#5a3b1d",
+      score: "#5a3b1d",
+      shadow: 0xc79a57,
+      highlight: 0xf0cc8b,
     };
- 
+
     this.GROUND_Y = height - 80;
     this.UPPER_PLATFORM_Y = this.GROUND_Y - 135;
     this.gameStarted = false;
@@ -248,11 +249,11 @@ class EgyptScene extends Phaser.Scene {
     this.add.ellipse(width / 2, this.GROUND_Y - 18, width * 0.9, 90, this.palette.dune, 0.82);
     this.add.ellipse(width / 2, this.GROUND_Y + 12, width, 70, 0xc58f4d, 0.95);
     this.createBackdropPyramids(width);
-    
+
     // Ground line
     this.groundLine = this.add.rectangle(width / 2, this.GROUND_Y + 2, width, 4, this.palette.ground);
     this.upperLaneGuide = this.add.rectangle(width / 2, this.UPPER_PLATFORM_Y + 8, width * 0.42, 2, 0xc59a5d, 0.2);
- 
+
     // Desert haze (decorative)
     this.clouds = [];
     for (let i = 0; i < 4; i++) {
@@ -267,17 +268,17 @@ class EgyptScene extends Phaser.Scene {
     this.dinoX = 80;
     this.dinoY = this.GROUND_Y;
     this.dino.setPosition(this.dinoX, this.dinoY);
- 
+
     // Physics state
     this.dinoVY = 0;
     this.isOnGround = true;
     this.GRAVITY = 1.1;
     this.JUMP_FORCE = -18;
- 
+
     // Leg animation
     this.legFrame = 0;
     this.legTimer = 0;
- 
+
     // Obstacles pool
     this.obstacles = [];
     this.obstacleTimer = 0;
@@ -288,12 +289,12 @@ class EgyptScene extends Phaser.Scene {
     this.platformTimer = 0;
     this.platformInterval = 220;
     this.currentPlatform = null;
- 
+
     // Pterodactyls
     this.pteros = [];
     this.pteroTimer = 0;
     this.pteroInterval = 300;
- 
+
     // Score display
     this.scoreText = this.add.text(width - 20, 20, "HI " + this.padScore(this.hiScore) + "  00000", {
       fontSize: "22px",
@@ -301,7 +302,7 @@ class EgyptScene extends Phaser.Scene {
       color: this.palette.score,
       fontStyle: "bold"
     }).setOrigin(1, 0);
- 
+
     // Start message
     this.startMsg = this.add.text(width / 2, this.GROUND_Y - 80, "PRESS SPACE OR TAP TO START", {
       fontSize: "18px",
@@ -309,7 +310,7 @@ class EgyptScene extends Phaser.Scene {
       color: this.palette.text,
       fontStyle: "bold"
     }).setOrigin(0.5);
- 
+
     // Blink animation for start message
     this.tweens.add({
       targets: this.startMsg,
@@ -318,11 +319,11 @@ class EgyptScene extends Phaser.Scene {
       yoyo: true,
       repeat: -1
     });
- 
+
     // Game over group (hidden initially)
     this.gameOverGroup = this.add.container(width / 2, this.GROUND_Y - 60);
     this.gameOverGroup.setVisible(false);
- 
+
     const goBox = this.add.rectangle(0, 0, 360, 90, this.palette.bg)
       .setStrokeStyle(3, this.palette.ground);
     const goText = this.add.text(0, -18, "GAME OVER", {
@@ -337,37 +338,40 @@ class EgyptScene extends Phaser.Scene {
       color: this.palette.text
     }).setOrigin(0.5);
     this.gameOverGroup.add([goBox, goText, restartText]);
- 
+
     // Input
     this.input.keyboard.on("keydown-SPACE", () => this.handleJump());
     this.input.keyboard.on("keydown-UP", () => this.handleJump());
     this.input.on("pointerdown", () => this.handleJump());
- 
+
     // ESC to map
-    this.input.keyboard.on("keydown-ESC", () => {
-      this.scene.start("MapScene");
-    });
+    this.input.keyboard.on("keydown-ESC", () => this.returnToMap());
+
   }
-  
-  // startEgyptianMusic() {
-  //   let egyptianMusic = this.sound.get("egyptian_music");
-  //   if (!egyptianMusic) {
-  //     egyptianMusic = this.sound.add("egyptian_music", { volume: 0.55, loop: true });
-  //   }
-  //   if (!egyptianMusic.isPlaying) {
-  //     egyptianMusic.play();
-  //   }
-  //  }
 
-  // stopEgyptianMusic() {
-  //   this.sound.stopByKey("egyptian_music");
-  // }
+  startEgyptMusic() {
+    let egyptMusic = this.sound.get("egypt_music");
+    if (!egyptMusic) {
+      egyptMusic = this.sound.add("egypt_music", { volume: 0.55, loop: true });
+    }
+    if (!egyptMusic.isPlaying) {
+      egyptMusic.play();
+    }
+  }
 
+  stopEgyptMusic() {
+    this.sound.stopByKey("egypt_music");
+  }
+
+  returnToMap() {
+    this.stopEgyptMusic();
+    this.scene.start("MapScene");
+  }
 
   padScore(n) {
     return String(n).padStart(5, "0");
   }
- 
+
   handleJump() {
     if (this.gameOver) {
       this.restartGame();
@@ -387,7 +391,7 @@ class EgyptScene extends Phaser.Scene {
       this.jumpCount = 2;
     }
   }
- 
+
   restartGame() {
     const hiScore = Math.max(this.score, this.hiScore);
     this.scene.restart({ hiScore });
@@ -403,49 +407,49 @@ class EgyptScene extends Phaser.Scene {
     g.fillTriangle(40, this.GROUND_Y, 110, this.GROUND_Y - 95, 180, this.GROUND_Y);
     g.setDepth(0);
   }
- 
+
   // ─── Asset Creation ───────────────────────────────────────────────────────
- 
-createDino() {
-  const equippedHat = (this.registry.get('equippedItems') || { hat: null }).hat;
-  const oliveTextureByHat = {
-    chef: 'oliveHatChef',
-    jester: 'oliveHatJester',
-    propeller: 'oliveHatPropeller',
-    wizard: 'oliveHatWizard'
-  };
-  const oliveTexture = oliveTextureByHat[equippedHat] || 'oliveOverjoyed';
-  const olive = this.add.image(0, 0, oliveTexture);
-  olive.setDisplaySize(64, 64);
-  olive.setOrigin(0.5, 1); // 👈 important
-  olive.setDepth(5);
-  olive.baseScaleX = olive.scaleX;
-  olive.baseScaleY = olive.scaleY;
-  this.drawDinoShape(olive, 0, 0, 0);
-  return olive;
-}
- 
+
+  createDino() {
+    const equippedHat = (this.registry.get('equippedItems') || { hat: null }).hat;
+    const oliveTextureByHat = {
+      chef: 'oliveHatChef',
+      jester: 'oliveHatJester',
+      propeller: 'oliveHatPropeller',
+      wizard: 'oliveHatWizard'
+    };
+    const oliveTexture = oliveTextureByHat[equippedHat] || 'oliveOverjoyed';
+    const olive = this.add.image(0, 0, oliveTexture);
+    olive.setDisplaySize(64, 64);
+    olive.setOrigin(0.5, 1); // 👈 important
+    olive.setDepth(5);
+    olive.baseScaleX = olive.scaleX;
+    olive.baseScaleY = olive.scaleY;
+    this.drawDinoShape(olive, 0, 0, 0);
+    return olive;
+  }
+
   drawDinoShape(g, x, y, legFrame) {
     g.clearTint();
     g.setAngle(legFrame === 0 ? -4 : 4);
     g.setScale(g.baseScaleX, g.baseScaleY);
     g.setPosition(x, y);
   }
- 
+
   drawDinoJump(g, x, y) {
     g.clearTint();
     g.setAngle(-12);
     g.setScale(g.baseScaleX * 0.97, g.baseScaleY * 0.97);
     g.setPosition(x, y);
   }
- 
+
   drawDinoDead(g, x, y) {
     g.setTint(0xd86a5e);
     g.setAngle(90);
     g.setScale(g.baseScaleX, g.baseScaleY);
     g.setPosition(x, y);
   }
- 
+
   createCloud(cx, cy) {
     const g = this.add.graphics();
     g.fillStyle(this.palette.cloud);
@@ -457,7 +461,7 @@ createDino() {
     g.cloudY = cy;
     return g;
   }
- 
+
   moveCloud(cloud, cx, cy) {
     cloud.clear();
     cloud.fillStyle(this.palette.cloud);
@@ -467,7 +471,7 @@ createDino() {
     cloud.cloudX = cx;
     cloud.cloudY = cy;
   }
- 
+
   createCactus(x) {
     const g = this.add.graphics();
     const type = Phaser.Math.Between(0, 2);
@@ -677,12 +681,12 @@ createDino() {
     const playerRight = this.dinoX + 8;
     return playerRight > platform.platformX && playerLeft < platform.platformX + platform.platformWidth;
   }
- 
+
   moveCactus(g, x) {
     g.x = x - g.obstacleX;
     g.obstacleX = x;
   }
- 
+
   createPtero(x, y) {
     const g = this.add.graphics();
     g.fillStyle(this.palette.obstacle);
@@ -713,7 +717,7 @@ createDino() {
     this.drawFalafel(g, x, y, 0);
     return g;
   }
- 
+
   drawPtero(g, x, y, wingFrame) {
     g.clear();
     g.fillStyle(this.palette.obstacle);
@@ -731,9 +735,9 @@ createDino() {
       g.fillRect(x + 4, y - 4, 10, 4);
     }
   }
- 
+
   // ─── Update ───────────────────────────────────────────────────────────────
- 
+
   update() {
     if (!this.gameStarted || this.gameOver) {
       // Idle leg animation even before start
@@ -745,13 +749,13 @@ createDino() {
       }
       return;
     }
- 
+
     this.frameCount++;
- 
+
     // Speed ramp
     this.speed = 6 + Math.floor(this.score / 100) * 0.5;
     if (this.speed > 18) this.speed = 18;
- 
+
     // Score
     if (this.frameCount % 6 === 0) {
       this.score++;
@@ -759,7 +763,7 @@ createDino() {
       this.scoreText.setText("HI " + this.padScore(this.hiScore) + "  " + this.padScore(this.score));
     }
 
- 
+
     // Clouds
     for (const cloud of this.clouds) {
       const nx = cloud.cloudX - 1.2;
@@ -795,7 +799,7 @@ createDino() {
         this.currentPlatform = null;
       }
     }
- 
+
     // Leg animation (only on ground)
     if (this.isOnGround) {
       this.legTimer++;
@@ -806,7 +810,7 @@ createDino() {
       this.drawDinoJump(this.dino, 0, 0);
     }
     this.dino.setPosition(this.dinoX, this.dinoY);
- 
+
     // Spawn obstacles
     this.obstacleTimer++;
     const minInterval = Math.max(40, 90 - Math.floor(this.score / 100) * 5);
@@ -826,7 +830,7 @@ createDino() {
         this.platforms.push(platform);
       }
     }
- 
+
     // Move obstacles
     for (let i = this.obstacles.length - 1; i >= 0; i--) {
       const obs = this.obstacles[i];
@@ -863,7 +867,7 @@ createDino() {
         this.platforms.splice(i, 1);
       }
     }
- 
+
     // Spawn pterodactyls after score 200
     if (this.score >= 200) {
       this.pteroTimer++;
@@ -878,7 +882,7 @@ createDino() {
         this.pteros.push(airObstacle);
       }
     }
- 
+
     // Move pteros
     for (let i = this.pteros.length - 1; i >= 0; i--) {
       const p = this.pteros[i];
@@ -886,11 +890,11 @@ createDino() {
       p.x = p.obstacleX - (this.scale.width + 20) + (this.scale.width + 20);
       // Actually use x directly
       p.x -= 0; // position set via drawPtero with offset
- 
+
       // Recalc actual draw position
       const drawX = p.obstacleX;
       const drawY = p.obstacleY;
- 
+
       if (p.obstacleType === "flyingFalafel") {
         p.rollAngle += this.speed * 0.1;
         this.drawFalafel(p, drawX, drawY, p.rollAngle);
@@ -909,14 +913,14 @@ createDino() {
     // Collision detection
     this.checkCollisions();
   }
- 
+
   checkCollisions() {
     // Dino hitbox: centered at (dinoX, dinoY - 20), half-extents ~14x20
     const dx = this.dinoX;
     const dy = this.dinoY - 20;
     const dHW = 12;
     const dHH = 18;
- 
+
     for (const obs of this.obstacles) {
       const ox = obs.obstacleX + obs.hitOffsetX;
       const oy = this.GROUND_Y + obs.hitOffsetY;
@@ -930,7 +934,7 @@ createDino() {
         return;
       }
     }
- 
+
     for (const p of this.pteros) {
       const ox = p.obstacleX;
       const oy = p.obstacleY;
@@ -961,36 +965,36 @@ createDino() {
     }
   }
 
-addCoin(amount) {
-  let current = this.registry.get('currency');
+  addCoin(amount) {
+    let current = this.registry.get('currency');
 
-  if (current === undefined || current === null) {
-    current = 0;
+    if (current === undefined || current === null) {
+      current = 0;
+    }
+
+    current += amount;
+    this.registry.set('currency', current);
+
   }
-
-  current+= amount;
-  this.registry.set('currency', current);
-
-}
-  rewardCoins(){
+  rewardCoins() {
     if (this.score >= 200) {
-      this.addCoin(Math.floor(this.score/200));
+      this.addCoin(Math.floor(this.score / 200));
     }
   }
   triggerGameOver() {
     this.gameOver = true;
- 
+
     // Draw dead dino
     this.drawDinoDead(this.dino, 0, 0);
     this.dino.setPosition(this.dinoX, this.dinoY);
- 
+
     // Flash red
     this.cameras.main.flash(300, 255, 50, 50, false);
- 
+
     // Show game over popup
     this.gameOverGroup.setVisible(true);
     this.gameOverGroup.setPosition(this.scale.width / 2, this.GROUND_Y - 70);
- 
+
     // Update score display
     this.scoreText.setText("HI " + this.padScore(this.hiScore) + "  " + this.padScore(this.score));
     this.rewardCoins();

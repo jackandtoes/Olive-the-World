@@ -715,7 +715,7 @@ class MapScene extends Phaser.Scene {
     this.cameras.main.startFollow(this.player, true, 0.08, 0.08);
   }
 
-  createCountry(name, x, y, description, sceneName, storeName, flagKey) {
+  createCountry(name, x, y, description, sceneName, flagKey) {
     const landmark = this.add.image(x, y, flagKey).setScale(0.6).setDepth(1);
     this.add.text(x, y - 40, name, {
       fontSize: "18px",
@@ -727,7 +727,6 @@ class MapScene extends Phaser.Scene {
       landmark,
       description,
       sceneName,
-      storeName,
       flagKey,
       radius: 60
     });
@@ -737,27 +736,62 @@ class MapScene extends Phaser.Scene {
     this.infoPanel = this.add.container(0, 0);
     this.infoPanel.setDepth(10);
     this.infoPanel.setVisible(false);
-    const bg = this.add.rectangle(0, 0, 290, 150, 0xfff7ef)
-      .setStrokeStyle(3, 0x000000);
+
+    this.infoPanelContent = this.add.container(0, 0);
+    const shadow = this.add.rectangle(4, 5, 290, 150, 0x7e4a2c, 0.2);
+    const bg = this.add.rectangle(0, 0, 290, 150, 0xf6f4eb, 0.98)
+      .setStrokeStyle(3, 0x97a38b, 0.95)
+      .setInteractive({ useHandCursor: true });
     this.panelTitle = this.add.text(-130, -55, "", {
       fontSize: "20px",
-      fill: "#000"
+      fill: "#5b351d",
+      fontStyle: "bold"
     });
     this.panelText = this.add.text(-130, -20, "", {
       fontSize: "16px",
-      fill: "#000"
+      fill: "#6b3b21"
     }).setWordWrapWidth(250);
-    const playButton = this.add.text(-130, 42, "Play game!", {
+    const playButton = this.add.text(-130, 42, "Click to play", {
       fontSize: "18px",
-      fill: "#007700"
-    }).setInteractive();
-    playButton.on("pointerdown", () => {
+      fill: "#5a5143",
+      fontStyle: "bold"
+    });
+
+    const startCountryGame = () => {
       if (this.currentCountry) {
         stopBackgroundMusic();
         this.scene.start(this.getCountrySceneName(this.currentCountry));
       }
-    });
-    this.infoPanel.add([bg, this.panelTitle, this.panelText, playButton]);
+    };
+
+    const activateHover = () => {
+      bg.setFillStyle(0xe3eadb, 1);
+      this.tweens.add({
+        targets: this.infoPanelContent,
+        scaleX: 1.03,
+        scaleY: 1.03,
+        duration: 140,
+        ease: "Sine.easeOut"
+      });
+    };
+
+    const deactivateHover = () => {
+      bg.setFillStyle(0xf6f4eb, 0.98);
+      this.tweens.add({
+        targets: this.infoPanelContent,
+        scaleX: 1,
+        scaleY: 1,
+        duration: 140,
+        ease: "Sine.easeOut"
+      });
+    };
+
+    bg.on("pointerover", activateHover);
+    bg.on("pointerout", deactivateHover);
+    bg.on("pointerdown", startCountryGame);
+
+    this.infoPanelContent.add([shadow, bg, this.panelTitle, this.panelText, playButton]);
+    this.infoPanel.add(this.infoPanelContent);
   }
 
   getCountrySceneName(country) {

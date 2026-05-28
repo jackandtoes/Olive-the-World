@@ -247,6 +247,7 @@ class BrazilScene extends Phaser.Scene {
   }
 
   preload() {
+    this.load.audio("brazil_music", "assets/brazil/brazil_music.mp3");
     this.load.image("oliveOverjoyed", "assets/olive_overjoyed.PNG");
     this.load.image("background", "assets/brazil/brazil_background.PNG");
     this.load.image("skyline", "assets/brazil/brazil_skyline.PNG");
@@ -254,6 +255,7 @@ class BrazilScene extends Phaser.Scene {
   }
 
   create() {
+    this.startBrazilMusic();
     this.input.keyboard.enabled = true;
     this.physics.world.gravity.y = 800;
     this.physics.world.setBounds(0, 0, this.sceneWidth, 760);
@@ -271,9 +273,7 @@ class BrazilScene extends Phaser.Scene {
     this.applyWeather(this.levelData.weather);
 
     this.cursors = this.input.keyboard.createCursorKeys();
-    this.input.keyboard.on("keydown-ESC", () => {
-      this.scene.start("MapScene");
-    });
+    this.input.keyboard.on("keydown-ESC", () => this.returnToMap());
 
     this.physics.add.collider(this.player, this.platforms);
     this.physics.add.collider(this.goal, this.platforms);
@@ -284,6 +284,25 @@ class BrazilScene extends Phaser.Scene {
     this.cameras.main.startFollow(this.player, true, 0.5, 0.5);
 
     this.showBanner(`Level ${this.currentLevel}`, `Collect ${this.levelData.ingredient} and reach the goal.`);
+  }
+
+  startBrazilMusic() {
+    let brazilMusic = this.sound.get("brazil_music");
+    if (!brazilMusic) {
+      brazilMusic = this.sound.add("brazil_music", { volume: 0.55, loop: true });
+    }
+    if (!brazilMusic.isPlaying) {
+      brazilMusic.play();
+    }
+  }
+
+  stopBrazilMusic() {
+    this.sound.stopByKey("brazil_music");
+  }
+
+  returnToMap() {
+    this.stopBrazilMusic();
+    this.scene.start("MapScene");
   }
 
   createTextures() {
