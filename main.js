@@ -639,7 +639,7 @@ class MapScene extends Phaser.Scene {
     this.cameras.main.startFollow(this.player, true, 0.08, 0.08);
   }
 
-  createCountry(name, x, y, description, sceneName, storeName, flagKey) {
+  createCountry(name, x, y, description, sceneName, flagKey) {
     const landmark = this.add.image(x, y, flagKey).setScale(0.6).setDepth(1);
     this.add.text(x, y - 40, name, {
       fontSize: "18px",
@@ -651,7 +651,6 @@ class MapScene extends Phaser.Scene {
       landmark,
       description,
       sceneName,
-      storeName,
       flagKey,
       radius: 60
     });
@@ -1419,6 +1418,7 @@ const config = {
     EgyptCutscene,
     EgyptScene,
     MexicoCutscene,
+    BrazilCutscene,
     BrazilScene,
     IndiaScene,
     Store,
