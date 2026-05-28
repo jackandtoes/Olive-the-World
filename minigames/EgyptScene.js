@@ -60,6 +60,7 @@ class EgyptCutscene extends Phaser.Scene {
     this.input.keyboard.on("keydown-ENTER", () => this.advanceCutscene());
 
   }
+  
   startEgyptMusic() {
     let egyptMusic = this.sound.get("egypt_music");
     if (!egyptMusic) {
@@ -202,7 +203,7 @@ class EgyptScene extends Phaser.Scene {
     this.load.image('oliveHatJester', 'assets/olive_hat_jester.PNG');
     this.load.image('oliveHatPropeller', 'assets/olive_hat_propeller.PNG');
     this.load.image('oliveHatWizard', 'assets/olive_hat_wizard.PNG');
-    this.load.audio('egypt_music', 'assets/egypt/egypt_music.mp3');
+    this.load.audio('egypt_music', 'assets/egypt/cutscene/egypt_music.mp3');
   }
 
   generateAssets() {
@@ -231,6 +232,17 @@ class EgyptScene extends Phaser.Scene {
       score: "#5a3b1d",
       shadow: 0xc79a57,
       highlight: 0xf0cc8b,
+      herb:       0x4f8f3a,
+      herbDark:   0x2f5f22,
+      cucumber:   0x6cab52,
+      cucumberDark: 0x3f6f30,
+      tomato:     0xc94b3a,
+      tomatoDark: 0x8f2f25,
+      cloud:      0xf7ebcf,
+      text:       "#5a3b1d",
+      score:      "#5a3b1d",
+      shadow:     0xc79a57,
+      highlight:  0xf0cc8b,
     };
 
     this.GROUND_Y = height - 80;
@@ -339,6 +351,21 @@ class EgyptScene extends Phaser.Scene {
     }).setOrigin(0.5);
     this.gameOverGroup.add([goBox, goText, restartText]);
 
+    this.winBannerShown = false;
+    this.winBanner = this.add.container(width / 2, 90);
+    this.winBanner.setDepth(12);
+    this.winBanner.setVisible(false);
+    const bannerShadow = this.add.rectangle(6, 6, 390, 70, 0x8d622b, 0.22);
+    const bannerPanel = this.add.rectangle(0, 0, 390, 70, 0xffefc8)
+      .setStrokeStyle(3, this.palette.ground);
+    const bannerText = this.add.text(0, 0, "YOU EARNED YOUR BADGE!", {
+      fontSize: "26px",
+      fontFamily: "monospace",
+      color: this.palette.text,
+      fontStyle: "bold"
+    }).setOrigin(0.5);
+    this.winBanner.add([bannerShadow, bannerPanel, bannerText]);
+ 
     // Input
     this.input.keyboard.on("keydown-SPACE", () => this.handleJump());
     this.input.keyboard.on("keydown-UP", () => this.handleJump());
@@ -589,10 +616,82 @@ class EgyptScene extends Phaser.Scene {
     g.strokePath();
   }
 
+  createHerbs(x) {
+    const g = this.add.graphics();
+    g.setDepth(4);
+    g.obstacleX = x;
+    g.obstacleType = "herbs";
+    g.hitW = 26;
+    g.hitH = 18;
+    g.hitOffsetX = 0;
+    g.hitOffsetY = -9;
+
+    const y = this.GROUND_Y - 10;
+    g.fillStyle(this.palette.herb);
+    g.fillEllipse(x - 8, y, 12, 18);
+    g.fillEllipse(x, y - 2, 12, 20);
+    g.fillEllipse(x + 8, y, 12, 18);
+    g.fillStyle(this.palette.herbDark);
+    g.fillRect(x - 1, y + 2, 2, 7);
+    return g;
+  }
+
+  createCucumber(x) {
+    const g = this.add.graphics();
+    g.setDepth(4);
+    g.obstacleX = x;
+    g.obstacleType = "cucumber";
+    g.hitW = 30;
+    g.hitH = 14;
+    g.hitOffsetX = 0;
+    g.hitOffsetY = -8;
+
+    const y = this.GROUND_Y - 8;
+    g.fillStyle(this.palette.cucumber);
+    g.fillEllipse(x, y, 30, 14);
+    g.fillStyle(this.palette.cucumberDark);
+    g.fillEllipse(x - 9, y, 4, 10);
+    g.fillEllipse(x + 9, y, 4, 10);
+    g.lineStyle(2, this.palette.highlight, 0.45);
+    g.beginPath();
+    g.moveTo(x - 10, y - 2);
+    g.lineTo(x + 10, y - 2);
+    g.moveTo(x - 8, y + 2);
+    g.lineTo(x + 8, y + 2);
+    g.strokePath();
+    return g;
+  }
+
+  createTomato(x) {
+    const g = this.add.graphics();
+    g.setDepth(4);
+    g.obstacleX = x;
+    g.obstacleType = "tomato";
+    g.hitW = 22;
+    g.hitH = 22;
+    g.hitOffsetX = 0;
+    g.hitOffsetY = -12;
+
+    const y = this.GROUND_Y - 12;
+    g.fillStyle(this.palette.tomato);
+    g.fillCircle(x, y, 11);
+    g.fillStyle(this.palette.tomatoDark);
+    g.fillCircle(x - 3, y - 2, 2.2);
+    g.fillStyle(this.palette.herb);
+    g.fillTriangle(x, y - 14, x - 4, y - 8, x + 4, y - 8);
+    g.fillTriangle(x - 6, y - 10, x - 1, y - 8, x - 4, y - 4);
+    g.fillTriangle(x + 6, y - 10, x + 1, y - 8, x + 4, y - 4);
+    return g;
+  }
+
   createGroundObstacle(x) {
     const roll = Phaser.Math.Between(0, 99);
     if (roll < 25) return this.createPyramid(x);
     if (roll < 45) return this.createFalafel(x);
+    if (roll < 58) return this.createCactus(x);
+    if (roll < 72) return this.createHerbs(x);
+    if (roll < 86) return this.createCucumber(x);
+    if (roll < 96) return this.createTomato(x);
     return this.createCactus(x);
   }
 
@@ -719,6 +818,75 @@ class EgyptScene extends Phaser.Scene {
     return g;
   }
 
+  createFlyingIngredient(x, y, type) {
+    const g = this.add.graphics();
+    g.setDepth(4);
+    g.obstacleX = x;
+    g.obstacleY = y;
+    g.obstacleType = type;
+    g.rollAngle = 0;
+
+    if (type === "flyingHerbs") {
+      g.hitW = 26;
+      g.hitH = 18;
+      g.hitOffsetX = 0;
+      g.hitOffsetY = -9;
+      this.drawHerbs(g, x, y);
+    } else if (type === "flyingCucumber") {
+      g.hitW = 30;
+      g.hitH = 14;
+      g.hitOffsetX = 0;
+      g.hitOffsetY = -8;
+      this.drawCucumber(g, x, y);
+    } else {
+      g.hitW = 22;
+      g.hitH = 22;
+      g.hitOffsetX = 0;
+      g.hitOffsetY = -12;
+      this.drawTomato(g, x, y);
+    }
+
+    return g;
+  }
+
+  drawHerbs(g, x, y) {
+    g.clear();
+    g.fillStyle(this.palette.herb);
+    g.fillEllipse(x - 8, y, 12, 18);
+    g.fillEllipse(x, y - 2, 12, 20);
+    g.fillEllipse(x + 8, y, 12, 18);
+    g.fillStyle(this.palette.herbDark);
+    g.fillRect(x - 1, y + 2, 2, 7);
+  }
+
+  drawCucumber(g, x, y) {
+    g.clear();
+    g.fillStyle(this.palette.cucumber);
+    g.fillEllipse(x, y, 30, 14);
+    g.fillStyle(this.palette.cucumberDark);
+    g.fillEllipse(x - 9, y, 4, 10);
+    g.fillEllipse(x + 9, y, 4, 10);
+    g.lineStyle(2, this.palette.highlight, 0.45);
+    g.beginPath();
+    g.moveTo(x - 10, y - 2);
+    g.lineTo(x + 10, y - 2);
+    g.moveTo(x - 8, y + 2);
+    g.lineTo(x + 8, y + 2);
+    g.strokePath();
+  }
+
+  drawTomato(g, x, y) {
+    g.clear();
+    g.fillStyle(this.palette.tomato);
+    g.fillCircle(x, y, 11);
+    g.fillStyle(this.palette.tomatoDark);
+    g.fillCircle(x - 3, y - 2, 2.2);
+    g.fillStyle(this.palette.herb);
+    g.fillTriangle(x, y - 14, x - 4, y - 8, x + 4, y - 8);
+    g.fillTriangle(x - 6, y - 10, x - 1, y - 8, x - 4, y - 4);
+    g.fillTriangle(x + 6, y - 10, x + 1, y - 8, x + 4, y - 4);
+  }
+ 
   drawPtero(g, x, y, wingFrame) {
     g.clear();
     g.fillStyle(this.palette.obstacle);
@@ -765,6 +933,11 @@ class EgyptScene extends Phaser.Scene {
     }
 
 
+    if (!this.winBannerShown && this.score >= 500) {
+      this.showWinBanner();
+    }
+
+ 
     // Clouds
     for (const cloud of this.clouds) {
       const nx = cloud.cloudX - 1.2;
@@ -877,9 +1050,19 @@ class EgyptScene extends Phaser.Scene {
         this.pteroInterval = Math.max(180, 300 - Math.floor(this.score / 200) * 20);
         const heights = [this.GROUND_Y - 50, this.GROUND_Y - 90, this.GROUND_Y - 130];
         const py = heights[Phaser.Math.Between(0, heights.length - 1)];
-        const airObstacle = Phaser.Math.Between(0, 99) < 45
-          ? this.createFlyingFalafel(this.scale.width + 20, py)
-          : this.createPtero(this.scale.width + 20, py);
+        const airRoll = Phaser.Math.Between(0, 99);
+        let airObstacle;
+        if (airRoll < 25) {
+          airObstacle = this.createFlyingFalafel(this.scale.width + 20, py);
+        } else if (airRoll < 45) {
+          airObstacle = this.createFlyingIngredient(this.scale.width + 20, py, "flyingTomato");
+        } else if (airRoll < 65) {
+          airObstacle = this.createFlyingIngredient(this.scale.width + 20, py, "flyingCucumber");
+        } else if (airRoll < 80) {
+          airObstacle = this.createFlyingIngredient(this.scale.width + 20, py, "flyingHerbs");
+        } else {
+          airObstacle = this.createPtero(this.scale.width + 20, py);
+        }
         this.pteros.push(airObstacle);
       }
     }
@@ -899,6 +1082,12 @@ class EgyptScene extends Phaser.Scene {
       if (p.obstacleType === "flyingFalafel") {
         p.rollAngle += this.speed * 0.1;
         this.drawFalafel(p, drawX, drawY, p.rollAngle);
+      } else if (p.obstacleType === "flyingTomato") {
+        this.drawTomato(p, drawX, drawY);
+      } else if (p.obstacleType === "flyingCucumber") {
+        this.drawCucumber(p, drawX, drawY);
+      } else if (p.obstacleType === "flyingHerbs") {
+        this.drawHerbs(p, drawX, drawY);
       } else {
         // Wing flap
         if (this.frameCount % 18 === 0) p.wingFrame = 1 - p.wingFrame;
@@ -966,6 +1155,40 @@ class EgyptScene extends Phaser.Scene {
     }
   }
 
+  showWinBanner() {
+    this.winBannerShown = true;
+    this.winBanner.setVisible(true);
+    this.winBanner.setAlpha(0);
+    this.winBanner.setScale(0.92);
+    this.winBanner.y = 58;
+
+    this.tweens.add({
+      targets: this.winBanner,
+      y: 90,
+      alpha: 1,
+      scaleX: 1,
+      scaleY: 1,
+      duration: 360,
+      ease: "Back.easeOut"
+    });
+
+    this.time.delayedCall(1800, () => {
+      if (!this.winBanner || !this.winBanner.scene) return;
+      this.tweens.add({
+        targets: this.winBanner,
+        y: 48,
+        alpha: 0,
+        duration: 320,
+        ease: "Sine.easeIn",
+        onComplete: () => {
+          if (this.winBanner) {
+            this.winBanner.setVisible(false);
+          }
+        }
+      });
+    });
+  }
+
   addCoin(amount) {
     let current = this.registry.get('currency');
 
@@ -975,8 +1198,8 @@ class EgyptScene extends Phaser.Scene {
 
     current += amount;
     this.registry.set('currency', current);
-
   }
+
   rewardCoins() {
     if (this.score >= 200) {
       this.addCoin(Math.floor(this.score / 200));
@@ -999,5 +1222,22 @@ class EgyptScene extends Phaser.Scene {
     // Update score display
     this.scoreText.setText("HI " + this.padScore(this.hiScore) + "  " + this.padScore(this.score));
     this.rewardCoins();
+
+    if (this.score >= 500) {
+      const wins = this.registry.get('wins');
+      wins.egypt = true;
+      this.registry.set('wins', wins);
+    }
+
+
   }
+
+  checkOliveWin() {
+    const wins = this.registry.get('wins') || {};
+    if (wins.italy && wins.philippines && wins.egypt && wins.mexico) {
+      return true;
+    }
+    return false;
+  }
+
 }
