@@ -8,6 +8,7 @@ class IndiaCutscene extends Phaser.Scene {
     }
 
     create() {
+
         const width = this.scale.width;
         const height = this.scale.height;
         const seenCutscenes = this.registry.get("seenCutscenes") || {};
@@ -226,6 +227,7 @@ class IndiaScene extends Phaser.Scene {
         this.startIndiaMusic();
         this.gameIsOver = false;
         this.levelComplete = false;
+        this.input.keyboard.enabled = true;
 
         this.score = 0;
         this.physics.world.gravity.y = 350;
@@ -240,6 +242,7 @@ class IndiaScene extends Phaser.Scene {
         // input
         this.cursorKeys = this.input.keyboard.createCursorKeys();
         this.input.keyboard.on("keydown-ESC", () => this.returnToMap());
+        
         // Create Ingredient group
         this.ingredientGroup = this.physics.add.group();
 
@@ -322,6 +325,7 @@ class IndiaScene extends Phaser.Scene {
             if (!child.active) {
                 return;
             }
+            child.angle += child.spinSpeed || 0;
             if (child.y > this.scale.height + 10) {
                 child.disableBody(true, true);
             }
@@ -330,6 +334,9 @@ class IndiaScene extends Phaser.Scene {
 
     spawnRandomIngredient() {
         const level = INDIA_LEVELS[this.currentLevel];
+
+        const angle = Phaser.Math.Between(-1, 1);
+
         if (!level) {
             return;
         }
@@ -345,6 +352,10 @@ class IndiaScene extends Phaser.Scene {
 
         ingredient.setScale(0.7);
         ingredient.body.setAllowGravity(true);
+        ingredient.setAngle(Phaser.Math.Between(0, 359));
+        ingredient.spinSpeed = Phaser.Math.Between(0, 1) === 0
+            ? Phaser.Math.Between(-3, -1)
+            : Phaser.Math.Between(1, 3);
     }
 
 
@@ -389,6 +400,8 @@ class IndiaScene extends Phaser.Scene {
         } else {
             this.showGameOver();
         }
+
+        this.input.keyboard.enabled = false;
     }
 
     levelComplete() {
