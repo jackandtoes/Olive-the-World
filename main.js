@@ -61,11 +61,13 @@ class StartScene extends Phaser.Scene {
 
   create() {
 
-    startBackgroundMusic(this);
-
     const width = this.scale.width;
     const height = this.scale.height;
 
+    // Start background music for the start scene
+    startBackgroundMusic(this);
+
+    // Adds background 
     this.add.rectangle(width / 2, height / 2, width, height, 0x1a140f).setDepth(-30);
 
     const backdrop = this.add.image(width / 2, height / 2 + 10, "homeBg");
@@ -88,9 +90,11 @@ class StartScene extends Phaser.Scene {
     const buttonShadow = this.add.ellipse(width / 2, height * 0.81 + 18, 320, 62, 0x000000, 0.28)
       .setDepth(7);
     buttonShadow.setAlpha(0);
+    
     const startButton = this.add.image(width / 2, height * 0.81, "startBtn")
       .setInteractive({ useHandCursor: true })
       .setDepth(8);
+    
     const buttonScale = Math.min(0.62, (width * 0.44) / startButton.width);
     startButton.setScale(buttonScale);
     startButton.setAlpha(0);
@@ -172,6 +176,38 @@ class StartScene extends Phaser.Scene {
       delay: 560,
       ease: "Sine.easeOut"
     });
+
+    //Settings Button
+    const settingsButton = this.add.image(750, 550, "settingsbutton")
+      .setOrigin(0.5)
+      .setScale(0.08)
+      .setInteractive()
+      .setScrollFactor(0)
+      .setDepth(30);
+    settingsButton.on("pointerdown", () => {
+      this.scene.start("Settings", { returnTo: "StartScene" });
+    });
+
+    settingsButton.on("pointerover", () => {
+      this.tweens.add({
+        targets: settingsButton,
+        scaleX: 0.08 * 1.06,
+        scaleY: 0.08 * 1.06,
+        duration: 140,
+        ease: "Sine.easeOut"
+      });
+    });
+
+    settingsButton.on("pointerout", () => {
+      this.tweens.add({
+        targets: settingsButton,
+        scaleX: 0.08,
+        scaleY: 0.08,
+        duration: 140,
+        ease: "Sine.easeOut",
+      });
+    });
+
   }
 
 animateText(target, speedInMs = 25) {
@@ -512,13 +548,53 @@ class MapScene extends Phaser.Scene {
     this.cameras.main.setBounds(0, 0, worldWidth, worldHeight);
     this.cameras.main.setZoom(2.5);
 
-    //Store Button
-    const storeButton = this.add.text(250, 190, "Store", {
+    // Top-left navigation buttons
+    const navButtonStyle = {
       fontSize: "10px",
       fill: "#000000",
       backgroundColor: "#ffc4e3",
       padding: { x: 10, y: 5 }
-    }).setOrigin(0, 0).setInteractive().setScrollFactor(0).setDepth(30);
+    };
+
+    const returnButton = this.add.text(250, 190, "Return", navButtonStyle)
+      .setOrigin(0, 0)
+      .setInteractive({ useHandCursor: true })
+      .setScrollFactor(0)
+      .setDepth(30);
+
+    returnButton.on("pointerover", () => {
+      this.tweens.add({
+        targets: returnButton,
+        scaleX: 1.05,
+        scaleY: 1.05,
+        duration: 140,
+        ease: "Sine.easeOut"
+      });
+      returnButton.setBackgroundColor("#ef7cac");
+    });
+
+    returnButton.on("pointerout", () => {
+      this.tweens.add({
+        targets: returnButton,
+        scaleX: 1,
+        scaleY: 1,
+        duration: 140,
+        ease: "Sine.easeOut",
+      });
+      returnButton.setBackgroundColor("#ffc4e3");
+    });
+
+    returnButton.on("pointerdown", () => {
+      this.scene.start("StartScene");
+    });
+
+
+    //Store Button
+    const storeButton = this.add.text(310, 190, "Store", navButtonStyle)
+      .setOrigin(0, 0)
+      .setInteractive({ useHandCursor: true })
+      .setScrollFactor(0)
+      .setDepth(30);
 
     storeButton.on("pointerover", () => {
       this.tweens.add({
@@ -547,12 +623,11 @@ class MapScene extends Phaser.Scene {
     });
 
     //Inventory Button
-    const inventoryButton = this.add.text(350, 200, "Inventory", {
-      fontSize: "10px",
-      fill: "#000000",
-      backgroundColor: "#ffc4e3",
-      padding: { x: 10, y: 5 }
-    }).setOrigin(0.5).setInteractive().setScrollFactor(0).setDepth(20);
+    const inventoryButton = this.add.text(365, 190, "Inventory", navButtonStyle)
+      .setOrigin(0, 0)
+      .setInteractive({ useHandCursor: true })
+      .setScrollFactor(0)
+      .setDepth(30);
     inventoryButton.on("pointerdown", () => {
       this.scene.start("Inventory");
     });
@@ -583,11 +658,11 @@ class MapScene extends Phaser.Scene {
     const settingsButton = this.add.image(540, 200, "settingsbutton")
       .setOrigin(0.5)
       .setScale(0.03)
-      .setInteractive()
+      .setInteractive({ useHandCursor: true })
       .setScrollFactor(0)
       .setDepth(30);
     settingsButton.on("pointerdown", () => {
-      this.scene.start("Settings");
+      this.scene.start("Settings", { returnTo: "MapScene" });
     });
 
     settingsButton.on("pointerover", () => {
@@ -619,6 +694,7 @@ class MapScene extends Phaser.Scene {
     this.player.setDepth(5);
 
     this.cursors = this.input.keyboard.createCursorKeys();
+    this.keys = this.input.keyboard.addKeys('W,A,S,D');
     this.countries = [];
 
     this.createCountry("Mexico", width * 0.3, height * 0.44,
@@ -660,27 +736,62 @@ class MapScene extends Phaser.Scene {
     this.infoPanel = this.add.container(0, 0);
     this.infoPanel.setDepth(10);
     this.infoPanel.setVisible(false);
-    const bg = this.add.rectangle(0, 0, 290, 150, 0xfff7ef)
-      .setStrokeStyle(3, 0x000000);
+
+    this.infoPanelContent = this.add.container(0, 0);
+    const shadow = this.add.rectangle(4, 5, 290, 150, 0x7e4a2c, 0.2);
+    const bg = this.add.rectangle(0, 0, 290, 150, 0xf6f4eb, 0.98)
+      .setStrokeStyle(3, 0x97a38b, 0.95)
+      .setInteractive({ useHandCursor: true });
     this.panelTitle = this.add.text(-130, -55, "", {
       fontSize: "20px",
-      fill: "#000"
+      fill: "#5b351d",
+      fontStyle: "bold"
     });
     this.panelText = this.add.text(-130, -20, "", {
       fontSize: "16px",
-      fill: "#000"
+      fill: "#6b3b21"
     }).setWordWrapWidth(250);
-    const playButton = this.add.text(-130, 42, "Play game!", {
+    const playButton = this.add.text(-130, 42, "Click to play", {
       fontSize: "18px",
-      fill: "#007700"
-    }).setInteractive();
-    playButton.on("pointerdown", () => {
+      fill: "#5a5143",
+      fontStyle: "bold"
+    });
+
+    const startCountryGame = () => {
       if (this.currentCountry) {
         stopBackgroundMusic();
         this.scene.start(this.getCountrySceneName(this.currentCountry));
       }
-    });
-    this.infoPanel.add([bg, this.panelTitle, this.panelText, playButton]);
+    };
+
+    const activateHover = () => {
+      bg.setFillStyle(0xe3eadb, 1);
+      this.tweens.add({
+        targets: this.infoPanelContent,
+        scaleX: 1.03,
+        scaleY: 1.03,
+        duration: 140,
+        ease: "Sine.easeOut"
+      });
+    };
+
+    const deactivateHover = () => {
+      bg.setFillStyle(0xf6f4eb, 0.98);
+      this.tweens.add({
+        targets: this.infoPanelContent,
+        scaleX: 1,
+        scaleY: 1,
+        duration: 140,
+        ease: "Sine.easeOut"
+      });
+    };
+
+    bg.on("pointerover", activateHover);
+    bg.on("pointerout", deactivateHover);
+    bg.on("pointerdown", startCountryGame);
+
+    this.infoPanelContent.add([shadow, bg, this.panelTitle, this.panelText, playButton]);
+    this.infoPanel.add(this.infoPanelContent);
   }
 
   getCountrySceneName(country) {
@@ -744,17 +855,21 @@ class MapScene extends Phaser.Scene {
 
   update() {
     const speed = 125;
+
+    // Handle player movement (Arrow keys and WASD)
     this.player.body.setVelocity(0);
-    if (this.cursors.left.isDown) {
+    if (this.cursors.left.isDown || this.keys.A.isDown) {
       this.player.body.setVelocityX(-speed);
       this.player.setFlipX(true);
     }
-    if (this.cursors.right.isDown) {
+    if (this.cursors.right.isDown || this.keys.D.isDown) {
       this.player.body.setVelocityX(speed);
       this.player.setFlipX(false);
     }
-    if (this.cursors.up.isDown) this.player.body.setVelocityY(-speed);
-    if (this.cursors.down.isDown) this.player.body.setVelocityY(speed);
+    if (this.cursors.up.isDown || this.keys.W.isDown) this.player.body.setVelocityY(-speed);
+    if (this.cursors.down.isDown || this.keys.S.isDown) this.player.body.setVelocityY(speed);
+
+
     let foundCountry = null;
     for (let country of this.countries) {
       const distance = Phaser.Math.Distance.Between(
@@ -1146,28 +1261,114 @@ class Inventory extends Phaser.Scene {
   }
 }
 
+// ===============================
+// Settings Scene
+// ===============================
+
 class Settings extends Phaser.Scene {
   constructor() {
     super("Settings");
   }
 
+  init(data) {
+    this.returnTo = data?.returnTo || "MapScene";
+    this.isReturning = false;
+
+    if (!this.registry.has("musicVolume")) {
+      this.registry.set("musicVolume", backgroundMusic ? backgroundMusic.volume : 0.55);
+    }
+  }
+
   create() {
     const width = this.scale.width;
     const height = this.scale.height;
-    this.add.rectangle(width / 2, height / 2, width, height, 0xffeaa7);
-    this.add.text(width / 2, 60, "Settings", {
-      fontSize: "36px",
-      fill: "#ffffff"
+
+    this.add.rectangle(width / 2, height / 2, width, height, 0x000000, 0.45);
+
+    const panel = this.add.rectangle(width / 2, height / 2, 420, 300, 0xfff4e3)
+      .setStrokeStyle(4, 0x6b3e1f);
+
+    this.add.text(width / 2, height / 2 - 110, "Settings", {
+      fontSize: "40px",
+      color: "#6b3e1f",
+      fontStyle: "bold"
     }).setOrigin(0.5);
 
-    this.add.text(width / 2, height - 50, "Press ESC to return to map", {
-      fontSize: "20px",
-      fill: "#000"
+    const musicText = this.add.text(width / 2, height / 2 - 25, "", {
+      fontSize: "24px",
+      color: "#5a341d"
     }).setOrigin(0.5);
 
-    this.input.keyboard.on("keydown-ESC", () => {
-      this.scene.start("MapScene");
+    const refreshMusicLabel = () => {
+      const isMuted = backgroundMusic ? backgroundMusic.mute : false;
+      musicText.setText(`Music: ${isMuted ? "Off" : "On"}`);
+    };
+
+    const applyMusicVolume = (volume) => {
+      const clampedVolume = Phaser.Math.Clamp(volume, 0, 1);
+      this.registry.set("musicVolume", clampedVolume);
+      this.sound.volume = clampedVolume;
+      if (backgroundMusic) {
+        backgroundMusic.setVolume(clampedVolume);
+      }
+      return clampedVolume;
+    };
+
+    const scrollBar = this.add.rectangle(width / 2, height / 2 + 15, 200, 8, 0xd9b97d)
+      .setStrokeStyle(2, 0x000000, 0.6)
+      .setOrigin(0.5);
+
+    const scrollHandle = this.add.circle(width / 2, height / 2 + 15, 12, 0xe0bb67)
+      .setStrokeStyle(2, 0x000000, 0.6)
+      .setInteractive({ useHandCursor: true })
+      .setOrigin(0.5);
+
+    this.input.setDraggable(scrollHandle);
+
+    const minX = scrollBar.x - scrollBar.width / 2;
+    const maxX = scrollBar.x + scrollBar.width / 2;
+    const savedVolume = Phaser.Math.Clamp(this.registry.get("musicVolume") ?? 0.55, 0, 1);
+
+    applyMusicVolume(savedVolume);
+    scrollHandle.x = Phaser.Math.Linear(minX, maxX, savedVolume);
+
+    scrollHandle.on("drag", (pointer, dragX) => {
+      const clampedX = Phaser.Math.Clamp(dragX, minX, maxX);
+
+      const volume = (clampedX - minX) / scrollBar.width;
+
+      applyMusicVolume(volume);
+      scrollHandle.x = clampedX;
+      refreshMusicLabel();
     });
+
+    const backButton = this.add.text(width / 2, height / 2 + 85, this.returnTo === "StartScene" ? "Back to Start" : "Back to Map", {
+      fontSize: "22px",
+      color: "#ffffff",
+      backgroundColor: "#5a341d",
+      padding: { x: 14, y: 8 }
+    }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+
+    const goBack = () => {
+      if (this.isReturning) return;
+      this.isReturning = true;
+      this.cameras.main.fadeOut(220, 0, 0, 0);
+      this.time.delayedCall(240, () => {
+        this.scene.start(this.returnTo);
+      });
+    };
+
+    backButton.on("pointerdown", goBack);
+
+    this.input.keyboard.on("keydown-ESC", goBack);
+
+    this.cameras.main.fadeIn(180, 0, 0, 0);
+
+    refreshMusicLabel();
+    this.add.text(width / 2, height / 2 + 145, "ESC to return", {
+      fontSize: "16px",
+      color: "#8a5d34"
+    }).setOrigin(0.5);
   }
 }
 
