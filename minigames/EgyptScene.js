@@ -7,7 +7,7 @@ class EgyptCutscene extends Phaser.Scene {
     this.load.image("olivePyramid", "assets/egypt/cutscene/olive_pyramids.png");
     this.load.image("oliveEgyptRest", "assets/egypt/cutscene/olive_falafel_rest.png");
     this.load.image("oliveChickpeaChef", "assets/egypt/cutscene/chickpea_chef.png");
-    // this.load.audio("egyptian_music", "assets/italy/cutscene/italian_music.mp3");
+    this.load.audio("egypt_music", "assets/egypt/cutscene/egypt_music.mp3");
   }
 
   create() {
@@ -18,7 +18,7 @@ class EgyptCutscene extends Phaser.Scene {
     this.registry.set("seenCutscenes", seenCutscenes);
     this.slides = ["olivePyramid", "oliveEgyptRest", "oliveChickpeaChef"];
     this.dialogueLines = [
-      "", 
+      "",
       "",
       "Habibi, do you want to make falafel? \n First you have to dodge them!"
     ];
@@ -34,7 +34,7 @@ class EgyptCutscene extends Phaser.Scene {
     this.cutsceneImage = this.add.image(width / 2, height / 2, this.slides[0]).setAlpha(0);
     this._fitCutsceneImage(this.cutsceneImage, width, height);
     this.cutsceneDialogue();
-    // this.startEgyptianMusic();
+    this.startEgyptMusic();
 
     this.cutsceneCaption = this.add.text(width / 2, height - 44, "Click or press SPACE to continue", {
       fontSize: "22px",
@@ -60,19 +60,19 @@ class EgyptCutscene extends Phaser.Scene {
     this.input.keyboard.on("keydown-ENTER", () => this.advanceCutscene());
 
   }
-  // startEgyptianMusic() {
-  //   let egyptianMusic = this.sound.get("egyptian_music");
-  //   if (!egyptianMusic) {
-  //     egyptianMusic = this.sound.add("egyptian_music", { volume: 0.55, loop: true });
-  //   }
-  //   if (!egyptianMusic.isPlaying) {
-  //     egyptianMusic.play();
-  //   }
-  // }
+  startEgyptMusic() {
+    let egyptMusic = this.sound.get("egypt_music");
+    if (!egyptMusic) {
+      egyptMusic = this.sound.add("egypt_music", { volume: 0.55, loop: true });
+    }
+    if (!egyptMusic.isPlaying) {
+      egyptMusic.play();
+    }
+  }
 
-  // stopEgyptianMusic() {
-  //   this.sound.stopByKey("italian_music");
-  // }
+  stopEgyptMusic() {
+    this.sound.stopByKey("egypt_music");
+  }
 
   cutsceneDialogue() {
     const dialogueText = this.dialogueLines[this.cutsceneIndex] || "";
@@ -99,56 +99,55 @@ class EgyptCutscene extends Phaser.Scene {
     image.setScale(scale);
   }
 
-advanceCutscene() {
-  if (this.isTransitioningSlide) return;
+  advanceCutscene() {
+    if (this.isTransitioningSlide) return;
 
-  // 👉 if still typing, finish instantly instead of advancing
-  if (this.isTyping) {
-    if (this.currentTypingTimer) {
-      this.currentTypingTimer.remove(false);
-      this.currentTypingTimer = null;
+    if (this.isTyping) {
+      if (this.currentTypingTimer) {
+        this.currentTypingTimer.remove(false);
+        this.currentTypingTimer = null;
+      }
+      this.dialogueText.setText(this.fullText);
+      this.isTyping = false;
+      return;
     }
-    this.dialogueText.setText(this.fullText);
-    this.isTyping = false;
-    return;
-  }
 
-  const nextIndex = this.cutsceneIndex + 1;
+    const nextIndex = this.cutsceneIndex + 1;
 
-  if (nextIndex >= this.slides.length) {
-    this.isTransitioningSlide = true;
-    this.cameras.main.fadeOut(350, 19, 14, 11);
-    this.time.delayedCall(360, () => {
-      this.scene.start("EgyptScene");
-    });
-    return;
-  }
-
-  this.isTransitioningSlide = true;
-  this.tweens.add({
-    targets: this.cutsceneImage,
-    alpha: 0,
-    duration: 260,
-    ease: "Sine.easeInOut",
-    onComplete: () => {
-      this.cutsceneIndex = nextIndex;
-      this.cutsceneImage.setTexture(this.slides[this.cutsceneIndex]);
-      this._fitCutsceneImage(this.cutsceneImage, this.scale.width, this.scale.height);
-      this.cutsceneProgress.setText(`${this.cutsceneIndex + 1} / ${this.slides.length}`);
-      this.cutsceneDialogue();
-
-      this.tweens.add({
-        targets: this.cutsceneImage,
-        alpha: 1,
-        duration: 320,
-        ease: "Sine.easeInOut",
-        onComplete: () => {
-          this.isTransitioningSlide = false;
-        }
+    if (nextIndex >= this.slides.length) {
+      this.isTransitioningSlide = true;
+      this.cameras.main.fadeOut(350, 19, 14, 11);
+      this.time.delayedCall(360, () => {
+        this.scene.start("EgyptScene");
       });
+      return;
     }
-  });
-}
+
+    this.isTransitioningSlide = true;
+    this.tweens.add({
+      targets: this.cutsceneImage,
+      alpha: 0,
+      duration: 260,
+      ease: "Sine.easeInOut",
+      onComplete: () => {
+        this.cutsceneIndex = nextIndex;
+        this.cutsceneImage.setTexture(this.slides[this.cutsceneIndex]);
+        this._fitCutsceneImage(this.cutsceneImage, this.scale.width, this.scale.height);
+        this.cutsceneProgress.setText(`${this.cutsceneIndex + 1} / ${this.slides.length}`);
+        this.cutsceneDialogue();
+
+        this.tweens.add({
+          targets: this.cutsceneImage,
+          alpha: 1,
+          duration: 320,
+          ease: "Sine.easeInOut",
+          onComplete: () => {
+            this.isTransitioningSlide = false;
+          }
+        });
+      }
+    });
+  }
 
   animateText(target, message, speedInMs = 50) {
     if (this.currentTypingTimer) {
@@ -191,10 +190,10 @@ advanceCutscene() {
 }
 
 class EgyptScene extends Phaser.Scene {
- constructor() {
-   super("EgyptScene");
- }
- 
+  constructor() {
+    super("EgyptScene");
+  }
+
   preload() {
     // Generate all assets procedurally using graphics
     this.generateAssets();
@@ -203,35 +202,48 @@ class EgyptScene extends Phaser.Scene {
     this.load.image('oliveHatJester', 'assets/olive_hat_jester.PNG');
     this.load.image('oliveHatPropeller', 'assets/olive_hat_propeller.PNG');
     this.load.image('oliveHatWizard', 'assets/olive_hat_wizard.PNG');
+    this.load.audio('egypt_music', 'assets/egypt/egypt_music.mp3');
   }
- 
+
   generateAssets() {
     // We'll use Phaser Graphics to draw everything in create()
   }
- 
+
   create(data) {
+    this.startEgyptMusic();
     const width = this.scale.width;
     const height = this.scale.height;
 
- 
+
     this.palette = {
-      bg:         0xfaf0cf,
-      skyAccent:  0xf4c95d,
-      dune:       0xd8b06b,
-      ground:     0x7a4e22,
-      obstacle:   0xbe8a3f,
+      bg: 0xfaf0cf,
+      skyAccent: 0xf4c95d,
+      dune: 0xd8b06b,
+      ground: 0x7a4e22,
+      obstacle: 0xbe8a3f,
       obstacleDark: 0x8d622b,
-      cactus:     0x4f8b3a,
+      cactus: 0x4f8b3a,
       cactusDark: 0x356327,
-      falafel:    0x8a5a27,
+      falafel: 0x8a5a27,
       falafelDark: 0x5f3b17,
+      cloud: 0xf7ebcf,
+      text: "#5a3b1d",
+      score: "#5a3b1d",
+      shadow: 0xc79a57,
+      highlight: 0xf0cc8b,
+      herb:       0x4f8f3a,
+      herbDark:   0x2f5f22,
+      cucumber:   0x6cab52,
+      cucumberDark: 0x3f6f30,
+      tomato:     0xc94b3a,
+      tomatoDark: 0x8f2f25,
       cloud:      0xf7ebcf,
       text:       "#5a3b1d",
       score:      "#5a3b1d",
       shadow:     0xc79a57,
       highlight:  0xf0cc8b,
     };
- 
+
     this.GROUND_Y = height - 80;
     this.UPPER_PLATFORM_Y = this.GROUND_Y - 135;
     this.gameStarted = false;
@@ -248,11 +260,11 @@ class EgyptScene extends Phaser.Scene {
     this.add.ellipse(width / 2, this.GROUND_Y - 18, width * 0.9, 90, this.palette.dune, 0.82);
     this.add.ellipse(width / 2, this.GROUND_Y + 12, width, 70, 0xc58f4d, 0.95);
     this.createBackdropPyramids(width);
-    
+
     // Ground line
     this.groundLine = this.add.rectangle(width / 2, this.GROUND_Y + 2, width, 4, this.palette.ground);
     this.upperLaneGuide = this.add.rectangle(width / 2, this.UPPER_PLATFORM_Y + 8, width * 0.42, 2, 0xc59a5d, 0.2);
- 
+
     // Desert haze (decorative)
     this.clouds = [];
     for (let i = 0; i < 4; i++) {
@@ -267,17 +279,17 @@ class EgyptScene extends Phaser.Scene {
     this.dinoX = 80;
     this.dinoY = this.GROUND_Y;
     this.dino.setPosition(this.dinoX, this.dinoY);
- 
+
     // Physics state
     this.dinoVY = 0;
     this.isOnGround = true;
     this.GRAVITY = 1.1;
     this.JUMP_FORCE = -18;
- 
+
     // Leg animation
     this.legFrame = 0;
     this.legTimer = 0;
- 
+
     // Obstacles pool
     this.obstacles = [];
     this.obstacleTimer = 0;
@@ -288,12 +300,12 @@ class EgyptScene extends Phaser.Scene {
     this.platformTimer = 0;
     this.platformInterval = 220;
     this.currentPlatform = null;
- 
+
     // Pterodactyls
     this.pteros = [];
     this.pteroTimer = 0;
     this.pteroInterval = 300;
- 
+
     // Score display
     this.scoreText = this.add.text(width - 20, 20, "HI " + this.padScore(this.hiScore) + "  00000", {
       fontSize: "22px",
@@ -301,7 +313,7 @@ class EgyptScene extends Phaser.Scene {
       color: this.palette.score,
       fontStyle: "bold"
     }).setOrigin(1, 0);
- 
+
     // Start message
     this.startMsg = this.add.text(width / 2, this.GROUND_Y - 80, "PRESS SPACE OR TAP TO START", {
       fontSize: "18px",
@@ -309,7 +321,7 @@ class EgyptScene extends Phaser.Scene {
       color: this.palette.text,
       fontStyle: "bold"
     }).setOrigin(0.5);
- 
+
     // Blink animation for start message
     this.tweens.add({
       targets: this.startMsg,
@@ -318,11 +330,11 @@ class EgyptScene extends Phaser.Scene {
       yoyo: true,
       repeat: -1
     });
- 
+
     // Game over group (hidden initially)
     this.gameOverGroup = this.add.container(width / 2, this.GROUND_Y - 60);
     this.gameOverGroup.setVisible(false);
- 
+
     const goBox = this.add.rectangle(0, 0, 360, 90, this.palette.bg)
       .setStrokeStyle(3, this.palette.ground);
     const goText = this.add.text(0, -18, "GAME OVER", {
@@ -337,37 +349,59 @@ class EgyptScene extends Phaser.Scene {
       color: this.palette.text
     }).setOrigin(0.5);
     this.gameOverGroup.add([goBox, goText, restartText]);
+
+    this.winBannerShown = false;
+    this.winBanner = this.add.container(width / 2, 90);
+    this.winBanner.setDepth(12);
+    this.winBanner.setVisible(false);
+    const bannerShadow = this.add.rectangle(6, 6, 390, 70, 0x8d622b, 0.22);
+    const bannerPanel = this.add.rectangle(0, 0, 390, 70, 0xffefc8)
+      .setStrokeStyle(3, this.palette.ground);
+    const bannerText = this.add.text(0, 0, "YOU EARNED YOUR BADGE!", {
+      fontSize: "26px",
+      fontFamily: "monospace",
+      color: this.palette.text,
+      fontStyle: "bold"
+    }).setOrigin(0.5);
+    this.winBanner.add([bannerShadow, bannerPanel, bannerText]);
  
     // Input
     this.input.keyboard.on("keydown-SPACE", () => this.handleJump());
     this.input.keyboard.on("keydown-UP", () => this.handleJump());
     this.input.on("pointerdown", () => this.handleJump());
- 
+
     // ESC to map
+    this.input.keyboard.on("keydown-ESC", () => this.returnToMap());
+
+  }
+
+  startEgyptMusic() {
+    let egyptMusic = this.sound.get("egypt_music");
+    if (!egyptMusic) {
+      egyptMusic = this.sound.add("egypt_music", { volume: 0.55, loop: true });
+    }
+    if (!egyptMusic.isPlaying) {
+      egyptMusic.play();
+    }
     this.input.keyboard.on("keydown-ESC", () => {
       this.scene.start("MapScene");
+      this.checkOliveWin();
     });
   }
-  
-  // startEgyptianMusic() {
-  //   let egyptianMusic = this.sound.get("egyptian_music");
-  //   if (!egyptianMusic) {
-  //     egyptianMusic = this.sound.add("egyptian_music", { volume: 0.55, loop: true });
-  //   }
-  //   if (!egyptianMusic.isPlaying) {
-  //     egyptianMusic.play();
-  //   }
-  //  }
 
-  // stopEgyptianMusic() {
-  //   this.sound.stopByKey("egyptian_music");
-  // }
+  stopEgyptMusic() {
+    this.sound.stopByKey("egypt_music");
+  }
 
+  returnToMap() {
+    this.stopEgyptMusic();
+    this.scene.start("MapScene");
+  }
 
   padScore(n) {
     return String(n).padStart(5, "0");
   }
- 
+
   handleJump() {
     if (this.gameOver) {
       this.restartGame();
@@ -387,7 +421,7 @@ class EgyptScene extends Phaser.Scene {
       this.jumpCount = 2;
     }
   }
- 
+
   restartGame() {
     const hiScore = Math.max(this.score, this.hiScore);
     this.scene.restart({ hiScore });
@@ -403,49 +437,49 @@ class EgyptScene extends Phaser.Scene {
     g.fillTriangle(40, this.GROUND_Y, 110, this.GROUND_Y - 95, 180, this.GROUND_Y);
     g.setDepth(0);
   }
- 
+
   // ─── Asset Creation ───────────────────────────────────────────────────────
- 
-createDino() {
-  const equippedHat = (this.registry.get('equippedItems') || { hat: null }).hat;
-  const oliveTextureByHat = {
-    chef: 'oliveHatChef',
-    jester: 'oliveHatJester',
-    propeller: 'oliveHatPropeller',
-    wizard: 'oliveHatWizard'
-  };
-  const oliveTexture = oliveTextureByHat[equippedHat] || 'oliveOverjoyed';
-  const olive = this.add.image(0, 0, oliveTexture);
-  olive.setDisplaySize(64, 64);
-  olive.setOrigin(0.5, 1); // 👈 important
-  olive.setDepth(5);
-  olive.baseScaleX = olive.scaleX;
-  olive.baseScaleY = olive.scaleY;
-  this.drawDinoShape(olive, 0, 0, 0);
-  return olive;
-}
- 
+
+  createDino() {
+    const equippedHat = (this.registry.get('equippedItems') || { hat: null }).hat;
+    const oliveTextureByHat = {
+      chef: 'oliveHatChef',
+      jester: 'oliveHatJester',
+      propeller: 'oliveHatPropeller',
+      wizard: 'oliveHatWizard'
+    };
+    const oliveTexture = oliveTextureByHat[equippedHat] || 'oliveOverjoyed';
+    const olive = this.add.image(0, 0, oliveTexture);
+    olive.setDisplaySize(64, 64);
+    olive.setOrigin(0.5, 1); // 👈 important
+    olive.setDepth(5);
+    olive.baseScaleX = olive.scaleX;
+    olive.baseScaleY = olive.scaleY;
+    this.drawDinoShape(olive, 0, 0, 0);
+    return olive;
+  }
+
   drawDinoShape(g, x, y, legFrame) {
     g.clearTint();
     g.setAngle(legFrame === 0 ? -4 : 4);
     g.setScale(g.baseScaleX, g.baseScaleY);
     g.setPosition(x, y);
   }
- 
+
   drawDinoJump(g, x, y) {
     g.clearTint();
     g.setAngle(-12);
     g.setScale(g.baseScaleX * 0.97, g.baseScaleY * 0.97);
     g.setPosition(x, y);
   }
- 
+
   drawDinoDead(g, x, y) {
     g.setTint(0xd86a5e);
     g.setAngle(90);
     g.setScale(g.baseScaleX, g.baseScaleY);
     g.setPosition(x, y);
   }
- 
+
   createCloud(cx, cy) {
     const g = this.add.graphics();
     g.fillStyle(this.palette.cloud);
@@ -457,7 +491,7 @@ createDino() {
     g.cloudY = cy;
     return g;
   }
- 
+
   moveCloud(cloud, cx, cy) {
     cloud.clear();
     cloud.fillStyle(this.palette.cloud);
@@ -467,7 +501,7 @@ createDino() {
     cloud.cloudX = cx;
     cloud.cloudY = cy;
   }
- 
+
   createCactus(x) {
     const g = this.add.graphics();
     const type = Phaser.Math.Between(0, 2);
@@ -584,10 +618,82 @@ createDino() {
     g.strokePath();
   }
 
+  createHerbs(x) {
+    const g = this.add.graphics();
+    g.setDepth(4);
+    g.obstacleX = x;
+    g.obstacleType = "herbs";
+    g.hitW = 26;
+    g.hitH = 18;
+    g.hitOffsetX = 0;
+    g.hitOffsetY = -9;
+
+    const y = this.GROUND_Y - 10;
+    g.fillStyle(this.palette.herb);
+    g.fillEllipse(x - 8, y, 12, 18);
+    g.fillEllipse(x, y - 2, 12, 20);
+    g.fillEllipse(x + 8, y, 12, 18);
+    g.fillStyle(this.palette.herbDark);
+    g.fillRect(x - 1, y + 2, 2, 7);
+    return g;
+  }
+
+  createCucumber(x) {
+    const g = this.add.graphics();
+    g.setDepth(4);
+    g.obstacleX = x;
+    g.obstacleType = "cucumber";
+    g.hitW = 30;
+    g.hitH = 14;
+    g.hitOffsetX = 0;
+    g.hitOffsetY = -8;
+
+    const y = this.GROUND_Y - 8;
+    g.fillStyle(this.palette.cucumber);
+    g.fillEllipse(x, y, 30, 14);
+    g.fillStyle(this.palette.cucumberDark);
+    g.fillEllipse(x - 9, y, 4, 10);
+    g.fillEllipse(x + 9, y, 4, 10);
+    g.lineStyle(2, this.palette.highlight, 0.45);
+    g.beginPath();
+    g.moveTo(x - 10, y - 2);
+    g.lineTo(x + 10, y - 2);
+    g.moveTo(x - 8, y + 2);
+    g.lineTo(x + 8, y + 2);
+    g.strokePath();
+    return g;
+  }
+
+  createTomato(x) {
+    const g = this.add.graphics();
+    g.setDepth(4);
+    g.obstacleX = x;
+    g.obstacleType = "tomato";
+    g.hitW = 22;
+    g.hitH = 22;
+    g.hitOffsetX = 0;
+    g.hitOffsetY = -12;
+
+    const y = this.GROUND_Y - 12;
+    g.fillStyle(this.palette.tomato);
+    g.fillCircle(x, y, 11);
+    g.fillStyle(this.palette.tomatoDark);
+    g.fillCircle(x - 3, y - 2, 2.2);
+    g.fillStyle(this.palette.herb);
+    g.fillTriangle(x, y - 14, x - 4, y - 8, x + 4, y - 8);
+    g.fillTriangle(x - 6, y - 10, x - 1, y - 8, x - 4, y - 4);
+    g.fillTriangle(x + 6, y - 10, x + 1, y - 8, x + 4, y - 4);
+    return g;
+  }
+
   createGroundObstacle(x) {
     const roll = Phaser.Math.Between(0, 99);
     if (roll < 25) return this.createPyramid(x);
     if (roll < 45) return this.createFalafel(x);
+    if (roll < 58) return this.createCactus(x);
+    if (roll < 72) return this.createHerbs(x);
+    if (roll < 86) return this.createCucumber(x);
+    if (roll < 96) return this.createTomato(x);
     return this.createCactus(x);
   }
 
@@ -677,12 +783,12 @@ createDino() {
     const playerRight = this.dinoX + 8;
     return playerRight > platform.platformX && playerLeft < platform.platformX + platform.platformWidth;
   }
- 
+
   moveCactus(g, x) {
     g.x = x - g.obstacleX;
     g.obstacleX = x;
   }
- 
+
   createPtero(x, y) {
     const g = this.add.graphics();
     g.fillStyle(this.palette.obstacle);
@@ -713,6 +819,75 @@ createDino() {
     this.drawFalafel(g, x, y, 0);
     return g;
   }
+
+  createFlyingIngredient(x, y, type) {
+    const g = this.add.graphics();
+    g.setDepth(4);
+    g.obstacleX = x;
+    g.obstacleY = y;
+    g.obstacleType = type;
+    g.rollAngle = 0;
+
+    if (type === "flyingHerbs") {
+      g.hitW = 26;
+      g.hitH = 18;
+      g.hitOffsetX = 0;
+      g.hitOffsetY = -9;
+      this.drawHerbs(g, x, y);
+    } else if (type === "flyingCucumber") {
+      g.hitW = 30;
+      g.hitH = 14;
+      g.hitOffsetX = 0;
+      g.hitOffsetY = -8;
+      this.drawCucumber(g, x, y);
+    } else {
+      g.hitW = 22;
+      g.hitH = 22;
+      g.hitOffsetX = 0;
+      g.hitOffsetY = -12;
+      this.drawTomato(g, x, y);
+    }
+
+    return g;
+  }
+
+  drawHerbs(g, x, y) {
+    g.clear();
+    g.fillStyle(this.palette.herb);
+    g.fillEllipse(x - 8, y, 12, 18);
+    g.fillEllipse(x, y - 2, 12, 20);
+    g.fillEllipse(x + 8, y, 12, 18);
+    g.fillStyle(this.palette.herbDark);
+    g.fillRect(x - 1, y + 2, 2, 7);
+  }
+
+  drawCucumber(g, x, y) {
+    g.clear();
+    g.fillStyle(this.palette.cucumber);
+    g.fillEllipse(x, y, 30, 14);
+    g.fillStyle(this.palette.cucumberDark);
+    g.fillEllipse(x - 9, y, 4, 10);
+    g.fillEllipse(x + 9, y, 4, 10);
+    g.lineStyle(2, this.palette.highlight, 0.45);
+    g.beginPath();
+    g.moveTo(x - 10, y - 2);
+    g.lineTo(x + 10, y - 2);
+    g.moveTo(x - 8, y + 2);
+    g.lineTo(x + 8, y + 2);
+    g.strokePath();
+  }
+
+  drawTomato(g, x, y) {
+    g.clear();
+    g.fillStyle(this.palette.tomato);
+    g.fillCircle(x, y, 11);
+    g.fillStyle(this.palette.tomatoDark);
+    g.fillCircle(x - 3, y - 2, 2.2);
+    g.fillStyle(this.palette.herb);
+    g.fillTriangle(x, y - 14, x - 4, y - 8, x + 4, y - 8);
+    g.fillTriangle(x - 6, y - 10, x - 1, y - 8, x - 4, y - 4);
+    g.fillTriangle(x + 6, y - 10, x + 1, y - 8, x + 4, y - 4);
+  }
  
   drawPtero(g, x, y, wingFrame) {
     g.clear();
@@ -731,9 +906,9 @@ createDino() {
       g.fillRect(x + 4, y - 4, 10, 4);
     }
   }
- 
+
   // ─── Update ───────────────────────────────────────────────────────────────
- 
+
   update() {
     if (!this.gameStarted || this.gameOver) {
       // Idle leg animation even before start
@@ -745,18 +920,23 @@ createDino() {
       }
       return;
     }
- 
+
     this.frameCount++;
- 
+
     // Speed ramp
     this.speed = 6 + Math.floor(this.score / 100) * 0.5;
     if (this.speed > 18) this.speed = 18;
- 
+
     // Score
     if (this.frameCount % 6 === 0) {
       this.score++;
       if (this.score > this.hiScore) this.hiScore = this.score;
       this.scoreText.setText("HI " + this.padScore(this.hiScore) + "  " + this.padScore(this.score));
+    }
+
+
+    if (!this.winBannerShown && this.score >= 500) {
+      this.showWinBanner();
     }
 
  
@@ -795,7 +975,7 @@ createDino() {
         this.currentPlatform = null;
       }
     }
- 
+
     // Leg animation (only on ground)
     if (this.isOnGround) {
       this.legTimer++;
@@ -806,7 +986,7 @@ createDino() {
       this.drawDinoJump(this.dino, 0, 0);
     }
     this.dino.setPosition(this.dinoX, this.dinoY);
- 
+
     // Spawn obstacles
     this.obstacleTimer++;
     const minInterval = Math.max(40, 90 - Math.floor(this.score / 100) * 5);
@@ -826,7 +1006,7 @@ createDino() {
         this.platforms.push(platform);
       }
     }
- 
+
     // Move obstacles
     for (let i = this.obstacles.length - 1; i >= 0; i--) {
       const obs = this.obstacles[i];
@@ -863,7 +1043,7 @@ createDino() {
         this.platforms.splice(i, 1);
       }
     }
- 
+
     // Spawn pterodactyls after score 200
     if (this.score >= 200) {
       this.pteroTimer++;
@@ -872,13 +1052,23 @@ createDino() {
         this.pteroInterval = Math.max(180, 300 - Math.floor(this.score / 200) * 20);
         const heights = [this.GROUND_Y - 50, this.GROUND_Y - 90, this.GROUND_Y - 130];
         const py = heights[Phaser.Math.Between(0, heights.length - 1)];
-        const airObstacle = Phaser.Math.Between(0, 99) < 45
-          ? this.createFlyingFalafel(this.scale.width + 20, py)
-          : this.createPtero(this.scale.width + 20, py);
+        const airRoll = Phaser.Math.Between(0, 99);
+        let airObstacle;
+        if (airRoll < 25) {
+          airObstacle = this.createFlyingFalafel(this.scale.width + 20, py);
+        } else if (airRoll < 45) {
+          airObstacle = this.createFlyingIngredient(this.scale.width + 20, py, "flyingTomato");
+        } else if (airRoll < 65) {
+          airObstacle = this.createFlyingIngredient(this.scale.width + 20, py, "flyingCucumber");
+        } else if (airRoll < 80) {
+          airObstacle = this.createFlyingIngredient(this.scale.width + 20, py, "flyingHerbs");
+        } else {
+          airObstacle = this.createPtero(this.scale.width + 20, py);
+        }
         this.pteros.push(airObstacle);
       }
     }
- 
+
     // Move pteros
     for (let i = this.pteros.length - 1; i >= 0; i--) {
       const p = this.pteros[i];
@@ -886,14 +1076,20 @@ createDino() {
       p.x = p.obstacleX - (this.scale.width + 20) + (this.scale.width + 20);
       // Actually use x directly
       p.x -= 0; // position set via drawPtero with offset
- 
+
       // Recalc actual draw position
       const drawX = p.obstacleX;
       const drawY = p.obstacleY;
- 
+
       if (p.obstacleType === "flyingFalafel") {
         p.rollAngle += this.speed * 0.1;
         this.drawFalafel(p, drawX, drawY, p.rollAngle);
+      } else if (p.obstacleType === "flyingTomato") {
+        this.drawTomato(p, drawX, drawY);
+      } else if (p.obstacleType === "flyingCucumber") {
+        this.drawCucumber(p, drawX, drawY);
+      } else if (p.obstacleType === "flyingHerbs") {
+        this.drawHerbs(p, drawX, drawY);
       } else {
         // Wing flap
         if (this.frameCount % 18 === 0) p.wingFrame = 1 - p.wingFrame;
@@ -909,14 +1105,14 @@ createDino() {
     // Collision detection
     this.checkCollisions();
   }
- 
+
   checkCollisions() {
     // Dino hitbox: centered at (dinoX, dinoY - 20), half-extents ~14x20
     const dx = this.dinoX;
     const dy = this.dinoY - 20;
     const dHW = 12;
     const dHH = 18;
- 
+
     for (const obs of this.obstacles) {
       const ox = obs.obstacleX + obs.hitOffsetX;
       const oy = this.GROUND_Y + obs.hitOffsetY;
@@ -930,7 +1126,7 @@ createDino() {
         return;
       }
     }
- 
+
     for (const p of this.pteros) {
       const ox = p.obstacleX;
       const oy = p.obstacleY;
@@ -961,38 +1157,90 @@ createDino() {
     }
   }
 
+  addCoin(amount) {
+    let current = this.registry.get('currency');
+  showWinBanner() {
+    this.winBannerShown = true;
+    this.winBanner.setVisible(true);
+    this.winBanner.setAlpha(0);
+    this.winBanner.setScale(0.92);
+    this.winBanner.y = 58;
+
+    this.tweens.add({
+      targets: this.winBanner,
+      y: 90,
+      alpha: 1,
+      scaleX: 1,
+      scaleY: 1,
+      duration: 360,
+      ease: "Back.easeOut"
+    });
+
+    this.time.delayedCall(1800, () => {
+      if (!this.winBanner || !this.winBanner.scene) return;
+      this.tweens.add({
+        targets: this.winBanner,
+        y: 48,
+        alpha: 0,
+        duration: 320,
+        ease: "Sine.easeIn",
+        onComplete: () => {
+          if (this.winBanner) {
+            this.winBanner.setVisible(false);
+          }
+        }
+      });
+    });
+  }
+
 addCoin(amount) {
   let current = this.registry.get('currency');
 
-  if (current === undefined || current === null) {
-    current = 0;
+    if (current === undefined || current === null) {
+      current = 0;
+    }
+
+    current += amount;
+    this.registry.set('currency', current);
+
   }
-
-  current+= amount;
-  this.registry.set('currency', current);
-
-}
-  rewardCoins(){
+  rewardCoins() {
     if (this.score >= 200) {
-      this.addCoin(Math.floor(this.score/200));
+      this.addCoin(Math.floor(this.score / 200));
     }
   }
   triggerGameOver() {
     this.gameOver = true;
- 
+
     // Draw dead dino
     this.drawDinoDead(this.dino, 0, 0);
     this.dino.setPosition(this.dinoX, this.dinoY);
- 
+
     // Flash red
     this.cameras.main.flash(300, 255, 50, 50, false);
- 
+
     // Show game over popup
     this.gameOverGroup.setVisible(true);
     this.gameOverGroup.setPosition(this.scale.width / 2, this.GROUND_Y - 70);
- 
+
     // Update score display
     this.scoreText.setText("HI " + this.padScore(this.hiScore) + "  " + this.padScore(this.score));
     this.rewardCoins();
+
+    if (this.score >= 500) {
+      const wins = this.registry.get('wins');
+      wins.egypt = true;
+      this.registry.set('wins', wins);
+    }
+
+
   }
+
+  checkOliveWin() {
+    const wins = this.registry.get('wins') || {};
+    if (wins.italy && wins.philippines && wins.egypt && wins.mexico) {
+      return true;
+    }
+  }
+
 }

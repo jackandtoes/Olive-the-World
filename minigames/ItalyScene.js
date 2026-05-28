@@ -729,7 +729,12 @@ pipe.tileData = tile;
 	
 	  next_button.on("pointerdown", () => {
     this.stopItalyMusic();
+    if(!this.checkOliveWin()){
 	    this.scene.start("MapScene");
+    }
+    else {
+      this.scene.start("OliveWinScene");
+    }
 	  });
 	 }
 
@@ -1077,6 +1082,13 @@ const pasta_41 = this.tileMapData[4][5];
   
   }
 }
+
+checkOliveWin() {
+    const wins = this.registry.get('wins') || {};
+    if (wins.italy && wins.philippines && wins.egypt && wins.mexico) {
+      return true;
+    }
+  }
 
 addCoin(amount = 1) {
   let current = this.registry.get('currency');
