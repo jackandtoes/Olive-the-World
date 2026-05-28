@@ -694,6 +694,7 @@ class MapScene extends Phaser.Scene {
     this.player.setDepth(5);
 
     this.cursors = this.input.keyboard.createCursorKeys();
+    this.keys = this.input.keyboard.addKeys('W,A,S,D');
     this.countries = [];
 
     this.createCountry("Mexico", width * 0.3, height * 0.44,
@@ -817,17 +818,21 @@ class MapScene extends Phaser.Scene {
 
   update() {
     const speed = 125;
+
+    // Handle player movement (Arrow keys and WASD)
     this.player.body.setVelocity(0);
-    if (this.cursors.left.isDown) {
+    if (this.cursors.left.isDown || this.keys.A.isDown) {
       this.player.body.setVelocityX(-speed);
       this.player.setFlipX(true);
     }
-    if (this.cursors.right.isDown) {
+    if (this.cursors.right.isDown || this.keys.D.isDown) {
       this.player.body.setVelocityX(speed);
       this.player.setFlipX(false);
     }
-    if (this.cursors.up.isDown) this.player.body.setVelocityY(-speed);
-    if (this.cursors.down.isDown) this.player.body.setVelocityY(speed);
+    if (this.cursors.up.isDown || this.keys.W.isDown) this.player.body.setVelocityY(-speed);
+    if (this.cursors.down.isDown || this.keys.S.isDown) this.player.body.setVelocityY(speed);
+
+
     let foundCountry = null;
     for (let country of this.countries) {
       const distance = Phaser.Math.Distance.Between(
