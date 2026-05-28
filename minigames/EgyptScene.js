@@ -401,6 +401,7 @@ class EgyptScene extends Phaser.Scene {
 
   handleJump() {
     if (this.gameOver) {
+      playButtonClickSfx(this);
       this.restartGame();
       return;
     }
