@@ -187,8 +187,8 @@ class IndiaCutscene extends Phaser.Scene {
 
 const INDIA_LEVELS = {
   1: { targetScore: 50, spawnDelay: 1000, timeLimit: 10, ingredientKey: "biryaniIngredients", frames: [0, 1, 2, 3, 4, 5, 6, 7] },
-  2: { targetScore: 70, spawnDelay: 850, timeLimit: 25, ingredientKey: "palakPaneerIngredients", frames: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] },
-  3: { targetScore: 90, spawnDelay: 700, timeLimit: 20, ingredientKey: "palakPaneerIngredients", frames: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] },
+  2: { targetScore: 70, spawnDelay: 850, timeLimit: 25, ingredientKey: "palakPaneerIngredients", frames: [0, 1, 2, 3, 4, 5, 6, 7, 8] },
+  3: { targetScore: 90, spawnDelay: 700, timeLimit: 20, ingredientKey: "samosasIngredients", frames: [0, 1, 2, 3, 4, 5, 6] },
 };
 
 
