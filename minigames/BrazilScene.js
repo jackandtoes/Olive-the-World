@@ -5,6 +5,10 @@ class BrazilCutscene extends Phaser.Scene {
 
   preload() {
     this.load.audio("brazil_music", "assets/brazil/cutscene/brazil_music.mp3");
+    this.load.image("olive_hanggliding", "assets/brazil/cutscene/olive_flying_hang.png");
+    this.load.image("olive_carnaval", "assets/brazil/cutscene/olive_carnaval.png");
+    this.load.image("olive_bean_chef", "assets/brazil/cutscene/bean_chef_olive.png");
+    // this.load.audio("egyptian_music", "assets/italy/cutscene/italian_music.mp3");
   }
 
   create() {
@@ -13,11 +17,11 @@ class BrazilCutscene extends Phaser.Scene {
     const seenCutscenes = this.registry.get("seenCutscenes") || {};
     seenCutscenes.brazil = true;
     this.registry.set("seenCutscenes", seenCutscenes);
-    this.slides = ["1", "2", "3"];
+    this.slides = ["olive_hanggliding", "olive_carnaval", "olive_bean_chef"];
     this.dialogueLines = [
+      "", 
       "",
-      "",
-      "Brazil" // change this later
+      "Habibi, do you want to make falafel? \n First you have to dodge them!"
     ];
 
     this.cutsceneIndex = 0;
@@ -97,55 +101,56 @@ class BrazilCutscene extends Phaser.Scene {
     image.setScale(scale);
   }
 
-  advanceCutscene() {
-    if (this.isTransitioningSlide) return;
+advanceCutscene() {
+  if (this.isTransitioningSlide) return;
 
-    if (this.isTyping) {
-      if (this.currentTypingTimer) {
-        this.currentTypingTimer.remove(false);
-        this.currentTypingTimer = null;
-      }
-      this.dialogueText.setText(this.fullText);
-      this.isTyping = false;
-      return;
+  // 👉 if still typing, finish instantly instead of advancing
+  if (this.isTyping) {
+    if (this.currentTypingTimer) {
+      this.currentTypingTimer.remove(false);
+      this.currentTypingTimer = null;
     }
-
-    const nextIndex = this.cutsceneIndex + 1;
-
-    if (nextIndex >= this.slides.length) {
-      this.isTransitioningSlide = true;
-      this.cameras.main.fadeOut(350, 19, 14, 11);
-      this.time.delayedCall(360, () => {
-        this.scene.start("BrazilScene");
-      });
-      return;
-    }
-
-    this.isTransitioningSlide = true;
-    this.tweens.add({
-      targets: this.cutsceneImage,
-      alpha: 0,
-      duration: 260,
-      ease: "Sine.easeInOut",
-      onComplete: () => {
-        this.cutsceneIndex = nextIndex;
-        this.cutsceneImage.setTexture(this.slides[this.cutsceneIndex]);
-        this._fitCutsceneImage(this.cutsceneImage, this.scale.width, this.scale.height);
-        this.cutsceneProgress.setText(`${this.cutsceneIndex + 1} / ${this.slides.length}`);
-        this.cutsceneDialogue();
-
-        this.tweens.add({
-          targets: this.cutsceneImage,
-          alpha: 1,
-          duration: 320,
-          ease: "Sine.easeInOut",
-          onComplete: () => {
-            this.isTransitioningSlide = false;
-          }
-        });
-      }
-    });
+    this.dialogueText.setText(this.fullText);
+    this.isTyping = false;
+    return;
   }
+
+  const nextIndex = this.cutsceneIndex + 1;
+
+  if (nextIndex >= this.slides.length) {
+    this.isTransitioningSlide = true;
+    this.cameras.main.fadeOut(350, 19, 14, 11);
+    this.time.delayedCall(360, () => {
+      this.scene.start("BrazilScene");
+    });
+    return;
+  }
+
+  this.isTransitioningSlide = true;
+  this.tweens.add({
+    targets: this.cutsceneImage,
+    alpha: 0,
+    duration: 260,
+    ease: "Sine.easeInOut",
+    onComplete: () => {
+      this.cutsceneIndex = nextIndex;
+      this.cutsceneImage.setTexture(this.slides[this.cutsceneIndex]);
+      this._fitCutsceneImage(this.cutsceneImage, this.scale.width, this.scale.height);
+      this.cutsceneProgress.setText(`${this.cutsceneIndex + 1} / ${this.slides.length}`);
+      this.cutsceneDialogue();
+
+      this.tweens.add({
+        targets: this.cutsceneImage,
+        alpha: 1,
+        duration: 320,
+        ease: "Sine.easeInOut",
+        onComplete: () => {
+          this.isTransitioningSlide = false;
+        }
+      });
+    }
+  });
+}
 
   animateText(target, message, speedInMs = 50) {
     if (this.currentTypingTimer) {
@@ -249,6 +254,7 @@ class BrazilScene extends Phaser.Scene {
   }
 
   preload() {
+    this.load.audio("brazil_music", "assets/brazil/brazil_music.mp3");
     this.load.image("oliveOverjoyed", "assets/olive_overjoyed.PNG");
     this.load.image("background", "assets/brazil/brazil_background.PNG");
     this.load.image("skyline", "assets/brazil/brazil_skyline.PNG");
@@ -256,6 +262,7 @@ class BrazilScene extends Phaser.Scene {
   }
 
   create() {
+    this.startBrazilMusic();
     this.input.keyboard.enabled = true;
     this.physics.world.gravity.y = 800;
     this.physics.world.setBounds(0, 0, this.sceneWidth, 760);
@@ -273,9 +280,7 @@ class BrazilScene extends Phaser.Scene {
     this.applyWeather(this.levelData.weather);
 
     this.cursors = this.input.keyboard.createCursorKeys();
-    this.input.keyboard.on("keydown-ESC", () => {
-      this.scene.start("MapScene");
-    });
+    this.input.keyboard.on("keydown-ESC", () => this.returnToMap());
 
     this.physics.add.collider(this.player, this.platforms);
     this.physics.add.collider(this.goal, this.platforms);
@@ -286,6 +291,25 @@ class BrazilScene extends Phaser.Scene {
     this.cameras.main.startFollow(this.player, true, 0.5, 0.5);
 
     this.showBanner(`Level ${this.currentLevel}`, `Collect ${this.levelData.ingredient} and reach the goal.`);
+  }
+
+  startBrazilMusic() {
+    let brazilMusic = this.sound.get("brazil_music");
+    if (!brazilMusic) {
+      brazilMusic = this.sound.add("brazil_music", { volume: 0.55, loop: true });
+    }
+    if (!brazilMusic.isPlaying) {
+      brazilMusic.play();
+    }
+  }
+
+  stopBrazilMusic() {
+    this.sound.stopByKey("brazil_music");
+  }
+
+  returnToMap() {
+    this.stopBrazilMusic();
+    this.scene.start("MapScene");
   }
 
   createTextures() {
@@ -623,8 +647,13 @@ class BrazilScene extends Phaser.Scene {
     text.on("pointerover", activateHover);
     bg.on("pointerout", deactivateHover);
     text.on("pointerout", deactivateHover);
-    bg.on("pointerdown", cb);
-    text.on("pointerdown", cb);
+    const handleClick = () => {
+      playButtonClickSfx(this);
+      cb();
+    };
+
+    bg.on("pointerdown", handleClick);
+    text.on("pointerdown", handleClick);
 
     return this.add.container(0, 0, [shadow, bg, text]).setScrollFactor(0).setDepth(depth);
   }
