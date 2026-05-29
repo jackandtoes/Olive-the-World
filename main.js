@@ -20,8 +20,9 @@ function playButtonClickSfx(scene) {
   if (!scene.cache.audio.exists("button_click_sfx")) {
     return;
   }
-
   scene.sound.play("button_click_sfx", { volume: getSfxVolume(scene) });
+}
+
 function getSavedMusicVolume(scene) {
   const savedVolume = scene.registry.get("musicVolume");
   return typeof savedVolume === "number" ? savedVolume : 0.55;
@@ -1670,4 +1671,5 @@ const config = {
     autoCenter: Phaser.Scale.CENTER_BOTH
   }
 };
+
 new Phaser.Game(config);
