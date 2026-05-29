@@ -22,13 +22,17 @@ function playButtonClickSfx(scene) {
   }
 
   scene.sound.play("button_click_sfx", { volume: getSfxVolume(scene) });
+function getSavedMusicVolume(scene) {
+  const savedVolume = scene.registry.get("musicVolume");
+  return typeof savedVolume === "number" ? savedVolume : 0.55;
 }
 
 function startBackgroundMusic(scene) {
   if (!backgroundMusic) {
-    backgroundMusic = scene.sound.add("background_music", { volume: 0.55, loop: true });
+    backgroundMusic = scene.sound.add("background_music", { volume: getSavedMusicVolume(scene), loop: true });
   }
 
+  backgroundMusic.setVolume(getSavedMusicVolume(scene));
   if (!backgroundMusic.isPlaying) {
     backgroundMusic.play();
   }
@@ -457,8 +461,9 @@ advanceCutscene() {
 
   playBirthdaySong() {
     if (!this.birthdaySong) {
-      this.birthdaySong = this.sound.add("birthday_song", { volume: 0.55 });
+      this.birthdaySong = this.sound.add("birthday_song", { volume: getSavedMusicVolume(this) });
     }
+    this.birthdaySong.setVolume(getSavedMusicVolume(this));
     if (!this.birthdaySong.isPlaying) {
       this.birthdaySong.play();
     }
@@ -1305,6 +1310,7 @@ class Settings extends Phaser.Scene {
 
     if (!this.registry.has("musicVolume")) {
       this.registry.set("musicVolume", backgroundMusic ? backgroundMusic.volume : 0.55);
+      
     }
     if (!this.registry.has("sfxVolume")) {
       this.registry.set("sfxVolume", 0.75);

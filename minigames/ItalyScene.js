@@ -62,9 +62,11 @@ class ItalyCutscene extends Phaser.Scene {
   }
     startItalyMusic() {
     let italyMusic = this.sound.get("italian_music");
+    const musicVolume = this.registry.get("musicVolume") ?? 0.55;
     if (!italyMusic) {
-      italyMusic = this.sound.add("italian_music", { volume: 0.55, loop: true });
+      italyMusic = this.sound.add("italian_music", { volume: musicVolume, loop: true });
     }
+    italyMusic.setVolume(musicVolume);
     if (!italyMusic.isPlaying) {
       italyMusic.play();
     }
@@ -406,15 +408,17 @@ this.levelLayouts = {
   
 	 }
 
-   startItalyMusic() {
+    startItalyMusic() {
     let italyMusic = this.sound.get("italian_music");
+    const musicVolume = this.registry.get("musicVolume") ?? 0.55;
     if (!italyMusic) {
-      italyMusic = this.sound.add("italian_music", { volume: 0.55, loop: true });
+      italyMusic = this.sound.add("italian_music", { volume: musicVolume, loop: true });
     }
+    italyMusic.setVolume(musicVolume);
     if (!italyMusic.isPlaying) {
       italyMusic.play();
     }
-   }
+  }
 
   stopItalyMusic() {
     this.sound.stopByKey("italian_music");
