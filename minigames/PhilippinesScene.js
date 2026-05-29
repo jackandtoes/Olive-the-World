@@ -62,9 +62,11 @@ class PhilippinesCutscene extends Phaser.Scene {
 
   startPhilippinesMusic() {
     let philippinesMusic = this.sound.get("filipino_music");
+    const musicVolume = this.registry.get("musicVolume") ?? 0.55;
     if (!philippinesMusic) {
-      philippinesMusic = this.sound.add("filipino_music", { volume: 0.55, loop: true });
+      philippinesMusic = this.sound.add("filipino_music", { volume: musicVolume, loop: true });
     }
+    philippinesMusic.setVolume(musicVolume);
     if (!philippinesMusic.isPlaying) {
       philippinesMusic.play();
     }
@@ -319,9 +321,11 @@ class PhilippinesScene extends Phaser.Scene {
 
   startPhilippinesMusic() {
     let philippinesMusic = this.sound.get("filipino_music");
+    const musicVolume = this.registry.get("musicVolume") ?? 0.55;
     if (!philippinesMusic) {
-      philippinesMusic = this.sound.add("filipino_music", { volume: 0.55, loop: true });
+      philippinesMusic = this.sound.add("filipino_music", { volume: musicVolume, loop: true });
     }
+    philippinesMusic.setVolume(musicVolume);
     if (!philippinesMusic.isPlaying) {
       philippinesMusic.play();
     }
