@@ -20,7 +20,7 @@ class PhilippinesCutscene extends Phaser.Scene {
     this.dialogueLines = [
       "",
       "",
-      "Philippines"
+      "Philippines" // change this later
     ];
 
     this.cutsceneIndex = 0;
@@ -62,9 +62,11 @@ class PhilippinesCutscene extends Phaser.Scene {
 
   startPhilippinesMusic() {
     let philippinesMusic = this.sound.get("filipino_music");
+    const musicVolume = this.registry.get("musicVolume") ?? 0.55;
     if (!philippinesMusic) {
-      philippinesMusic = this.sound.add("filipino_music", { volume: 0.55, loop: true });
+      philippinesMusic = this.sound.add("filipino_music", { volume: musicVolume, loop: true });
     }
+    philippinesMusic.setVolume(musicVolume);
     if (!philippinesMusic.isPlaying) {
       philippinesMusic.play();
     }
@@ -319,9 +321,11 @@ class PhilippinesScene extends Phaser.Scene {
 
   startPhilippinesMusic() {
     let philippinesMusic = this.sound.get("filipino_music");
+    const musicVolume = this.registry.get("musicVolume") ?? 0.55;
     if (!philippinesMusic) {
-      philippinesMusic = this.sound.add("filipino_music", { volume: 0.55, loop: true });
+      philippinesMusic = this.sound.add("filipino_music", { volume: musicVolume, loop: true });
     }
+    philippinesMusic.setVolume(musicVolume);
     if (!philippinesMusic.isPlaying) {
       philippinesMusic.play();
     }
@@ -993,8 +997,8 @@ class PhilippinesScene extends Phaser.Scene {
     const panelShadow = this.add.rectangle(width / 2 + 6, height / 2 + 8, 530, 380, 0x5e685d, 0.14);
     const panel = this.add.rectangle(width / 2, height / 2, 530, 380, 0xf6f4eb, 0.98)
       .setStrokeStyle(3, this.palette.uiBorder, 1);
-    const accent = this.add.rectangle(width / 2, height / 2 - 140, 440, 6, this.palette.uiAccent, 0.95);
-    return { width, height, fade, panelShadow, panel, accent };
+    //const accent = this.add.rectangle(width / 2, height / 2 - 140, 440, 6, this.palette.uiAccent, 0.95);
+    return { width, height, fade, panelShadow, panel };
   }
 
   _button(x, y, label, cb, depth = 30) {
@@ -1026,8 +1030,13 @@ class PhilippinesScene extends Phaser.Scene {
     bg.on("pointerout", deactivateHover);
     text.on("pointerout", deactivateHover);
 
-    bg.on("pointerdown", cb);
-    text.on("pointerdown", cb);
+    const handleClick = () => {
+      playButtonClickSfx(this);
+      cb();
+    };
+
+    bg.on("pointerdown", handleClick);
+    text.on("pointerdown", handleClick);
 
     return this.add.container(0, 0, [shadow, bg, text]).setDepth(depth);
   }
