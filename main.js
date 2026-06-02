@@ -732,7 +732,7 @@ class MapScene extends Phaser.Scene {
     this.createCountry("Italy", width * 0.70, height * 0.35,
       "Fix pasta pipes.\nServe the perfect plate!", "ItalyCutscene", "flagItaly");
     this.createCountry("India", width * 0.62, height * 0.27,
-      "A quick visit to India.\nTry the India scene!", "IndiaScene", "flagIndia");
+      "A quick visit to India.\nTry the India scene!", "IndiaCutscene", "flagIndia");
     this.createCountry("Philippines", width * 1.1, height * 0.5,
       "Collect lumpia ingredients.\nAvoid traffic!", "PhilippinesCutscene", "flagPhilippines");
     this.createCountry("Egypt", width * 0.76, height * 0.42,
@@ -842,6 +842,9 @@ class MapScene extends Phaser.Scene {
     }
     if (country.name === "Brazil" && (wins.brazil || seenCutscenes.brazil)) {
       return "BrazilScene";
+    }
+    if (country.name === "India" && (wins.india || seenCutscenes.india)) {
+      return "IndiaScene";
     }
     return country.sceneName;
   }
@@ -1656,6 +1659,7 @@ const config = {
     MexicoCutscene,
     BrazilCutscene,
     BrazilScene,
+    IndiaCutscene,
     IndiaScene,
     Store,
     Inventory,

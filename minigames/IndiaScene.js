@@ -4,6 +4,9 @@ class IndiaCutscene extends Phaser.Scene {
     }
 
     preload() {
+        this.load.image("oliveMumbai", "assets/india/cutscene/olive_in_mumbai.png");
+        this.load.image("oliveIndianRest", "assets/india/cutscene/olive_at_indianrest.png");
+        this.load.image("oliveSamosaChef", "assets/india/cutscene/olive_samosa_chef.png");
         this.load.audio("india_music", "assets/india/cutscene/india_music.mp3");
     }
 
@@ -14,11 +17,11 @@ class IndiaCutscene extends Phaser.Scene {
         const seenCutscenes = this.registry.get("seenCutscenes") || {};
         seenCutscenes.india = true;
         this.registry.set("seenCutscenes", seenCutscenes);
-        this.slides = ["1", "2", "3"];
+        this.slides = ["oliveMumbai", "oliveIndianRest", "oliveSamosaChef"];
         this.dialogueLines = [
-            "",
-            "",
-            "India" // change this later
+            "Wow, Mumbai is so busy!\n I wonder what I can find here?",
+            "This place is amazing! The food looks so good.",
+            "Welcome to India!\nNow that you've seen the sights, let's get cooking!"
         ];
 
         this.cutsceneIndex = 0;
