@@ -41,12 +41,12 @@ class ItalyCutscene extends Phaser.Scene {
       fill: "#fff4dd",
       backgroundColor: "#5a341d",
       padding: { x: 14, y: 8 }
-    }).setOrigin(0.5);
+    }).setOrigin(0.5).setShadow(2, 2, "#000000", 0, false, true);
 
     this.cutsceneProgress = this.add.text(width / 2, 36, `1 / ${this.slides.length}`, {
       fontSize: "24px",
       fill: "#fff4dd"
-    }).setOrigin(0.5);
+    }).setOrigin(0.5).setShadow(2, 2, "#000000", 0, false, true);
 
     this.tweens.add({
       targets: this.cutsceneImage,
@@ -90,7 +90,7 @@ class ItalyCutscene extends Phaser.Scene {
           align: "center",
           wordWrap: { width: this.scale.width - 80 }
         }
-      ).setOrigin(0.5);
+      ).setOrigin(0.5).setShadow(2, 2, "#000000", 0, false, true);
     }
 
     this.animateText(this.dialogueText, dialogueText, 20);
@@ -405,10 +405,7 @@ this.levelLayouts = {
 	  this.boardContainer.setDepth(2);
 	  this.drawGrid();
 	   this.addPipes();
-	   this.input.keyboard.on("keydown-ESC", () => {
-      this.stopItalyMusic();
-	     this.scene.start("MapScene");
-	   });
+	   this.input.keyboard.on("keydown-ESC", () => this.returnToMap());
   
   
 	 }
@@ -427,6 +424,15 @@ this.levelLayouts = {
 
   stopItalyMusic() {
     this.sound.stopByKey("italian_music");
+  }
+
+  returnToMap() {
+    this.stopItalyMusic();
+    if (!this.checkOliveWin()) {
+      this.scene.start("MapScene");
+    } else {
+      this.scene.start("OliveWinScene");
+    }
   }
 
   createCheerOlive(boardX, boardY) {
@@ -728,7 +734,7 @@ pipe.tileData = tile;
  showTotalWinPopup() {
   this.pointerText.setText("YOU WIN!");
 
-  const next_button = this.add.rectangle(400, 350, 300, 170, 0x2b140c, 0.94)
+  const restart_button = this.add.rectangle(400, 332, 300, 64, 0x7c2d12, 0.98)
     .setStrokeStyle(3, this.palette.panelBorder)
     .setInteractive({ useHandCursor: true })
     .setDepth(20);
@@ -737,23 +743,30 @@ pipe.tileData = tile;
     color: "#fff4dd",
     fontStyle: "bold"
   }).setOrigin(0.5).setDepth(21);
-  this.add.text(400, 360, "Back to Map", {
-    fontSize: "30px",
+  this.add.text(400, 332, "Restart", {
+    fontSize: "26px",
     color: "#ffffff",
-    backgroundColor: "#7c2d12",
-    padding: { x: 20, y: 10 }
-	  }).setOrigin(0.5).setDepth(21);
-	
-	  next_button.on("pointerdown", () => {
-    this.stopItalyMusic();
-    if(!this.checkOliveWin()){
-	    this.scene.start("MapScene");
-    }
-    else {
-      this.scene.start("OliveWinScene");
-    }
-	  });
-	 }
+    fontStyle: "bold"
+  }).setOrigin(0.5).setDepth(21);
+
+  const back_button = this.add.rectangle(400, 402, 300, 64, 0x5a341d, 0.98)
+    .setStrokeStyle(3, this.palette.panelBorder)
+    .setInteractive({ useHandCursor: true })
+    .setDepth(20);
+  this.add.text(400, 402, "Back to Map", {
+    fontSize: "24px",
+    color: "#ffffff",
+    fontStyle: "bold"
+  }).setOrigin(0.5).setDepth(21);
+
+  this.addCoin(1);
+  restart_button.on("pointerdown", () => {
+    this.scene.restart({ level: 1 });
+  });
+  back_button.on("pointerdown", () => {
+    this.returnToMap();
+  });
+ }
 
   _overlay() {
     const { width, height } = this.scale;
@@ -962,7 +975,6 @@ pipe.tileData = tile;
       pasta_17.rotationIndex % 2 == 0
     ) {
 
-      this.addCoin()
       this.hasWon = true;
       this.playSauceFillAnimation(this.getWinningAnimationCoords(), () => this.showWinPopup());
   
@@ -1156,9 +1168,10 @@ const pasta_41 = this.tileMapData[4][5];
 
 checkOliveWin() {
     const wins = this.registry.get('wins') || {};
-    if (wins.italy && wins.philippines && wins.egypt && wins.mexico) {
+    if (wins.italy && wins.philippines && wins.egypt && wins.mexico && wins.india && wins.brazil) {
       return true;
     }
+    return false;
   }
 
 addCoin(amount = 1) {
