@@ -62,9 +62,11 @@ class ItalyCutscene extends Phaser.Scene {
   }
     startItalyMusic() {
     let italyMusic = this.sound.get("italian_music");
+    const musicVolume = this.registry.get("musicVolume") ?? 0.55;
     if (!italyMusic) {
-      italyMusic = this.sound.add("italian_music", { volume: 0.55, loop: true });
+      italyMusic = this.sound.add("italian_music", { volume: musicVolume, loop: true });
     }
+    italyMusic.setVolume(musicVolume);
     if (!italyMusic.isPlaying) {
       italyMusic.play();
     }
@@ -406,15 +408,17 @@ this.levelLayouts = {
   
 	 }
 
-   startItalyMusic() {
+    startItalyMusic() {
     let italyMusic = this.sound.get("italian_music");
+    const musicVolume = this.registry.get("musicVolume") ?? 0.55;
     if (!italyMusic) {
-      italyMusic = this.sound.add("italian_music", { volume: 0.55, loop: true });
+      italyMusic = this.sound.add("italian_music", { volume: musicVolume, loop: true });
     }
+    italyMusic.setVolume(musicVolume);
     if (!italyMusic.isPlaying) {
       italyMusic.play();
     }
-   }
+  }
 
   stopItalyMusic() {
     this.sound.stopByKey("italian_music");
@@ -729,9 +733,68 @@ pipe.tileData = tile;
 	
 	  next_button.on("pointerdown", () => {
     this.stopItalyMusic();
+    if(!this.checkOliveWin()){
 	    this.scene.start("MapScene");
+    }
+    else {
+      this.scene.start("OliveWinScene");
+    }
 	  });
 	 }
+
+  _overlay() {
+    const { width, height } = this.scale;
+    const depth = 1000;
+
+    const fade = this.add.rectangle(width / 2, height / 2, width, height, this.palette.overlay, 0.38)
+      .setDepth(depth);
+    const panelShadow = this.add.rectangle(width / 2 + 6, height / 2 + 8, 530, 380, 0x5e685d, 0.14)
+      .setDepth(depth + 1);
+    const panel = this.add.rectangle(width / 2, height / 2, 530, 380, 0xf6f4eb, 0.98)
+      .setStrokeStyle(3, this.palette.uiBorder, 1)
+      .setDepth(depth + 2);
+    // const accent = this.add.rectangle(width / 2, height / 2 - 140, 440, 6, this.palette.uiAccent, 0.95)
+    //   .setDepth(depth + 3);
+
+    return { width, height, depth, fade, panelShadow, panel };
+  }
+
+  _button(x, y, label, cb, depth = 30) {
+    const shadow = this.add.rectangle(x + 3, y + 4, 190, 44, 0x7e4a2c, 0.2).setDepth(depth - 1);
+    const bg = this.add.rectangle(x, y, 190, 44, this.palette.buttonFill)
+      .setStrokeStyle(3, this.palette.buttonBorder, 0.95)
+      .setInteractive({ useHandCursor: true })
+      .setDepth(depth);
+    const text = this.add.text(x, y, label, {
+      fontSize: "24px",
+      color: this.palette.buttonText,
+      fontStyle: "bold",
+    }).setOrigin(0.5).setDepth(depth + 1).setInteractive({ useHandCursor: true });
+
+    const activateHover = () => {
+      bg.setFillStyle(this.palette.buttonHover, 1);
+      text.setScale(1.03);
+    };
+
+    const deactivateHover = () => {
+      bg.setFillStyle(this.palette.buttonFill, 1);
+      text.setScale(1);
+    };
+
+    bg.on("pointerover", activateHover);
+    text.on("pointerover", activateHover);
+    bg.on("pointerout", deactivateHover);
+    text.on("pointerout", deactivateHover);
+    const handleClick = () => {
+      playButtonClickSfx(this);
+      cb();
+    };
+
+    bg.on("pointerdown", handleClick);
+    text.on("pointerdown", handleClick);
+
+    return this.add.container(0, 0, [shadow, bg, text]).setDepth(depth);
+  }
 
 	checkWin() {
 
@@ -1077,6 +1140,13 @@ const pasta_41 = this.tileMapData[4][5];
   
   }
 }
+
+checkOliveWin() {
+    const wins = this.registry.get('wins') || {};
+    if (wins.italy && wins.philippines && wins.egypt && wins.mexico) {
+      return true;
+    }
+  }
 
 addCoin(amount = 1) {
   let current = this.registry.get('currency');
