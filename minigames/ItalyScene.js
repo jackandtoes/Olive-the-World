@@ -204,6 +204,11 @@ class ItalyScene extends Phaser.Scene {
    this.load.image('crossed', 'assets/italy/crossed_pasta.png');
    this.load.image('t_shape', 'assets/italy/t-shaped_pasta.png');
    this.load.image('olive_mascot', 'assets/olive_favicon.png');
+   this.load.image('oliveOverjoyed', 'assets/olivesprites/olive_overjoyed.PNG');
+   this.load.image('oliveHatChef', 'assets/olivesprites/olive_hat_chef.PNG');
+   this.load.image('oliveHatJester', 'assets/olivesprites/olive_hat_jester.PNG');
+   this.load.image('oliveHatPropeller', 'assets/olivesprites/olive_hat_propeller.PNG');
+   this.load.image('oliveHatWizard', 'assets/olivesprites/olive_hat_wizard.PNG');
    this.load.audio("italian_music", "assets/italy/cutscene/italian_music.mp3");
  }
 
@@ -428,7 +433,15 @@ this.levelLayouts = {
   const mascotX = boardX - 82;
   const mascotY = boardY + 210;
   const shadow = this.add.ellipse(mascotX, mascotY + 52, 58, 16, 0xb98547, 0.28).setDepth(2);
-  const olive = this.add.image(mascotX, mascotY, 'olive_mascot').setDepth(3);
+  const equippedHat = (this.registry.get('equippedItems') || { hat: null }).hat;
+  const oliveTextureByHat = {
+    chef: 'oliveHatChef',
+    jester: 'oliveHatJester',
+    propeller: 'oliveHatPropeller',
+    wizard: 'oliveHatWizard'
+  };
+  const oliveTexture = oliveTextureByHat[equippedHat] || 'oliveOverjoyed';
+  const olive = this.add.image(mascotX, mascotY, oliveTexture).setDepth(3);
   olive.setDisplaySize(82, 82);
 
   this.tweens.add({

@@ -19,9 +19,9 @@ class BrazilCutscene extends Phaser.Scene {
     this.registry.set("seenCutscenes", seenCutscenes);
     this.slides = ["olive_hanggliding", "olive_carnaval", "olive_bean_chef"];
     this.dialogueLines = [
-      "", 
-      "",
-      "Habibi, do you want to make falafel? \n First you have to dodge them!"
+      "What a great view from here!\n I wonder what is going on below?", 
+      "Get a taste of carnival!",
+      "No party can start without feijoada!\n Let's find those ingredients!"
     ];
 
     this.cutsceneIndex = 0;

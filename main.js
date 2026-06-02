@@ -20,8 +20,9 @@ function playButtonClickSfx(scene) {
   if (!scene.cache.audio.exists("button_click_sfx")) {
     return;
   }
-
   scene.sound.play("button_click_sfx", { volume: getSfxVolume(scene) });
+}
+
 function getSavedMusicVolume(scene) {
   const savedVolume = scene.registry.get("musicVolume");
   return typeof savedVolume === "number" ? savedVolume : 0.55;
@@ -81,12 +82,8 @@ class StartScene extends Phaser.Scene {
   }
 
   create() {
-
     const width = this.scale.width;
     const height = this.scale.height;
-
-    // Start background music for the start scene
-    startBackgroundMusic(this);
 
     // Adds background 
     this.add.rectangle(width / 2, height / 2, width, height, 0x1a140f).setDepth(-30);
@@ -303,7 +300,7 @@ class IntroCutscene extends Phaser.Scene {
   }
 
   create() {
-    startBackgroundMusic(this);
+    stopBackgroundMusic();
 
     const width = this.scale.width;
     const height = this.scale.height;
@@ -361,7 +358,7 @@ class IntroCutscene extends Phaser.Scene {
       duration: 450,
       ease: "Sine.easeOut",
       onComplete: () => {
-        //this.playBirthdaySong();
+        this.playBirthdaySong();
       }
     });
 
@@ -735,7 +732,7 @@ class MapScene extends Phaser.Scene {
     this.createCountry("Italy", width * 0.70, height * 0.35,
       "Fix pasta pipes.\nServe the perfect plate!", "ItalyCutscene", "flagItaly");
     this.createCountry("India", width * 0.62, height * 0.27,
-      "A quick visit to India.\nTry the India scene!", "IndiaScene", "flagIndia");
+      "A quick visit to India.\nTry the India scene!", "IndiaCutscene", "flagIndia");
     this.createCountry("Philippines", width * 1.1, height * 0.5,
       "Collect lumpia ingredients.\nAvoid traffic!", "PhilippinesCutscene", "flagPhilippines");
     this.createCountry("Egypt", width * 0.76, height * 0.42,
@@ -845,6 +842,9 @@ class MapScene extends Phaser.Scene {
     }
     if (country.name === "Brazil" && (wins.brazil || seenCutscenes.brazil)) {
       return "BrazilScene";
+    }
+    if (country.name === "India" && (wins.india || seenCutscenes.india)) {
+      return "IndiaScene";
     }
     return country.sceneName;
   }
@@ -1469,7 +1469,7 @@ class OliveWinScene extends Phaser.Scene {
       duration: 450,
       ease: "Sine.easeOut",
       onComplete: () => {
-        //this.playBirthdaySong();
+        this.playBirthdaySong();
       }
     });
 
@@ -1659,6 +1659,7 @@ const config = {
     MexicoCutscene,
     BrazilCutscene,
     BrazilScene,
+    IndiaCutscene,
     IndiaScene,
     Store,
     Inventory,
@@ -1670,4 +1671,5 @@ const config = {
     autoCenter: Phaser.Scale.CENTER_BOTH
   }
 };
+
 new Phaser.Game(config);
