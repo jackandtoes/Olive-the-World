@@ -82,12 +82,8 @@ class StartScene extends Phaser.Scene {
   }
 
   create() {
-
     const width = this.scale.width;
     const height = this.scale.height;
-
-    // Start background music for the start scene
-    startBackgroundMusic(this);
 
     // Adds background 
     this.add.rectangle(width / 2, height / 2, width, height, 0x1a140f).setDepth(-30);
@@ -304,7 +300,7 @@ class IntroCutscene extends Phaser.Scene {
   }
 
   create() {
-    startBackgroundMusic(this);
+    stopBackgroundMusic();
 
     const width = this.scale.width;
     const height = this.scale.height;
@@ -362,7 +358,7 @@ class IntroCutscene extends Phaser.Scene {
       duration: 450,
       ease: "Sine.easeOut",
       onComplete: () => {
-        //this.playBirthdaySong();
+        this.playBirthdaySong();
       }
     });
 
@@ -1470,7 +1466,7 @@ class OliveWinScene extends Phaser.Scene {
       duration: 450,
       ease: "Sine.easeOut",
       onComplete: () => {
-        //this.playBirthdaySong();
+        this.playBirthdaySong();
       }
     });
 
