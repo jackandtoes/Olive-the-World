@@ -61,13 +61,15 @@ class MexicoCutscene extends Phaser.Scene {
 
   }
    startMexicanMusic() {
-     let mexicanMusic = this.sound.get("mexican_music");
-     if (!mexicanMusic) {
-       mexicanMusic = this.sound.add("mexican_music", { volume: 0.55, loop: true });
-     }
-     if (!mexicanMusic.isPlaying) {
-       mexicanMusic.play();
-     }
+    let mexicanMusic = this.sound.get("mexican_music");
+    const musicVolume = this.registry.get("musicVolume") ?? 0.55;
+    if (!mexicanMusic) {
+      mexicanMusic = this.sound.add("mexican_music", { volume: musicVolume, loop: true });
+    }
+    mexicanMusic.setVolume(musicVolume);
+    if (!mexicanMusic.isPlaying) {
+      mexicanMusic.play();
+    }
    }
 
    stopMexicanMusic() {
@@ -326,9 +328,11 @@ class MexicoScene extends Phaser.Scene {
     }
     startMexicanMusic() {
     let mexicanMusic = this.sound.get("mexican_music");
+    const musicVolume = this.registry.get("musicVolume") ?? 0.55;
     if (!mexicanMusic) {
-      mexicanMusic = this.sound.add("mexican_music", { volume: 0.55, loop: true });
+      mexicanMusic = this.sound.add("mexican_music", { volume: musicVolume, loop: true });
     }
+    mexicanMusic.setVolume(musicVolume);
     if (!mexicanMusic.isPlaying) {
       mexicanMusic.play();
     }
@@ -881,6 +885,7 @@ class MexicoScene extends Phaser.Scene {
                     .setOrigin(0.5)
                     .setInteractive();
                 playButton.on('pointerdown', () => {
+                    playButtonClickSfx(this);
                     this.scene.start('MexicoScene');
                 });
                 const wins = this.registry.get('wins');
@@ -906,6 +911,7 @@ class MexicoScene extends Phaser.Scene {
                     .setOrigin(0.5)
                     .setInteractive();
                 playButton.on('pointerdown', () => {
+                    playButtonClickSfx(this);
                     this.scene.start('MexicoScene');
                 });
             }

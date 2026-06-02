@@ -63,9 +63,11 @@ class BrazilCutscene extends Phaser.Scene {
 
   startBrazilMusic() {
     let brazilMusic = this.sound.get("brazil_music");
+    const musicVolume = this.registry.get("musicVolume") ?? 0.55;
     if (!brazilMusic) {
-      brazilMusic = this.sound.add("brazil_music", { volume: 0.55, loop: true });
+      brazilMusic = this.sound.add("brazil_music", { volume: musicVolume, loop: true });
     }
+    brazilMusic.setVolume(musicVolume);
     if (!brazilMusic.isPlaying) {
       brazilMusic.play();
     }
@@ -645,8 +647,13 @@ class BrazilScene extends Phaser.Scene {
     text.on("pointerover", activateHover);
     bg.on("pointerout", deactivateHover);
     text.on("pointerout", deactivateHover);
-    bg.on("pointerdown", cb);
-    text.on("pointerdown", cb);
+    const handleClick = () => {
+      playButtonClickSfx(this);
+      cb();
+    };
+
+    bg.on("pointerdown", handleClick);
+    text.on("pointerdown", handleClick);
 
     return this.add.container(0, 0, [shadow, bg, text]).setScrollFactor(0).setDepth(depth);
   }

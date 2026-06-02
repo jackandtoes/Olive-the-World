@@ -8,11 +8,32 @@ const HAT_CATALOG = [
 const MAP_OLIVE_TARGET_HEIGHT = 38;
 let backgroundMusic = null;
 
-function startBackgroundMusic(scene) {
-  if (!backgroundMusic) {
-    backgroundMusic = scene.sound.add("background_music", { volume: 0.55, loop: true });
+function getSfxVolume(scene) {
+  if (!scene.registry.has("sfxVolume")) {
+    scene.registry.set("sfxVolume", 0.75);
   }
 
+  return scene.registry.get("sfxVolume");
+}
+
+function playButtonClickSfx(scene) {
+  if (!scene.cache.audio.exists("button_click_sfx")) {
+    return;
+  }
+  scene.sound.play("button_click_sfx", { volume: getSfxVolume(scene) });
+}
+
+function getSavedMusicVolume(scene) {
+  const savedVolume = scene.registry.get("musicVolume");
+  return typeof savedVolume === "number" ? savedVolume : 0.55;
+}
+
+function startBackgroundMusic(scene) {
+  if (!backgroundMusic) {
+    backgroundMusic = scene.sound.add("background_music", { volume: getSavedMusicVolume(scene), loop: true });
+  }
+
+  backgroundMusic.setVolume(getSavedMusicVolume(scene));
   if (!backgroundMusic.isPlaying) {
     backgroundMusic.play();
   }
@@ -57,6 +78,7 @@ class StartScene extends Phaser.Scene {
     this.load.image("oliveConcernedParents", "assets/cutscene/concerned_olive_parents.png");
     this.load.image("oliveDetermined", "assets/cutscene/olive_determined.png");
     this.load.audio("background_music", "assets/background_music.mp3");
+    this.load.audio("button_click_sfx", "assets/sfx/button_click_sfx.mp3");
   }
 
   create() {
@@ -100,7 +122,10 @@ class StartScene extends Phaser.Scene {
     startButton.setAlpha(0);
     startButton.y += 12;
 
-    const startGame = () => this.scene.start("IntroCutscene");
+    const startGame = () => {
+      playButtonClickSfx(this);
+      this.scene.start("IntroCutscene");
+    };
     startButton.on("pointerdown", startGame);
     this.input.keyboard.once("keydown-SPACE", startGame);
 
@@ -185,6 +210,7 @@ class StartScene extends Phaser.Scene {
       .setScrollFactor(0)
       .setDepth(30);
     settingsButton.on("pointerdown", () => {
+      playButtonClickSfx(this);
       this.scene.start("Settings", { returnTo: "StartScene" });
     });
 
@@ -325,7 +351,10 @@ class IntroCutscene extends Phaser.Scene {
       backgroundColor: "#5a341d",
       padding: { x: 12, y: 8 }
     }).setOrigin(1, 0).setInteractive({ useHandCursor: true });
-    this.skipButton.on("pointerdown", () => this.skipCutscene());
+    this.skipButton.on("pointerdown", () => {
+      playButtonClickSfx(this);
+      this.skipCutscene();
+    });
 
     this.tweens.add({
       targets: this.cutsceneImage,
@@ -433,8 +462,9 @@ advanceCutscene() {
 
   playBirthdaySong() {
     if (!this.birthdaySong) {
-      this.birthdaySong = this.sound.add("birthday_song", { volume: 0.55 });
+      this.birthdaySong = this.sound.add("birthday_song", { volume: getSavedMusicVolume(this) });
     }
+    this.birthdaySong.setVolume(getSavedMusicVolume(this));
     if (!this.birthdaySong.isPlaying) {
       this.birthdaySong.play();
     }
@@ -585,6 +615,7 @@ class MapScene extends Phaser.Scene {
     });
 
     returnButton.on("pointerdown", () => {
+      playButtonClickSfx(this);
       this.scene.start("StartScene");
     });
 
@@ -619,6 +650,7 @@ class MapScene extends Phaser.Scene {
     });
 
     storeButton.on("pointerdown", () => {
+      playButtonClickSfx(this);
       this.scene.start("Store");
     });
 
@@ -629,6 +661,7 @@ class MapScene extends Phaser.Scene {
       .setScrollFactor(0)
       .setDepth(30);
     inventoryButton.on("pointerdown", () => {
+      playButtonClickSfx(this);
       this.scene.start("Inventory");
     });
 
@@ -662,6 +695,7 @@ class MapScene extends Phaser.Scene {
       .setScrollFactor(0)
       .setDepth(30);
     settingsButton.on("pointerdown", () => {
+      playButtonClickSfx(this);
       this.scene.start("Settings", { returnTo: "MapScene" });
     });
 
@@ -759,6 +793,7 @@ class MapScene extends Phaser.Scene {
 
     const startCountryGame = () => {
       if (this.currentCountry) {
+        playButtonClickSfx(this);
         stopBackgroundMusic();
         this.scene.start(this.getCountrySceneName(this.currentCountry));
       }
@@ -1276,6 +1311,10 @@ class Settings extends Phaser.Scene {
 
     if (!this.registry.has("musicVolume")) {
       this.registry.set("musicVolume", backgroundMusic ? backgroundMusic.volume : 0.55);
+      
+    }
+    if (!this.registry.has("sfxVolume")) {
+      this.registry.set("sfxVolume", 0.75);
     }
   }
 
@@ -1307,7 +1346,6 @@ class Settings extends Phaser.Scene {
     const applyMusicVolume = (volume) => {
       const clampedVolume = Phaser.Math.Clamp(volume, 0, 1);
       this.registry.set("musicVolume", clampedVolume);
-      this.sound.volume = clampedVolume;
       if (backgroundMusic) {
         backgroundMusic.setVolume(clampedVolume);
       }
@@ -1352,6 +1390,7 @@ class Settings extends Phaser.Scene {
     const goBack = () => {
       if (this.isReturning) return;
       this.isReturning = true;
+      playButtonClickSfx(this);
       this.cameras.main.fadeOut(220, 0, 0, 0);
       this.time.delayedCall(240, () => {
         this.scene.start(this.returnTo);
@@ -1632,4 +1671,5 @@ const config = {
     autoCenter: Phaser.Scale.CENTER_BOTH
   }
 };
+
 new Phaser.Game(config);

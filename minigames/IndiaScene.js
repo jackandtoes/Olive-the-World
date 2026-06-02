@@ -8,6 +8,7 @@ class IndiaCutscene extends Phaser.Scene {
     }
 
     create() {
+
         const width = this.scale.width;
         const height = this.scale.height;
         const seenCutscenes = this.registry.get("seenCutscenes") || {};
@@ -187,8 +188,8 @@ class IndiaCutscene extends Phaser.Scene {
 
 const INDIA_LEVELS = {
   1: { targetScore: 50, spawnDelay: 1000, timeLimit: 10, ingredientKey: "biryaniIngredients", frames: [0, 1, 2, 3, 4, 5, 6, 7] },
-  2: { targetScore: 70, spawnDelay: 850, timeLimit: 25, ingredientKey: "palakPaneerIngredients", frames: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] },
-  3: { targetScore: 90, spawnDelay: 700, timeLimit: 20, ingredientKey: "palakPaneerIngredients", frames: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] },
+  2: { targetScore: 70, spawnDelay: 850, timeLimit: 25, ingredientKey: "palakPaneerIngredients", frames: [0, 1, 2, 3, 4, 5, 6, 7, 8] },
+  3: { targetScore: 90, spawnDelay: 700, timeLimit: 20, ingredientKey: "samosasIngredients", frames: [0, 1, 2, 3, 4, 5, 6] },
 };
 
 
@@ -215,12 +216,18 @@ class IndiaScene extends Phaser.Scene {
             frameWidth: 200,
             frameHeight: 200
         });
+
+        this.load.spritesheet('samosasIngredients', 'assets/india/samosasIngredients.png', {
+            frameWidth: 200,
+            frameHeight: 200
+        });
     }
 
     create() {
         this.startIndiaMusic();
         this.gameIsOver = false;
         this.levelComplete = false;
+        this.input.keyboard.enabled = true;
 
         this.score = 0;
         this.physics.world.gravity.y = 350;
@@ -235,6 +242,7 @@ class IndiaScene extends Phaser.Scene {
         // input
         this.cursorKeys = this.input.keyboard.createCursorKeys();
         this.input.keyboard.on("keydown-ESC", () => this.returnToMap());
+        
         // Create Ingredient group
         this.ingredientGroup = this.physics.add.group();
 
@@ -317,6 +325,7 @@ class IndiaScene extends Phaser.Scene {
             if (!child.active) {
                 return;
             }
+            child.angle += child.spinSpeed || 0;
             if (child.y > this.scale.height + 10) {
                 child.disableBody(true, true);
             }
@@ -325,6 +334,9 @@ class IndiaScene extends Phaser.Scene {
 
     spawnRandomIngredient() {
         const level = INDIA_LEVELS[this.currentLevel];
+
+        const angle = Phaser.Math.Between(-1, 1);
+
         if (!level) {
             return;
         }
@@ -340,6 +352,10 @@ class IndiaScene extends Phaser.Scene {
 
         ingredient.setScale(0.7);
         ingredient.body.setAllowGravity(true);
+        ingredient.setAngle(Phaser.Math.Between(0, 359));
+        ingredient.spinSpeed = Phaser.Math.Between(0, 1) === 0
+            ? Phaser.Math.Between(-3, -1)
+            : Phaser.Math.Between(1, 3);
     }
 
 
@@ -384,6 +400,8 @@ class IndiaScene extends Phaser.Scene {
         } else {
             this.showGameOver();
         }
+
+        this.input.keyboard.enabled = false;
     }
 
     levelComplete() {
@@ -432,6 +450,7 @@ class IndiaScene extends Phaser.Scene {
             fontSize: "24px",
             color: "#5a341d"
         }).setOrigin(0.5).setInteractive({ useHandCursor: true }).on('pointerdown', () => {
+            playButtonClickSfx(this);
             this.scene.restart({ level: this.currentLevel + 1, maxLevel: this.maxLevel });
         });
         
@@ -439,7 +458,8 @@ class IndiaScene extends Phaser.Scene {
             fontSize: "22px",
             color: "#5a341d"
         }).setOrigin(0.5).setInteractive({ useHandCursor: true }).on('pointerdown', () => {
-                this.scene.start("MapScene");
+            playButtonClickSfx(this);
+            this.returnToMap();
         });
     }
 
@@ -485,6 +505,7 @@ class IndiaScene extends Phaser.Scene {
             fontSize: "24px",
             color: "#5a341d"
         }).setOrigin(0.5).setInteractive({ useHandCursor: true }).on('pointerdown', () => {
+            playButtonClickSfx(this);
             this.scene.restart({ level: this.currentLevel, maxLevel: this.maxLevel });
         });
 
@@ -492,7 +513,8 @@ class IndiaScene extends Phaser.Scene {
             fontSize: "22px",
             color: "#5a341d"
         }).setOrigin(0.5).setInteractive({ useHandCursor: true }).on('pointerdown', () => {
-            this.scene.start("MapScene");
+            playButtonClickSfx(this);
+            this.returnToMap();
         });
     }
 
@@ -525,8 +547,13 @@ class IndiaScene extends Phaser.Scene {
             fontSize: "22px",
             color: "#5a341d"
         }).setOrigin(0.5).setInteractive({ useHandCursor: true }).on('pointerdown', () => {
-            this.scene.start("MapScene");
+            playButtonClickSfx(this);
+            this.returnToMap();
         });
+
+        const wins = this.registry.get('wins');
+        wins.india = true;
+        this.registry.set('wins', wins);
     }
 
 }

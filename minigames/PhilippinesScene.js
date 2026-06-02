@@ -62,9 +62,11 @@ class PhilippinesCutscene extends Phaser.Scene {
 
   startPhilippinesMusic() {
     let philippinesMusic = this.sound.get("filipino_music");
+    const musicVolume = this.registry.get("musicVolume") ?? 0.55;
     if (!philippinesMusic) {
-      philippinesMusic = this.sound.add("filipino_music", { volume: 0.55, loop: true });
+      philippinesMusic = this.sound.add("filipino_music", { volume: musicVolume, loop: true });
     }
+    philippinesMusic.setVolume(musicVolume);
     if (!philippinesMusic.isPlaying) {
       philippinesMusic.play();
     }
@@ -319,9 +321,11 @@ class PhilippinesScene extends Phaser.Scene {
 
   startPhilippinesMusic() {
     let philippinesMusic = this.sound.get("filipino_music");
+    const musicVolume = this.registry.get("musicVolume") ?? 0.55;
     if (!philippinesMusic) {
-      philippinesMusic = this.sound.add("filipino_music", { volume: 0.55, loop: true });
+      philippinesMusic = this.sound.add("filipino_music", { volume: musicVolume, loop: true });
     }
+    philippinesMusic.setVolume(musicVolume);
     if (!philippinesMusic.isPlaying) {
       philippinesMusic.play();
     }
@@ -1026,8 +1030,13 @@ class PhilippinesScene extends Phaser.Scene {
     bg.on("pointerout", deactivateHover);
     text.on("pointerout", deactivateHover);
 
-    bg.on("pointerdown", cb);
-    text.on("pointerdown", cb);
+    const handleClick = () => {
+      playButtonClickSfx(this);
+      cb();
+    };
+
+    bg.on("pointerdown", handleClick);
+    text.on("pointerdown", handleClick);
 
     return this.add.container(0, 0, [shadow, bg, text]).setDepth(depth);
   }
