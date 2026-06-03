@@ -548,7 +548,7 @@ class MapScene extends Phaser.Scene {
       this.registry.set('ownedItems', {});
     }
     if (!this.registry.has('wins')) {
-      this.registry.set('wins', { mexico: true, italy: true, philippines: true, egypt: true, brazil: false, india: true });
+      this.registry.set('wins', { mexico: false, italy: false, philippines: false, egypt: false, brazil: false, india: false });
     }
     if (!this.registry.has('seenCutscenes')) {
       this.registry.set('seenCutscenes', { mexico: false, italy: false, philippines: false, egypt: false, brazil: false, india: false });
