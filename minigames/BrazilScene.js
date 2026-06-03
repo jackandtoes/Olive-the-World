@@ -711,7 +711,7 @@ class BrazilScene extends Phaser.Scene {
       () => this.scene.restart({ level: 1 }), depth + 5);
 
     this._button(width / 2, height / 2 + 132, "Back to Map",
-      () => this.scene.start("MapScene"), depth + 5);
+      () => this.returnToMap(), depth + 5);
   }
 
   showBanner(title, subtitle) {
