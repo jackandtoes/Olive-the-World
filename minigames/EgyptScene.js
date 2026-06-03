@@ -20,7 +20,7 @@ class EgyptCutscene extends Phaser.Scene {
     this.dialogueLines = [
       "",
       "",
-      "Habibi, do you want to make falafel? \n First you have to dodge them!"
+      "Habibi, do you want to make falafels? \n First you have to dodge them!"
     ];
 
     this.cutsceneIndex = 0;
@@ -41,12 +41,12 @@ class EgyptCutscene extends Phaser.Scene {
       fill: "#fff4dd",
       backgroundColor: "#5a341d",
       padding: { x: 14, y: 8 }
-    }).setOrigin(0.5);
+    }).setOrigin(0.5).setShadow(2, 2, "#000000", 0, false, true);
 
     this.cutsceneProgress = this.add.text(width / 2, 36, `1 / ${this.slides.length}`, {
       fontSize: "24px",
       fill: "#fff4dd"
-    }).setOrigin(0.5);
+    }).setOrigin(0.5).setShadow(2, 2, "#000000", 0, false, true);
 
     this.tweens.add({
       targets: this.cutsceneImage,
@@ -89,7 +89,7 @@ class EgyptCutscene extends Phaser.Scene {
           align: "center",
           wordWrap: { width: this.scale.width - 80 }
         }
-      ).setOrigin(0.5);
+      ).setOrigin(0.5).setShadow(2, 2, "#000000", 0, false, true);
     }
 
     this.animateText(this.dialogueText, dialogueText, 20);
@@ -392,7 +392,11 @@ class EgyptScene extends Phaser.Scene {
 
   returnToMap() {
     this.stopEgyptMusic();
-    this.scene.start("MapScene");
+    if (!this.checkOliveWin()) {
+      this.scene.start("MapScene");
+    } else {
+      this.scene.start("OliveWinScene");
+    }
   }
 
   padScore(n) {
@@ -1234,7 +1238,7 @@ class EgyptScene extends Phaser.Scene {
 
   checkOliveWin() {
     const wins = this.registry.get('wins') || {};
-    if (wins.italy && wins.philippines && wins.egypt && wins.mexico) {
+    if (wins.italy && wins.philippines && wins.egypt && wins.mexico && wins.india && wins.brazil) {
       return true;
     }
     return false;

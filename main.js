@@ -334,19 +334,19 @@ class IntroCutscene extends Phaser.Scene {
       fill: "#fff4dd",
       backgroundColor: "#5a341d",
       padding: { x: 14, y: 8 }
-    }).setOrigin(0.5);
+    }).setOrigin(0.5).setShadow(2, 2, "#000000", 0, false, true);
 
     this.cutsceneProgress = this.add.text(width / 2, 36, `1 / ${this.slides.length}`, {
       fontSize: "24px",
       fill: "#fff4dd"
-    }).setOrigin(0.5);
+    }).setOrigin(0.5).setShadow(2, 2, "#000000", 0, false, true);
 
     this.skipButton = this.add.text(width - 28, 28, "Skip", {
       fontSize: "22px",
       fill: "#fff4dd",
       backgroundColor: "#5a341d",
       padding: { x: 12, y: 8 }
-    }).setOrigin(1, 0).setInteractive({ useHandCursor: true });
+    }).setOrigin(1, 0).setInteractive({ useHandCursor: true }).setShadow(2, 2, "#000000", 0, false, true);
     this.skipButton.on("pointerdown", () => {
       playButtonClickSfx(this);
       this.skipCutscene();
@@ -383,7 +383,7 @@ class IntroCutscene extends Phaser.Scene {
           align: "center",
           wordWrap: { width: this.scale.width - 80 }
         }
-      ).setOrigin(0.5);
+      ).setOrigin(0.5).setShadow(2, 2, "#000000", 0, false, true);
     }
 
     this.animateText(this.dialogueText, dialogueText, 20);
@@ -931,9 +931,7 @@ class MapScene extends Phaser.Scene {
 
   checkOliveWin() {
     const wins = this.registry.get('wins') || {};
-    if (wins.italy) {
-      this.scene.start("StartScene");
-    }
+    return wins.italy && wins.philippines && wins.egypt && wins.mexico && wins.india && wins.brazil;
   }
 
 }
@@ -1413,6 +1411,8 @@ class Settings extends Phaser.Scene {
 class OliveWinScene extends Phaser.Scene {
   constructor() {
     super("OliveWinScene");
+
+    
   }
 
   create() {
@@ -1448,19 +1448,19 @@ class OliveWinScene extends Phaser.Scene {
       fill: "#fff4dd",
       backgroundColor: "#5a341d",
       padding: { x: 14, y: 8 }
-    }).setOrigin(0.5);
+    }).setOrigin(0.5).setShadow(2, 2, "#000000", 0, false, true);
 
     this.cutsceneProgress = this.add.text(width / 2, 36, `1 / ${this.slides.length}`, {
       fontSize: "24px",
       fill: "#fff4dd"
-    }).setOrigin(0.5);
+    }).setOrigin(0.5).setShadow(2, 2, "#000000", 0, false, true);
 
     this.skipButton = this.add.text(width - 28, 28, "Skip", {
       fontSize: "22px",
       fill: "#fff4dd",
       backgroundColor: "#5a341d",
       padding: { x: 12, y: 8 }
-    }).setOrigin(1, 0).setInteractive({ useHandCursor: true });
+    }).setOrigin(1, 0).setInteractive({ useHandCursor: true }).setShadow(2, 2, "#000000", 0, false, true);
     this.skipButton.on("pointerdown", () => this.skipCutscene());
 
     this.tweens.add({
@@ -1494,7 +1494,7 @@ class OliveWinScene extends Phaser.Scene {
           align: "center",
           wordWrap: { width: this.scale.width - 80 }
         }
-      ).setOrigin(0.5);
+      ).setOrigin(0.5).setShadow(2, 2, "#000000", 0, false, true);
     }
 
     this.animateText(this.dialogueText, dialogueText, 20);
