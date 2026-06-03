@@ -731,7 +731,7 @@ class MapScene extends Phaser.Scene {
       "Whack piñatas.\nAvoid spicy chiles!", "MexicoCutscene", "flagMexico");
     this.createCountry("Italy", width * 0.70, height * 0.35,
       "Fix pasta pipes.\nServe the perfect plate!", "ItalyCutscene", "flagItaly");
-    this.createCountry("India", width * 0.62, height * 0.27,
+    this.createCountry("India", width * 0.915, height * 0.50,
       "A quick visit to India.\nTry the India scene!", "IndiaCutscene", "flagIndia");
     this.createCountry("Philippines", width * 1.1, height * 0.5,
       "Collect lumpia ingredients.\nAvoid traffic!", "PhilippinesCutscene", "flagPhilippines");
