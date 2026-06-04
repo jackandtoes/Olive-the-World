@@ -41,12 +41,12 @@ class ItalyCutscene extends Phaser.Scene {
       fill: "#fff4dd",
       backgroundColor: "#5a341d",
       padding: { x: 14, y: 8 }
-    }).setOrigin(0.5);
+    }).setOrigin(0.5).setShadow(2, 2, "#000000", 0, false, true);
 
     this.cutsceneProgress = this.add.text(width / 2, 36, `1 / ${this.slides.length}`, {
       fontSize: "24px",
       fill: "#fff4dd"
-    }).setOrigin(0.5);
+    }).setOrigin(0.5).setShadow(2, 2, "#000000", 0, false, true);
 
     this.tweens.add({
       targets: this.cutsceneImage,
@@ -62,9 +62,11 @@ class ItalyCutscene extends Phaser.Scene {
   }
     startItalyMusic() {
     let italyMusic = this.sound.get("italian_music");
+    const musicVolume = this.registry.get("musicVolume") ?? 0.55;
     if (!italyMusic) {
-      italyMusic = this.sound.add("italian_music", { volume: 0.55, loop: true });
+      italyMusic = this.sound.add("italian_music", { volume: musicVolume, loop: true });
     }
+    italyMusic.setVolume(musicVolume);
     if (!italyMusic.isPlaying) {
       italyMusic.play();
     }
@@ -88,7 +90,7 @@ class ItalyCutscene extends Phaser.Scene {
           align: "center",
           wordWrap: { width: this.scale.width - 80 }
         }
-      ).setOrigin(0.5);
+      ).setOrigin(0.5).setShadow(2, 2, "#000000", 0, false, true);
     }
 
     this.animateText(this.dialogueText, dialogueText, 20);
@@ -202,6 +204,11 @@ class ItalyScene extends Phaser.Scene {
    this.load.image('crossed', 'assets/italy/crossed_pasta.png');
    this.load.image('t_shape', 'assets/italy/t-shaped_pasta.png');
    this.load.image('olive_mascot', 'assets/olive_favicon.png');
+   this.load.image('oliveOverjoyed', 'assets/olivesprites/olive_overjoyed.PNG');
+   this.load.image('oliveHatChef', 'assets/olivesprites/olive_hat_chef.PNG');
+   this.load.image('oliveHatJester', 'assets/olivesprites/olive_hat_jester.PNG');
+   this.load.image('oliveHatPropeller', 'assets/olivesprites/olive_hat_propeller.PNG');
+   this.load.image('oliveHatWizard', 'assets/olivesprites/olive_hat_wizard.PNG');
    this.load.audio("italian_music", "assets/italy/cutscene/italian_music.mp3");
  }
 
@@ -398,33 +405,49 @@ this.levelLayouts = {
 	  this.boardContainer.setDepth(2);
 	  this.drawGrid();
 	   this.addPipes();
-	   this.input.keyboard.on("keydown-ESC", () => {
-      this.stopItalyMusic();
-	     this.scene.start("MapScene");
-	   });
+	   this.input.keyboard.on("keydown-ESC", () => this.returnToMap());
   
   
 	 }
 
-   startItalyMusic() {
+    startItalyMusic() {
     let italyMusic = this.sound.get("italian_music");
+    const musicVolume = this.registry.get("musicVolume") ?? 0.55;
     if (!italyMusic) {
-      italyMusic = this.sound.add("italian_music", { volume: 0.55, loop: true });
+      italyMusic = this.sound.add("italian_music", { volume: musicVolume, loop: true });
     }
+    italyMusic.setVolume(musicVolume);
     if (!italyMusic.isPlaying) {
       italyMusic.play();
     }
-   }
+  }
 
   stopItalyMusic() {
     this.sound.stopByKey("italian_music");
+  }
+
+  returnToMap() {
+    this.stopItalyMusic();
+    if (!this.checkOliveWin()) {
+      this.scene.start("MapScene");
+    } else {
+      this.scene.start("OliveWinScene");
+    }
   }
 
   createCheerOlive(boardX, boardY) {
   const mascotX = boardX - 82;
   const mascotY = boardY + 210;
   const shadow = this.add.ellipse(mascotX, mascotY + 52, 58, 16, 0xb98547, 0.28).setDepth(2);
-  const olive = this.add.image(mascotX, mascotY, 'olive_mascot').setDepth(3);
+  const equippedHat = (this.registry.get('equippedItems') || { hat: null }).hat;
+  const oliveTextureByHat = {
+    chef: 'oliveHatChef',
+    jester: 'oliveHatJester',
+    propeller: 'oliveHatPropeller',
+    wizard: 'oliveHatWizard'
+  };
+  const oliveTexture = oliveTextureByHat[equippedHat] || 'oliveOverjoyed';
+  const olive = this.add.image(mascotX, mascotY, oliveTexture).setDepth(3);
   olive.setDisplaySize(82, 82);
 
   this.tweens.add({
@@ -711,7 +734,7 @@ pipe.tileData = tile;
  showTotalWinPopup() {
   this.pointerText.setText("YOU WIN!");
 
-  const next_button = this.add.rectangle(400, 350, 300, 170, 0x2b140c, 0.94)
+  const restart_button = this.add.rectangle(400, 332, 300, 64, 0x7c2d12, 0.98)
     .setStrokeStyle(3, this.palette.panelBorder)
     .setInteractive({ useHandCursor: true })
     .setDepth(20);
@@ -720,23 +743,30 @@ pipe.tileData = tile;
     color: "#fff4dd",
     fontStyle: "bold"
   }).setOrigin(0.5).setDepth(21);
-  this.add.text(400, 360, "Back to Map", {
-    fontSize: "30px",
+  this.add.text(400, 332, "Restart", {
+    fontSize: "26px",
     color: "#ffffff",
-    backgroundColor: "#7c2d12",
-    padding: { x: 20, y: 10 }
-	  }).setOrigin(0.5).setDepth(21);
-	
-	  next_button.on("pointerdown", () => {
-    this.stopItalyMusic();
-    if(!this.checkOliveWin()){
-	    this.scene.start("MapScene");
-    }
-    else {
-      this.scene.start("OliveWinScene");
-    }
-	  });
-	 }
+    fontStyle: "bold"
+  }).setOrigin(0.5).setDepth(21);
+
+  const back_button = this.add.rectangle(400, 402, 300, 64, 0x5a341d, 0.98)
+    .setStrokeStyle(3, this.palette.panelBorder)
+    .setInteractive({ useHandCursor: true })
+    .setDepth(20);
+  this.add.text(400, 402, "Back to Map", {
+    fontSize: "24px",
+    color: "#ffffff",
+    fontStyle: "bold"
+  }).setOrigin(0.5).setDepth(21);
+
+  this.addCoin(1);
+  restart_button.on("pointerdown", () => {
+    this.scene.restart({ level: 1 });
+  });
+  back_button.on("pointerdown", () => {
+    this.returnToMap();
+  });
+ }
 
   _overlay() {
     const { width, height } = this.scale;
@@ -945,7 +975,6 @@ pipe.tileData = tile;
       pasta_17.rotationIndex % 2 == 0
     ) {
 
-      this.addCoin()
       this.hasWon = true;
       this.playSauceFillAnimation(this.getWinningAnimationCoords(), () => this.showWinPopup());
   
@@ -1139,9 +1168,10 @@ const pasta_41 = this.tileMapData[4][5];
 
 checkOliveWin() {
     const wins = this.registry.get('wins') || {};
-    if (wins.italy && wins.philippines && wins.egypt && wins.mexico) {
+    if (wins.italy && wins.philippines && wins.egypt && wins.mexico && wins.india && wins.brazil) {
       return true;
     }
+    return false;
   }
 
 addCoin(amount = 1) {
