@@ -4,20 +4,24 @@ class IndiaCutscene extends Phaser.Scene {
     }
 
     preload() {
+        this.load.image("oliveMumbai", "assets/india/cutscene/olive_in_mumbai.png");
+        this.load.image("oliveIndianRest", "assets/india/cutscene/olive_at_indianrest.png");
+        this.load.image("oliveSamosaChef", "assets/india/cutscene/olive_samosa_chef.png");
         this.load.audio("india_music", "assets/india/cutscene/india_music.mp3");
     }
 
     create() {
+
         const width = this.scale.width;
         const height = this.scale.height;
         const seenCutscenes = this.registry.get("seenCutscenes") || {};
         seenCutscenes.india = true;
         this.registry.set("seenCutscenes", seenCutscenes);
-        this.slides = ["1", "2", "3"];
+        this.slides = ["oliveMumbai", "oliveIndianRest", "oliveSamosaChef"];
         this.dialogueLines = [
-            "",
-            "",
-            "India" // change this later
+            "Wow, Mumbai is so busy!\n I wonder what I can find here?",
+            "This place is amazing! The food looks so good.",
+            "Welcome to India!\nNow that you've seen the sights, let's get cooking!"
         ];
 
         this.cutsceneIndex = 0;
@@ -38,12 +42,12 @@ class IndiaCutscene extends Phaser.Scene {
             fill: "#fff4dd",
             backgroundColor: "#5a341d",
             padding: { x: 13, y: 8 }
-        }).setOrigin(0.5);
+        }).setOrigin(0.5).setShadow(2, 2, "#000000", 0, false, true);
 
         this.cutsceneProgress = this.add.text(width / 2, 36, `1 / ${this.slides.length}`, {
             fontSize: "24px",
             fill: "#fff4dd"
-        }).setOrigin(0.5);
+        }).setOrigin(0.5).setShadow(2, 2, "#000000", 0, false, true);
 
         this.tweens.add({
             targets: this.cutsceneImage,
@@ -85,7 +89,7 @@ class IndiaCutscene extends Phaser.Scene {
                     align: "center",
                     wordWrap: { width: this.scale.width - 80 }
                 }
-            ).setOrigin(0.5);
+            ).setOrigin(0.5).setShadow(2, 2, "#000000", 0, false, true);
         }
         this.animateText(this.dialogueText, dialogueText, 20);
     }
@@ -187,8 +191,8 @@ class IndiaCutscene extends Phaser.Scene {
 
 const INDIA_LEVELS = {
   1: { targetScore: 50, spawnDelay: 1000, timeLimit: 10, ingredientKey: "biryaniIngredients", frames: [0, 1, 2, 3, 4, 5, 6, 7] },
-  2: { targetScore: 70, spawnDelay: 850, timeLimit: 25, ingredientKey: "palakPaneerIngredients", frames: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] },
-  3: { targetScore: 90, spawnDelay: 700, timeLimit: 20, ingredientKey: "palakPaneerIngredients", frames: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] },
+  2: { targetScore: 70, spawnDelay: 850, timeLimit: 25, ingredientKey: "palakPaneerIngredients", frames: [0, 1, 2, 3, 4, 5, 6, 7, 8] },
+  3: { targetScore: 90, spawnDelay: 700, timeLimit: 20, ingredientKey: "samosasIngredients", frames: [0, 1, 2, 3, 4, 5, 6] },
 };
 
 
@@ -225,12 +229,18 @@ class IndiaScene extends Phaser.Scene {
             frameWidth: 200,
             frameHeight: 200
         });
+
+        this.load.spritesheet('samosasIngredients', 'assets/india/samosasIngredients.png', {
+            frameWidth: 200,
+            frameHeight: 200
+        });
     }
 
     create() {
         this.startIndiaMusic();
         this.gameIsOver = false;
         this.levelComplete = false;
+        this.input.keyboard.enabled = true;
 
         this.score = 0;
         this.physics.world.gravity.y = 350;
@@ -245,6 +255,7 @@ class IndiaScene extends Phaser.Scene {
         // input
         this.cursorKeys = this.input.keyboard.createCursorKeys();
         this.input.keyboard.on("keydown-ESC", () => this.returnToMap());
+        
         // Create Ingredient group
         this.ingredientGroup = this.physics.add.group();
 
@@ -305,7 +316,12 @@ class IndiaScene extends Phaser.Scene {
 
     returnToMap() {
         this.stopIndiaMusic();
-        this.scene.start("MapScene");
+        if(!this.checkOliveWin()){
+	    this.scene.start("MapScene");
+        }
+        else {
+        this.scene.start("OliveWinScene");
+        }
     }
 
     update() {
@@ -327,6 +343,7 @@ class IndiaScene extends Phaser.Scene {
             if (!child.active) {
                 return;
             }
+            child.angle += child.spinSpeed || 0;
             if (child.y > this.scale.height + 10) {
                 child.disableBody(true, true);
             }
@@ -335,6 +352,9 @@ class IndiaScene extends Phaser.Scene {
 
     spawnRandomIngredient() {
         const level = INDIA_LEVELS[this.currentLevel];
+
+        const angle = Phaser.Math.Between(-1, 1);
+
         if (!level) {
             return;
         }
@@ -350,6 +370,10 @@ class IndiaScene extends Phaser.Scene {
 
         ingredient.setScale(0.7);
         ingredient.body.setAllowGravity(true);
+        ingredient.setAngle(Phaser.Math.Between(0, 359));
+        ingredient.spinSpeed = Phaser.Math.Between(0, 1) === 0
+            ? Phaser.Math.Between(-3, -1)
+            : Phaser.Math.Between(1, 3);
     }
 
 
@@ -394,6 +418,8 @@ class IndiaScene extends Phaser.Scene {
         } else {
             this.showGameOver();
         }
+
+        this.input.keyboard.enabled = false;
     }
 
     levelComplete() {
@@ -526,12 +552,19 @@ class IndiaScene extends Phaser.Scene {
         }).setOrigin(0.5).setDepth(depth + 4);
         this.add.text(width / 2, height / 2 + 4, `You completed all ${this.maxLevel} India levels.`, {
             fontSize: "22px",
-            color: "#82553a"
+            color: "#5a341d"
         }).setOrigin(0.5).setDepth(depth + 4);
         this._button(width / 2, height / 2 + 78, "Play Again", () => {
             this.scene.restart({ level: 1, maxLevel: this.maxLevel });
         }, depth + 5);
         this._button(width / 2, height / 2 + 132, "Back to Map", () => this.returnToMap(), depth + 5);
     }
+  checkOliveWin() {
+    const wins = this.registry.get('wins') || {};
+    if (wins.italy && wins.philippines && wins.egypt && wins.mexico && wins.india && wins.brazil) {
+      return true;
+    }
+    return false;
+  }
 
 }

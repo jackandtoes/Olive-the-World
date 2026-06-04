@@ -19,9 +19,9 @@ class BrazilCutscene extends Phaser.Scene {
     this.registry.set("seenCutscenes", seenCutscenes);
     this.slides = ["olive_hanggliding", "olive_carnaval", "olive_bean_chef"];
     this.dialogueLines = [
-      "", 
-      "",
-      "Habibi, do you want to make falafel? \n First you have to dodge them!"
+      "What a great view from here!\n I wonder what is going on below?", 
+      "Get a taste of Carnival!",
+      "No party can start without feijoada!\n Let's find those ingredients!"
     ];
 
     this.cutsceneIndex = 0;
@@ -42,12 +42,12 @@ class BrazilCutscene extends Phaser.Scene {
       fill: "#fff4dd",
       backgroundColor: "#5a341d",
       padding: { x: 13, y: 8 }
-    }).setOrigin(0.5);
+    }).setOrigin(0.5).setShadow(2, 2, "#000000", 0, false, true);
 
     this.cutsceneProgress = this.add.text(width / 2, 36, `1 / ${this.slides.length}`, {
       fontSize: "24px",
       fill: "#fff4dd"
-    }).setOrigin(0.5);
+    }).setOrigin(0.5).setShadow(2, 2, "#000000", 0, false, true);
 
     this.tweens.add({
       targets: this.cutsceneImage,
@@ -63,9 +63,11 @@ class BrazilCutscene extends Phaser.Scene {
 
   startBrazilMusic() {
     let brazilMusic = this.sound.get("brazil_music");
+    const musicVolume = this.registry.get("musicVolume") ?? 0.55;
     if (!brazilMusic) {
-      brazilMusic = this.sound.add("brazil_music", { volume: 0.55, loop: true });
+      brazilMusic = this.sound.add("brazil_music", { volume: musicVolume, loop: true });
     }
+    brazilMusic.setVolume(musicVolume);
     if (!brazilMusic.isPlaying) {
       brazilMusic.play();
     }
@@ -89,7 +91,7 @@ class BrazilCutscene extends Phaser.Scene {
           align: "center",
           wordWrap: { width: this.scale.width - 80 }
         }
-      ).setOrigin(0.5);
+      ).setOrigin(0.5).setShadow(2, 2, "#000000", 0, false, true);
     }
     this.animateText(this.dialogueText, dialogueText, 20);
   }
@@ -309,7 +311,12 @@ class BrazilScene extends Phaser.Scene {
 
   returnToMap() {
     this.stopBrazilMusic();
-    this.scene.start("MapScene");
+    if(!this.checkOliveWin()){
+	    this.scene.start("MapScene");
+    }
+    else {
+      this.scene.start("OliveWinScene");
+    }
   }
 
   createTextures() {
@@ -847,5 +854,12 @@ class BrazilScene extends Phaser.Scene {
         }
       });
     }
+  }
+  checkOliveWin() {
+    const wins = this.registry.get('wins') || {};
+    if (wins.italy && wins.philippines && wins.egypt && wins.mexico && wins.india && wins.brazil) {
+      return true;
+    }
+    return false;
   }
 }

@@ -41,12 +41,12 @@ class MexicoCutscene extends Phaser.Scene {
       fill: "#ffbd3a",
       backgroundColor: "#5a341d",
       padding: { x: 14, y: 8 }
-    }).setOrigin(0.5);
+    }).setOrigin(0.5).setShadow(2, 2, "#000000", 0, false, true);
 
     this.cutsceneProgress = this.add.text(width / 2, 36, `1 / ${this.slides.length}`, {
       fontSize: "24px",
       fill: "#fff4dd"
-    }).setOrigin(0.5);
+    }).setOrigin(0.5).setShadow(2, 2, "#000000", 0, false, true);
 
     this.tweens.add({
       targets: this.cutsceneImage,
@@ -61,13 +61,15 @@ class MexicoCutscene extends Phaser.Scene {
 
   }
    startMexicanMusic() {
-     let mexicanMusic = this.sound.get("mexican_music");
-     if (!mexicanMusic) {
-       mexicanMusic = this.sound.add("mexican_music", { volume: 0.55, loop: true });
-     }
-     if (!mexicanMusic.isPlaying) {
-       mexicanMusic.play();
-     }
+    let mexicanMusic = this.sound.get("mexican_music");
+    const musicVolume = this.registry.get("musicVolume") ?? 0.55;
+    if (!mexicanMusic) {
+      mexicanMusic = this.sound.add("mexican_music", { volume: musicVolume, loop: true });
+    }
+    mexicanMusic.setVolume(musicVolume);
+    if (!mexicanMusic.isPlaying) {
+      mexicanMusic.play();
+    }
    }
 
    stopMexicanMusic() {
@@ -88,7 +90,7 @@ class MexicoCutscene extends Phaser.Scene {
           align: "center",
           wordWrap: { width: this.scale.width - 80 }
         }
-      ).setOrigin(0.5);
+      ).setOrigin(0.5).setShadow(2, 2, "#000000", 0, false, true);
     }
 
     this.animateText(this.dialogueText, dialogueText, 20);
@@ -255,10 +257,7 @@ class MexicoScene extends Phaser.Scene {
             .setOrigin(1, 0);
 
         // Listen for ESC key to return to map
-        this.input.keyboard.on('keydown-ESC', () => {
-            this.stopMexicanMusic();
-            this.scene.start('MapScene');
-        });
+        this.input.keyboard.on('keydown-ESC', () => this.returnToMap());
 
         // Initialize dynamic spawn tracking (spawn rate increases as game progresses)
         this.lastPinataSpawnTime = 0;
@@ -326,16 +325,27 @@ class MexicoScene extends Phaser.Scene {
     }
     startMexicanMusic() {
     let mexicanMusic = this.sound.get("mexican_music");
+    const musicVolume = this.registry.get("musicVolume") ?? 0.55;
     if (!mexicanMusic) {
-      mexicanMusic = this.sound.add("mexican_music", { volume: 0.55, loop: true });
+      mexicanMusic = this.sound.add("mexican_music", { volume: musicVolume, loop: true });
     }
+    mexicanMusic.setVolume(musicVolume);
     if (!mexicanMusic.isPlaying) {
       mexicanMusic.play();
     }
    }
 
-    stopMexicanMusic() {
+   stopMexicanMusic() {
      this.sound.stopByKey("mexican_music");
+   }
+
+   returnToMap() {
+     this.stopMexicanMusic();
+     if (!this.checkOliveWin()) {
+       this.scene.start("MapScene");
+     } else {
+       this.scene.start("OliveWinScene");
+     }
    }
 
     initConfettiPool(poolSize = 24) {
@@ -856,90 +866,66 @@ class MexicoScene extends Phaser.Scene {
         }
     }
     
-    _overlay() {
-        const { width, height } = this.scale;
-        const depth = 1000;
-
-        const fade = this.add.rectangle(width / 2, height / 2, width, height, 0x222620, 0.38)
-            .setDepth(depth);
-        const panelShadow = this.add.rectangle(width / 2 + 6, height / 2 + 8, 530, 380, 0x5e685d, 0.14)
-            .setDepth(depth + 1);
-        const panel = this.add.rectangle(width / 2, height / 2, 530, 380, 0xf6f4eb, 0.98)
-            .setStrokeStyle(3, 0x9fad95, 1)
-            .setDepth(depth + 2);
-
-        return { width, height, depth, fade, panelShadow, panel };
-    }
-
-    _button(x, y, label, cb, depth = 30) {
-        const shadow = this.add.rectangle(x + 3, y + 4, 190, 44, 0x7e4a2c, 0.2).setDepth(depth - 1);
-        const bg = this.add.rectangle(x, y, 190, 44, 0xf1efe4)
-            .setStrokeStyle(3, 0x97a38b, 0.95)
-            .setInteractive({ useHandCursor: true })
-            .setDepth(depth);
-        const text = this.add.text(x, y, label, {
-            fontSize: "24px",
-            color: "#5a5143",
-            fontStyle: "bold",
-        }).setOrigin(0.5).setDepth(depth + 1).setInteractive({ useHandCursor: true });
-
-        const activateHover = () => {
-            bg.setFillStyle(0xe3eadb, 1);
-            text.setScale(1.03);
-        };
-
-        const deactivateHover = () => {
-            bg.setFillStyle(0xf1efe4, 1);
-            text.setScale(1);
-        };
-
-        const handleClick = () => {
-            playButtonClickSfx(this);
-            cb();
-        };
-
-        bg.on("pointerover", activateHover);
-        text.on("pointerover", activateHover);
-        bg.on("pointerout", deactivateHover);
-        text.on("pointerout", deactivateHover);
-        bg.on("pointerdown", handleClick);
-        text.on("pointerdown", handleClick);
-
-        return this.add.container(0, 0, [shadow, bg, text]).setDepth(depth);
-    }
-
     endGame() {
         this.gameOver = true;
         if (this.countdownEvent) this.countdownEvent.remove();
+        const width = this.scale.width;
+        const height = this.scale.height;
 
-        const won = this.score >= 1500;
-        const { width, height, depth } = this._overlay();
-        this.add.text(width / 2, height / 2 - 108, won ? "Victory!" : "Game Over", {
-            fontSize: "46px",
-            color: won ? "#2f9e44" : "#d94841",
-            fontStyle: "bold"
-        }).setOrigin(0.5).setDepth(depth + 4);
-        this.add.text(width / 2, height / 2 - 48, `Final Score: ${this.score}`, {
-            fontSize: "24px",
-            color: "#6b3b21",
-            fontStyle: "bold"
-        }).setOrigin(0.5).setDepth(depth + 4);
-        this.add.text(width / 2, height / 2 + 4, won ? "You earned the Mexico token!" : "Try the pinata round again.", {
-            fontSize: "22px",
-            color: "#82553a"
-        }).setOrigin(0.5).setDepth(depth + 4);
-
-        this._button(width / 2, height / 2 + 78, "Play Again", () => this.scene.start("MexicoScene"), depth + 5);
-        this._button(width / 2, height / 2 + 132, "Back to Map", () => {
-            this.stopMexicanMusic();
-            this.scene.start("MapScene");
-        }, depth + 5);
-
-        if (won) {
-            const wins = this.registry.get('wins');
-            wins.mexico = true;
-            this.registry.set('wins', wins);
-        }
-
+            if (this.score >= 1500) {
+                this.add.rectangle(width/2, height/2, 400, 400, 0x000000, 0.8);
+                this.add.text(width/2, height/2 - 40, 'YOU WIN!', 
+                    { fontSize: '48px', fill: '#fff' }).setOrigin(0.5);
+                this.add.text(width/2, height/2 + 20, `Final Score: ${this.score}`, 
+                    { fontSize: '32px', fill: '#fff' }).setOrigin(0.5);
+                const backButton = this.add.text(width/2, height/2 + 70, 'Return to Map', 
+                    { fontSize: '24px', fill: '#00ff00' })
+                    .setOrigin(0.5)
+                    .setInteractive();
+                backButton.on('pointerdown', () => {
+                    this.returnToMap();
+                });
+                const playButton = this.add.text(width/2, height/2 + 120, 'Play Again', 
+                    { fontSize: '24px', fill: '#00ff00' })
+                    .setOrigin(0.5)
+                    .setInteractive();
+                playButton.on('pointerdown', () => {
+                    playButtonClickSfx(this);
+                    this.scene.start('MexicoScene');
+                });
+                const wins = this.registry.get('wins') || {};
+                wins.mexico = true;
+                this.registry.set('wins', wins);
+            }
+            else {
+                this.add.rectangle(width/2, height/2, 400, 400, 0x000000, 0.8);
+                this.add.text(width/2, height/2 - 40, 'YOU LOSE', 
+                    { fontSize: '48px', fill: '#fff' }).setOrigin(0.5);
+                this.add.text(width/2, height/2 + 20, `Final Score: ${this.score}`, 
+                    { fontSize: '32px', fill: '#fff' }).setOrigin(0.5);
+                const backButton = this.add.text(width/2, height/2 + 70, 'Return to Map', 
+                    { fontSize: '24px', fill: '#00ff00' })
+                    .setOrigin(0.5)
+                    .setInteractive();
+                backButton.on('pointerdown', () => {
+                    this.returnToMap();
+                });
+                const playButton = this.add.text(width/2, height/2 + 120, 'Play Again', 
+                    { fontSize: '24px', fill: '#00ff00' })
+                    .setOrigin(0.5)
+                    .setInteractive();
+                playButton.on('pointerdown', () => {
+                    playButtonClickSfx(this);
+                    this.scene.start('MexicoScene');
+                });
+            }
+        
     }
+  checkOliveWin() {
+    const wins = this.registry.get('wins') || {};
+    if (wins.italy && wins.philippines && wins.egypt && wins.mexico && wins.india && wins.brazil) {
+      return true;
+    }
+    return false;
+  }
 }
