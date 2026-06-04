@@ -252,7 +252,7 @@ class BrazilScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.audio("brazil_music", "assets/brazil/brazil_music.mp3");
+    this.load.audio("brazil_music", "assets/brazil/cutscene/brazil_music.mp3");
     this.load.image("oliveOverjoyed", "assets/olive_overjoyed.PNG");
     this.load.image("background", "assets/brazil/brazil_background.PNG");
     this.load.image("skyline", "assets/brazil/brazil_skyline.PNG");
@@ -271,6 +271,7 @@ class BrazilScene extends Phaser.Scene {
     this.createPlatforms();
     this.createPlayer();
     this.createIngredient();
+    this.createCoin();
     this.createGoal();
     this.createParticles();
     this.createUi();
@@ -283,6 +284,7 @@ class BrazilScene extends Phaser.Scene {
     this.physics.add.collider(this.player, this.platforms);
     this.physics.add.collider(this.goal, this.platforms);
     this.physics.add.overlap(this.player, this.ingredient, this.collectIngredient, null, this);
+    this.physics.add.overlap(this.player, this.coin, this.collectCoin, null, this);
     this.physics.add.overlap(this.player, this.goal, this.tryFinishLevel, null, this);
 
     this.cameras.main.setBounds(0, 0, this.sceneWidth, 600);
@@ -342,6 +344,15 @@ class BrazilScene extends Phaser.Scene {
     graphics.fillCircle(22, 9, 4);
     graphics.fillCircle(18, 22, 5);
     graphics.generateTexture("brazilIngredientBlock", 32, 32);
+    graphics.clear();
+
+    graphics.fillStyle(0xe3c254, 1);
+    graphics.fillCircle(18, 18, 18);
+    graphics.fillStyle(0xf1e5a4, 1);
+    graphics.fillCircle(18, 18, 12);
+    graphics.fillStyle(0xffffff, 0.85);
+    graphics.fillCircle(12, 11, 4);
+    graphics.generateTexture("brazilCoinBlock", 36, 36);
     graphics.clear();
 
     graphics.fillStyle(0xffffff, 0.95);
@@ -462,6 +473,29 @@ class BrazilScene extends Phaser.Scene {
     });
   }
 
+  createCoin() {
+    const platformIndexes = this.levelData.heights
+      .map((height, index) => ({ height, index }))
+      .filter((platform) => Number.isFinite(platform.height));
+    const targetPlatform = platformIndexes[Math.min(this.currentLevel, platformIndexes.length - 2)] || platformIndexes[0];
+    const x = 220 * targetPlatform.index + 110;
+    const y = targetPlatform.height * 70 - 58;
+
+    this.coin = this.physics.add.sprite(x, y, "brazilCoinBlock");
+    this.coin.body.setAllowGravity(false);
+    this.coin.setImmovable(true);
+
+    this.tweens.add({
+      targets: this.coin,
+      y: y - 10,
+      angle: 8,
+      duration: 850,
+      yoyo: true,
+      repeat: -1,
+      ease: "Sine.InOut",
+    });
+  }
+
   createGoal() {
     let lastHeight = 4;
 
@@ -523,6 +557,11 @@ class BrazilScene extends Phaser.Scene {
 
     this.quitText = this.add.text(this.scale.width - 14, 12, "ESC to map", {
       fontSize: "16px",
+      color: "#7f5539",
+    }).setOrigin(1, 0).setScrollFactor(0);
+
+    this.coinText = this.add.text(this.scale.width - 14, 30, `Coins: ${this.registry.get("currency") || 0}`, {
+      fontSize: "15px",
       color: "#7f5539",
     }).setOrigin(1, 0).setScrollFactor(0);
   }
@@ -593,6 +632,20 @@ class BrazilScene extends Phaser.Scene {
     this.ingredientCollected = true;
     this.ingredientText.setText(`${this.levelData.ingredient}: collected`);
     this.showToast("Ingredient collected");
+  }
+
+  collectCoin(player, coin) {
+    if (!coin.active) {
+      return;
+    }
+
+    coin.disableBody(true, true);
+    const current = this.registry.get("currency") || 0;
+    this.registry.set("currency", current + 1);
+    if (this.coinText) {
+      this.coinText.setText(`Coins: ${current + 1}`);
+    }
+    this.showToast("Coin collected");
   }
 
   tryFinishLevel() {
@@ -704,7 +757,7 @@ class BrazilScene extends Phaser.Scene {
       () => this.scene.restart({ level: 1 }), depth + 5);
 
     this._button(width / 2, height / 2 + 132, "Back to Map",
-      () => this.scene.start("MapScene"), depth + 5);
+      () => this.returnToMap(), depth + 5);
   }
 
   showBanner(title, subtitle) {

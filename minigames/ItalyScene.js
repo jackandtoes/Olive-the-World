@@ -223,6 +223,14 @@ class ItalyScene extends Phaser.Scene {
     bgAccent: 0xe5b56a,
     panel: 0xfff4dd,
     panelBorder: 0xb87433,
+    uiBorder: 0x9fad95,
+    overlay: 0x222620,
+    win: "#2f9e44",
+    lose: "#d94841",
+    buttonFill: 0xf1efe4,
+    buttonBorder: 0x97a38b,
+    buttonText: "#5a5143",
+    buttonHover: 0xe3eadb,
     board: 0xf7e7c4,
     boardShadow: 0xd59b56,
     tile: 0x8b6a4b,
@@ -591,25 +599,29 @@ pipe.on("pointerdown", () => {
   else if (this.pointerCountAll == 0){
     if(this.outOfClicksShown) return;
     this.outOfClicksShown = true;
-    const popup = this.add.rectangle(400, 300, 320, 170, 0x2b140c, 0.94)
-      .setStrokeStyle(3, this.palette.panelBorder)
-      .setDepth(20);
-    this.add.text(400, 266, "You have run out of clicks!", {
-      fontSize: "20px",
-      color: "#fff4dd",
+    const { width, height, depth } = this._overlay();
+    this.add.text(width / 2, height / 2 - 108, "Out of Clicks", {
+      fontSize: "44px",
+      color: this.palette.lose,
       fontStyle: "bold"
-    }).setOrigin(0.5).setDepth(21);
-    this.add.text(400, 305, "Restart", {
+    }).setOrigin(0.5).setDepth(depth + 4);
+    this.add.text(width / 2, height / 2 - 46, "You have run out of clicks!", {
       fontSize: "24px",
-      color: "#ffffff",
-      backgroundColor: "#7c2d12",
-      padding: { x: 18, y: 8 }
-    }).setOrigin(0.5).setDepth(21).setInteractive({ useHandCursor: true })
-      .on("pointerdown", () => {
-        this.outOfClicksShown = false;
-        popup.destroy();
-        this.scene.restart({ level: 1 });
-      });
+      color: "#6b3b21",
+      fontStyle: "bold"
+    }).setOrigin(0.5).setDepth(depth + 4);
+    this.add.text(width / 2, height / 2 + 2, "Try this pasta path again.", {
+      fontSize: "21px",
+      color: "#82553a"
+    }).setOrigin(0.5).setDepth(depth + 4);
+    this._button(width / 2, height / 2 + 78, "Retry Level", () => {
+      this.outOfClicksShown = false;
+      this.scene.restart({ level: this.level });
+    }, depth + 5);
+    this._button(width / 2, height / 2 + 132, "Back to Map", () => {
+      this.stopItalyMusic();
+      this.scene.start("MapScene");
+    }, depth + 5);
   }
 });
 
@@ -687,47 +699,50 @@ pipe.tileData = tile;
  showWinPopup() {
   this.pointerText.setText("YOU WIN!");
 
-  const next_button = this.add.rectangle(400, 350, 300, 170, 0x2b140c, 0.94)
-    .setStrokeStyle(3, this.palette.panelBorder)
-    .setInteractive({ useHandCursor: true })
-    .setDepth(20);
-  this.add.text(400, 292, "You passed\nthis level!", {
-    fontSize: "28px",
-    color: "#fff4dd",
+  const { width, height, depth } = this._overlay();
+  this.add.text(width / 2, height / 2 - 112, "Level Complete", {
+    fontSize: "44px",
+    color: this.palette.win,
     fontStyle: "bold"
-  }).setOrigin(0.5).setDepth(21);
-  this.add.text(400, 360, "Next Level", {
-    fontSize: "30px",
-    color: "#ffffff",
-    backgroundColor: "#7c2d12",
-    padding: { x: 20, y: 10 }
-  }).setOrigin(0.5).setDepth(21);
+  }).setOrigin(0.5).setDepth(depth + 4);
+  this.add.text(width / 2, height / 2 - 46, "You passed this level!", {
+    fontSize: "28px",
+    color: "#6b3b21",
+    fontStyle: "bold"
+  }).setOrigin(0.5).setDepth(depth + 4);
+  this.add.text(width / 2, height / 2 + 2, "Olive is ready for the next plate.", {
+    fontSize: "21px",
+    color: "#82553a"
+  }).setOrigin(0.5).setDepth(depth + 4);
   this.addCoin(1);
-  next_button.on("pointerdown", () => {
-    this.nextLevel();
-  });
+  this._button(width / 2, height / 2 + 78, "Next Level", () => this.nextLevel(), depth + 5);
+  this._button(width / 2, height / 2 + 132, "Back to Map", () => {
+    this.stopItalyMusic();
+    this.scene.start("MapScene");
+  }, depth + 5);
  }
 
  showTotalWinPopup() {
   this.pointerText.setText("YOU WIN!");
 
-  const next_button = this.add.rectangle(400, 350, 300, 170, 0x2b140c, 0.94)
-    .setStrokeStyle(3, this.palette.panelBorder)
-    .setInteractive({ useHandCursor: true })
-    .setDepth(20);
-  this.add.text(400, 292, "You passed\nall levels!", {
-    fontSize: "28px",
-    color: "#fff4dd",
+  const { width, height, depth } = this._overlay();
+  this.add.text(width / 2, height / 2 - 108, "Victory!", {
+    fontSize: "46px",
+    color: this.palette.win,
     fontStyle: "bold"
-  }).setOrigin(0.5).setDepth(21);
-  this.add.text(400, 360, "Back to Map", {
-    fontSize: "30px",
-    color: "#ffffff",
-    backgroundColor: "#7c2d12",
-    padding: { x: 20, y: 10 }
-	  }).setOrigin(0.5).setDepth(21);
-	
-	  next_button.on("pointerdown", () => {
+  }).setOrigin(0.5).setDepth(depth + 4);
+  this.add.text(width / 2, height / 2 - 48, "You passed all levels!", {
+    fontSize: "24px",
+    color: "#6b3b21",
+    fontStyle: "bold"
+  }).setOrigin(0.5).setDepth(depth + 4);
+  this.add.text(width / 2, height / 2 + 4, "You completed all 5 Italy levels.", {
+    fontSize: "22px",
+    color: "#82553a"
+	  }).setOrigin(0.5).setDepth(depth + 4);
+
+  this._button(width / 2, height / 2 + 78, "Play Again", () => this.scene.restart({ level: 1 }), depth + 5);
+  this._button(width / 2, height / 2 + 132, "Back to Map", () => {
     this.stopItalyMusic();
     if(!this.checkOliveWin()){
 	    this.scene.start("MapScene");
@@ -735,7 +750,7 @@ pipe.tileData = tile;
     else {
       this.scene.start("OliveWinScene");
     }
-	  });
+	  }, depth + 5);
 	 }
 
   _overlay() {
