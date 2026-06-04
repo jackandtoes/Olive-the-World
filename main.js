@@ -522,10 +522,12 @@ class MapScene extends Phaser.Scene {
 
   preload() {
     this.load.image("mapBg", "assets/map (2).png");
-    this.load.image("flagPhilippines", "assets/Philippines_flag.png");
-    this.load.image("flagMexico", "assets/Mexico_flag.png");
-    this.load.image("flagEgypt", "assets/Egypt_flag.png");
-    this.load.image("flagItaly", "assets/Italy_flag.png");
+    this.load.image("philippines_landmark", "assets/landmarks/philippines_landmark.png");
+    this.load.image("mexico_landmark", "assets/landmarks/mexico_landmark.png");
+    this.load.image("egypt_landmark", "assets/landmarks/egypt_landmark.png");
+    this.load.image("italy_landmark", "assets/landmarks/italy_landmark.png");
+    this.load.image("india_landmark", "assets/landmarks/india_landmark.png");
+    this.load.image("brazil_landmark", "assets/landmarks/brazil_landmark.png");
     this.load.image("hatChef", "assets/hats/hat_chef.PNG");
     this.load.image("hatJester", "assets/hats/hat_jester.PNG");
     this.load.image("hatPropeller", "assets/hats/hat_propeller.PNG");
@@ -727,18 +729,18 @@ class MapScene extends Phaser.Scene {
     this.keys = this.input.keyboard.addKeys('W,A,S,D');
     this.countries = [];
 
-    this.createCountry("Mexico", width * 0.3, height * 0.44,
-      "Whack piñatas.\nAvoid spicy chiles!", "MexicoCutscene", "flagMexico");
-    this.createCountry("Italy", width * 0.70, height * 0.35,
-      "Fix pasta pipes.\nServe the perfect plate!", "ItalyCutscene", "flagItaly");
+    this.createCountry("Mexico", width * 0.29, height * 0.46,
+      "Whack piñatas.\nAvoid spicy chiles!", "MexicoCutscene", "mexico_landmark");
+    this.createCountry("Italy", width * 0.68, height * 0.38,
+      "Fix pasta pipes.\nServe the perfect plate!", "ItalyCutscene", "italy_landmark");
     this.createCountry("India", width * 0.915, height * 0.50,
-      "A quick visit to India.\nTry the India scene!", "IndiaCutscene", "flagIndia");
-    this.createCountry("Philippines", width * 1.1, height * 0.5,
-      "Collect lumpia ingredients.\nAvoid traffic!", "PhilippinesCutscene", "flagPhilippines");
-    this.createCountry("Egypt", width * 0.76, height * 0.42,
-      "Run in the desert.\nDodge palm trees and flying falafels!", "EgyptCutscene", "flagEgypt");
-    this.createCountry("Brazil", width * 0.45, height * 0.65,
-      "Collect carnival ingredients.\nJump past floats and hazards!", "BrazilCutscene", "BrazilScene", "flagBrazil");
+      "A quick visit to India.\nTry the India scene!", "IndiaCutscene", "india_landmark");
+    this.createCountry("Philippines", width * 1.06, height * 0.5,
+      "Collect lumpia ingredients.\nAvoid traffic!", "PhilippinesCutscene", "philippines_landmark");
+    this.createCountry("Egypt", width * 0.73, height * 0.46,
+      "Run in the desert.\nDodge palm trees and flying falafels!", "EgyptCutscene", "egypt_landmark");
+    this.createCountry("Brazil", width * 0.45, height * 0.62,
+      "Collect carnival ingredients.\nJump past floats and hazards!", "BrazilCutscene", "brazil_landmark");
     this.createInfoPanel();
     this.updatePlayerAppearance();
 
@@ -746,7 +748,7 @@ class MapScene extends Phaser.Scene {
   }
 
   createCountry(name, x, y, description, sceneName, flagKey) {
-    const landmark = this.add.image(x, y, flagKey).setScale(0.6).setDepth(1);
+    const landmark = this.add.image(x, y, flagKey).setScale(0.04).setDepth(1);
     this.add.text(x, y - 40, name, {
       fontSize: "18px",
       fill: "#000"
