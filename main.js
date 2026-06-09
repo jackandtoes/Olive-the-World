@@ -334,19 +334,19 @@ class IntroCutscene extends Phaser.Scene {
       fill: "#fff4dd",
       backgroundColor: "#5a341d",
       padding: { x: 14, y: 8 }
-    }).setOrigin(0.5);
+    }).setOrigin(0.5).setShadow(2, 2, "#000000", 0, false, true);
 
     this.cutsceneProgress = this.add.text(width / 2, 36, `1 / ${this.slides.length}`, {
       fontSize: "24px",
       fill: "#fff4dd"
-    }).setOrigin(0.5);
+    }).setOrigin(0.5).setShadow(2, 2, "#000000", 0, false, true);
 
     this.skipButton = this.add.text(width - 28, 28, "Skip", {
       fontSize: "22px",
       fill: "#fff4dd",
       backgroundColor: "#5a341d",
       padding: { x: 12, y: 8 }
-    }).setOrigin(1, 0).setInteractive({ useHandCursor: true });
+    }).setOrigin(1, 0).setInteractive({ useHandCursor: true }).setShadow(2, 2, "#000000", 0, false, true);
     this.skipButton.on("pointerdown", () => {
       playButtonClickSfx(this);
       this.skipCutscene();
@@ -383,7 +383,7 @@ class IntroCutscene extends Phaser.Scene {
           align: "center",
           wordWrap: { width: this.scale.width - 80 }
         }
-      ).setOrigin(0.5);
+      ).setOrigin(0.5).setShadow(2, 2, "#000000", 0, false, true);
     }
 
     this.animateText(this.dialogueText, dialogueText, 20);
@@ -522,10 +522,12 @@ class MapScene extends Phaser.Scene {
 
   preload() {
     this.load.image("mapBg", "assets/map (2).png");
-    this.load.image("flagPhilippines", "assets/Philippines_flag.png");
-    this.load.image("flagMexico", "assets/Mexico_flag.png");
-    this.load.image("flagEgypt", "assets/Egypt_flag.png");
-    this.load.image("flagItaly", "assets/Italy_flag.png");
+    this.load.image("philippines_landmark", "assets/landmarks/philippines_landmark.png");
+    this.load.image("mexico_landmark", "assets/landmarks/mexico_landmark.png");
+    this.load.image("egypt_landmark", "assets/landmarks/egypt_landmark.png");
+    this.load.image("italy_landmark", "assets/landmarks/italy_landmark.png");
+    this.load.image("india_landmark", "assets/landmarks/india_landmark.png");
+    this.load.image("brazil_landmark", "assets/landmarks/brazil_landmark.png");
     this.load.image("hatChef", "assets/hats/hat_chef.PNG");
     this.load.image("hatJester", "assets/hats/hat_jester.PNG");
     this.load.image("hatPropeller", "assets/hats/hat_propeller.PNG");
@@ -727,18 +729,18 @@ class MapScene extends Phaser.Scene {
     this.keys = this.input.keyboard.addKeys('W,A,S,D');
     this.countries = [];
 
-    this.createCountry("Mexico", width * 0.3, height * 0.44,
-      "Whack piñatas.\nAvoid spicy chiles!", "MexicoCutscene", "flagMexico");
-    this.createCountry("Italy", width * 0.70, height * 0.35,
-      "Fix pasta pipes.\nServe the perfect plate!", "ItalyCutscene", "flagItaly");
-    this.createCountry("India", width * 0.62, height * 0.27,
-      "A quick visit to India.\nTry the India scene!", "IndiaCutscene", "flagIndia");
-    this.createCountry("Philippines", width * 1.1, height * 0.5,
-      "Collect lumpia ingredients.\nAvoid traffic!", "PhilippinesCutscene", "flagPhilippines");
-    this.createCountry("Egypt", width * 0.76, height * 0.42,
-      "Run in the desert.\nDodge palm trees and flying falafels!", "EgyptCutscene", "flagEgypt");
-    this.createCountry("Brazil", width * 0.45, height * 0.65,
-      "Collect carnival ingredients.\nJump past floats and hazards!", "BrazilCutscene", "BrazilScene", "flagBrazil");
+    this.createCountry("Mexico", width * 0.29, height * 0.46,
+      "Whack piñatas.\nAvoid spicy chiles!", "MexicoCutscene", "mexico_landmark");
+    this.createCountry("Italy", width * 0.68, height * 0.38,
+      "Fix pasta pipes.\nServe the perfect plate!", "ItalyCutscene", "italy_landmark");
+    this.createCountry("India", width * 0.915, height * 0.50,
+      "A quick visit to India.\nTry the India scene!", "IndiaCutscene", "india_landmark");
+    this.createCountry("Philippines", width * 1.06, height * 0.5,
+      "Collect lumpia ingredients.\nAvoid traffic!", "PhilippinesCutscene", "philippines_landmark");
+    this.createCountry("Egypt", width * 0.73, height * 0.46,
+      "Run in the desert.\nDodge palm trees and flying falafels!", "EgyptCutscene", "egypt_landmark");
+    this.createCountry("Brazil", width * 0.45, height * 0.62,
+      "Collect carnival ingredients.\nJump past floats and hazards!", "BrazilCutscene", "brazil_landmark");
     this.createInfoPanel();
     this.updatePlayerAppearance();
 
@@ -746,7 +748,7 @@ class MapScene extends Phaser.Scene {
   }
 
   createCountry(name, x, y, description, sceneName, flagKey) {
-    const landmark = this.add.image(x, y, flagKey).setScale(0.6).setDepth(1);
+    const landmark = this.add.image(x, y, flagKey).setScale(0.04).setDepth(1);
     this.add.text(x, y - 40, name, {
       fontSize: "18px",
       fill: "#000"
@@ -931,9 +933,7 @@ class MapScene extends Phaser.Scene {
 
   checkOliveWin() {
     const wins = this.registry.get('wins') || {};
-    if (wins.italy) {
-      this.scene.start("StartScene");
-    }
+    return wins.italy && wins.philippines && wins.egypt && wins.mexico && wins.india && wins.brazil;
   }
 
 }
@@ -1063,7 +1063,7 @@ class Inventory extends Phaser.Scene {
       fill: "#6b3e1f",
       fontStyle: "bold"
     }).setOrigin(0.5);
-    this.add.text(width / 2, 98, "Collect tokens from each country to fill your passport.", {
+    this.add.text(width / 2, 98, "Collect stamps from each country to fill your passport.", {
       fontSize: "18px",
       fill: "#9a6b3d"
     }).setOrigin(0.5);
@@ -1101,12 +1101,12 @@ class Inventory extends Phaser.Scene {
 
     const cards = [
        { section: "Accessories", label: "No Hat", unlocked: true, texture: "oliveOverjoyed", tokenWidth: 74, tokenHeight: 74, ribbon: equippedItems.hat === null ? "Equipped" : "Click to unequip", accessoryKey: null },
-      { section: "Country Tokens", label: "Mexico", unlocked: wins.mexico, texture: "mexico_token", tokenWidth: 150, tokenHeight: 150, ribbon: "Collected" },
-      { section: "Country Tokens", label: "Italy", unlocked: wins.italy, texture: "italy_token", tokenWidth: 150, tokenHeight: 150, ribbon: "Collected" },
-      { section: "Country Tokens", label: "Philippines", unlocked: wins.philippines, texture: "philip_token", tokenWidth: 150, tokenHeight: 150, ribbon: "Collected" },
-      { section: "Country Tokens", label: "Egypt", unlocked: wins.egypt, texture: "egypt_token", tokenWidth: 150, tokenHeight: 150, ribbon: "Collected" },
-      { section: "Country Tokens", label: "India", unlocked: wins.india, texture: "india_token", tokenWidth: 150, tokenHeight: 150, ribbon: "Collected" },
-      { section: "Country Tokens", label: "Brazil", unlocked: wins.brazil, texture: "brazil_token", tokenWidth: 150, tokenHeight: 150, ribbon: "Collected" },
+      { section: "Country Stamps", label: "Mexico", unlocked: wins.mexico, texture: "mexico_token", tokenWidth: 150, tokenHeight: 150, ribbon: "Collected" },
+      { section: "Country Stamps", label: "Italy", unlocked: wins.italy, texture: "italy_token", tokenWidth: 150, tokenHeight: 150, ribbon: "Collected" },
+      { section: "Country Stamps", label: "Philippines", unlocked: wins.philippines, texture: "philip_token", tokenWidth: 150, tokenHeight: 150, ribbon: "Collected" },
+      { section: "Country Stamps", label: "Egypt", unlocked: wins.egypt, texture: "egypt_token", tokenWidth: 150, tokenHeight: 150, ribbon: "Collected" },
+      { section: "Country Stamps", label: "India", unlocked: wins.india, texture: "india_token", tokenWidth: 150, tokenHeight: 150, ribbon: "Collected" },
+      { section: "Country Stamps", label: "Brazil", unlocked: wins.brazil, texture: "brazil_token", tokenWidth: 150, tokenHeight: 150, ribbon: "Collected" },
 
      
       ...HAT_CATALOG.map((hat) => ({
@@ -1414,20 +1414,15 @@ class OliveWinScene extends Phaser.Scene {
   constructor() {
     super("OliveWinScene");
   }
-
+  preload() {
+    this.load.image("oliveVictory", "assets/cutscene/olive_victory_yay.png");
+  }
   create() {
     const width = this.scale.width;
     const height = this.scale.height;
-    this.slides = ["oliveFarmhouse", "oliveBirthday", "oliveParents", "oliveConfession1", "oliveConfession2", "oliveConfession3", "oliveConcernedParents", "oliveDetermined"];
+    this.slides = ["oliveVictory"];
     this.dialogueLines = [
-      "", 
-      "",
-      "... happy birthday to you ...",
-      "Mama, papa, I want to leave this town",
-      "I want to see the world!\n I'm done with this small lil' town.",
-      "I want to experience what all olives should!\n I want to travel the world as a world class chef",
-      "Oh, baby — that’s a big step to make! But if you are confident then—",
-      "I won’t let you down!"
+      "I won! I won! Mama and papa would be so proud!"
     ];
 
     this.cutsceneIndex = 0;
@@ -1448,36 +1443,19 @@ class OliveWinScene extends Phaser.Scene {
       fill: "#fff4dd",
       backgroundColor: "#5a341d",
       padding: { x: 14, y: 8 }
-    }).setOrigin(0.5);
-
-    this.cutsceneProgress = this.add.text(width / 2, 36, `1 / ${this.slides.length}`, {
-      fontSize: "24px",
-      fill: "#fff4dd"
-    }).setOrigin(0.5);
-
-    this.skipButton = this.add.text(width - 28, 28, "Skip", {
-      fontSize: "22px",
-      fill: "#fff4dd",
-      backgroundColor: "#5a341d",
-      padding: { x: 12, y: 8 }
-    }).setOrigin(1, 0).setInteractive({ useHandCursor: true });
-    this.skipButton.on("pointerdown", () => this.skipCutscene());
+    }).setOrigin(0.5).setShadow(2, 2, "#000000", 0, false, true);
 
     this.tweens.add({
       targets: this.cutsceneImage,
       alpha: 1,
       duration: 450,
       ease: "Sine.easeOut",
-      onComplete: () => {
-        this.playBirthdaySong();
-      }
     });
 
-    this.input.on("pointerdown", () => this.advanceCutscene());
-    this.input.keyboard.on("keydown-SPACE", () => this.advanceCutscene());
-    this.input.keyboard.on("keydown-ENTER", () => this.advanceCutscene());
-    this.input.keyboard.on("keydown-ESC", () => this.skipCutscene());
-    this.events.once("shutdown", () => this.stopBirthdaySong());
+    this.input.on("pointerdown", () => this.advanceWinCutscene());
+    this.input.keyboard.on("keydown-SPACE", () => this.advanceWinCutscene());
+    this.input.keyboard.on("keydown-ENTER", () => this.advanceWinCutscene());
+    this.input.keyboard.on("keydown-ESC", () => this.skipWinCutscene());
   }
 
   cutsceneDialogue() {
@@ -1494,7 +1472,7 @@ class OliveWinScene extends Phaser.Scene {
           align: "center",
           wordWrap: { width: this.scale.width - 80 }
         }
-      ).setOrigin(0.5);
+      ).setOrigin(0.5).setShadow(2, 2, "#000000", 0, false, true);
     }
 
     this.animateText(this.dialogueText, dialogueText, 20);
@@ -1505,10 +1483,9 @@ class OliveWinScene extends Phaser.Scene {
     image.setScale(scale);
   }
 
-advanceCutscene() {
+advanceWinCutscene() {
   if (this.isTransitioningSlide) return;
 
-  // 👉 if still typing, finish instantly instead of advancing
   if (this.isTyping) {
     if (this.currentTypingTimer) {
       this.currentTypingTimer.remove(false);
@@ -1523,7 +1500,6 @@ advanceCutscene() {
 
   if (nextIndex >= this.slides.length) {
     this.isTransitioningSlide = true;
-    this.stopBirthdaySong();
     this.cameras.main.fadeOut(350, 19, 14, 11);
     this.time.delayedCall(360, () => {
       this.scene.start("MapScene");
@@ -1557,29 +1533,13 @@ advanceCutscene() {
   });
 }
 
-  skipCutscene() {
+  skipWinCutscene() {
     if (this.isTransitioningSlide) return;
     this.isTransitioningSlide = true;
-    this.stopBirthdaySong();
     this.cameras.main.fadeOut(350, 19, 14, 11);
     this.time.delayedCall(360, () => {
       this.scene.start("MapScene");
     });
-  }
-
-  playBirthdaySong() {
-    if (!this.birthdaySong) {
-      this.birthdaySong = this.sound.add("birthday_song", { volume: 0.55 });
-    }
-    if (!this.birthdaySong.isPlaying) {
-      this.birthdaySong.play();
-    }
-  }
-
-  stopBirthdaySong() {
-    if (this.birthdaySong && this.birthdaySong.isPlaying) {
-      this.birthdaySong.stop();
-    }
   }
 
   animateText(target, message, speedInMs = 50) {
