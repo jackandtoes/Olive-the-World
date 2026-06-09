@@ -451,12 +451,7 @@ class PhilippinesScene extends Phaser.Scene {
     const spriteScale = (this.GRID_SIZE + 4) / sprite.texture.getSourceImage().height;
     sprite.setScale(spriteScale);
     this.playerSprite = sprite;
-
-    this.player = this.add.container(x, y, [
-      shadow,
-      sprite,
-    ]).setDepth(1000);
-
+    this.player = this.add.container(x, y, [shadow, sprite,]).setDepth(1000);
     this.gameContainer.add(this.player);
 
     this.playerGridX = startCol;
@@ -637,14 +632,8 @@ class PhilippinesScene extends Phaser.Scene {
     this.coin = this.add.container(x, y, [glow, outer, inner, shine]).setDepth(600);
     this.gameContainer.add(this.coin);
 
-    this.tweens.add({
-      targets: this.coin,
-      y: y - 6,
-      duration: 900,
-      yoyo: true,
-      repeat: -1,
-      ease: "Sine.InOut",
-    });
+    this.tweens.add({targets: this.coin, y: y - 6, duration: 900, 
+      yoyo: true, repeat: -1, ease: "Sine.InOut"});
 
     this.coinGridX = col;
     this.coinGridY = row;
@@ -669,13 +658,9 @@ class PhilippinesScene extends Phaser.Scene {
 
       this.gameContainer.add(sprite);
 
-      this.tweens.add({
-        targets: sprite,
-        scale: { from: 0.95, to: 1.05 },
-        duration: 800 + spawned * 35,
-        yoyo: true,
-        repeat: -1,
-        ease: "Sine.InOut",
+      this.tweens.add({targets: sprite, scale: { from: 0.95, to: 1.05 },
+        duration: 800 + spawned * 35, yoyo: true,
+        repeat: -1, ease: "Sine.InOut",
       });
 
       this.ingredients.push({ sprite, gridX: col, gridY: row, collected: false });

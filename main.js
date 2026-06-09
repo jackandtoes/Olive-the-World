@@ -555,6 +555,9 @@ class MapScene extends Phaser.Scene {
     if (!this.registry.has('seenCutscenes')) {
       this.registry.set('seenCutscenes', { mexico: false, italy: false, philippines: false, egypt: false, brazil: false, india: false });
     }
+    if (!this.registry.has('lastMapPosition')) {
+      this.registry.set('lastMapPosition', null);
+    }
   }
 
   create() {
@@ -577,112 +580,19 @@ class MapScene extends Phaser.Scene {
     this.cameras.main.setZoom(2.5);
 
     // Top-left navigation buttons
-    const navButtonStyle = {
-      fontSize: "10px",
-      fill: "#000000",
-      backgroundColor: "#ffc4e3",
-      padding: { x: 10, y: 5 }
-    };
-
-    const returnButton = this.add.text(250, 190, "Return", navButtonStyle)
-      .setOrigin(0, 0)
-      .setInteractive({ useHandCursor: true })
-      .setScrollFactor(0)
-      .setDepth(30);
-
-    returnButton.on("pointerover", () => {
-      this.tweens.add({
-        targets: returnButton,
-        scaleX: 1.05,
-        scaleY: 1.05,
-        duration: 140,
-        ease: "Sine.easeOut"
-      });
-      returnButton.setBackgroundColor("#ef7cac");
-    });
-
-    returnButton.on("pointerout", () => {
-      this.tweens.add({
-        targets: returnButton,
-        scaleX: 1,
-        scaleY: 1,
-        duration: 140,
-        ease: "Sine.easeOut",
-      });
-      returnButton.setBackgroundColor("#ffc4e3");
-    });
-
-    returnButton.on("pointerdown", () => {
+    this.createMapNavButton(280, 202, 60, "Return", () => {
       playButtonClickSfx(this);
       this.scene.start("StartScene");
     });
 
-
-    //Store Button
-    const storeButton = this.add.text(310, 190, "Store", navButtonStyle)
-      .setOrigin(0, 0)
-      .setInteractive({ useHandCursor: true })
-      .setScrollFactor(0)
-      .setDepth(30);
-
-    storeButton.on("pointerover", () => {
-      this.tweens.add({
-        targets: storeButton,
-        scaleX: 1.05,
-        scaleY: 1.05,
-        duration: 140,
-        ease: "Sine.easeOut"
-      });
-      storeButton.setBackgroundColor("#ef7cac");
-    });
-
-    storeButton.on("pointerout", () => {
-      this.tweens.add({
-        targets: storeButton,
-        scaleX: 1,
-        scaleY: 1,
-        duration: 140,
-        ease: "Sine.easeOut",
-      });
-      storeButton.setBackgroundColor("#ffc4e3");
-    });
-
-    storeButton.on("pointerdown", () => {
+    this.createMapNavButton(347, 202, 54, "Store", () => {
       playButtonClickSfx(this);
       this.scene.start("Store");
     });
 
-    //Inventory Button
-    const inventoryButton = this.add.text(365, 190, "Inventory", navButtonStyle)
-      .setOrigin(0, 0)
-      .setInteractive({ useHandCursor: true })
-      .setScrollFactor(0)
-      .setDepth(30);
-    inventoryButton.on("pointerdown", () => {
+    this.createMapNavButton(425, 202, 84, "Inventory", () => {
       playButtonClickSfx(this);
       this.scene.start("Inventory");
-    });
-
-    inventoryButton.on("pointerover", () => {
-      this.tweens.add({
-        targets: inventoryButton,
-        scaleX: 1.05,
-        scaleY: 1.05,
-        duration: 140,
-        ease: "Sine.easeOut"
-      });
-      inventoryButton.setBackgroundColor("#ef7cac");
-    });
-
-    inventoryButton.on("pointerout", () => {
-      this.tweens.add({
-        targets: inventoryButton,
-        scaleX: 1,
-        scaleY: 1,
-        duration: 140,
-        ease: "Sine.easeOut",
-      });
-      inventoryButton.setBackgroundColor("#ffc4e3");
     });
 
     //Settings Button
@@ -724,6 +634,7 @@ class MapScene extends Phaser.Scene {
     this.player.body.setSize(22, 22);
     this.player.body.setOffset(6, 6);
     this.player.setDepth(5);
+    this.restoreMapPosition();
 
     this.cursors = this.input.keyboard.createCursorKeys();
     this.keys = this.input.keyboard.addKeys('W,A,S,D');
@@ -763,6 +674,75 @@ class MapScene extends Phaser.Scene {
       radius: 60
     });
   }
+
+  saveMapPosition() {
+    if (!this.player) {
+      return;
+    }
+
+    this.registry.set('lastMapPosition', {
+      x: this.player.x,
+      y: this.player.y
+    });
+  }
+
+  restoreMapPosition() {
+    const lastMapPosition = this.registry.get('lastMapPosition');
+
+    if (!lastMapPosition) {
+      return;
+    }
+
+    const bounds = this.physics.world.bounds;
+    this.player.setPosition(
+      Phaser.Math.Clamp(lastMapPosition.x, bounds.x, bounds.right),
+      Phaser.Math.Clamp(lastMapPosition.y, bounds.y, bounds.bottom)
+    );
+  }
+
+  createMapNavButton(x, y, width, label, cb) {
+    const content = this.add.container(x, y).setScrollFactor(0).setDepth(30);
+    const buttonHeight = 24;
+    const shadow = this.add.rectangle(2, 2, width, buttonHeight, 0x7e4a2c, 0.08);
+    const bg = this.add.rectangle(0, 0, width, buttonHeight, 0xf6f4eb, 0.98)
+      .setStrokeStyle(2, 0x97a38b, 0.95);
+    const hitTarget = this.add.rectangle(0, 0, width, buttonHeight, 0xffffff, 0.001)
+      .setInteractive({ useHandCursor: true });
+    const text = this.add.text(0, 0, label, {
+      fontSize: "10px",
+      fill: "#5a5143",
+      fontStyle: "bold"
+    }).setOrigin(0.5);
+
+    const activateHover = () => {
+      bg.setFillStyle(0xe3eadb, 1);
+      this.tweens.add({
+        targets: [shadow, bg, text],
+        scaleX: 1.05,
+        scaleY: 1.05,
+        duration: 140,
+        ease: "Sine.easeOut"
+      });
+    };
+
+    const deactivateHover = () => {
+      bg.setFillStyle(0xf6f4eb, 0.98);
+      this.tweens.add({
+        targets: [shadow, bg, text],
+        scaleX: 1,
+        scaleY: 1,
+        duration: 140,
+        ease: "Sine.easeOut"
+      });
+    };
+
+    hitTarget.on("pointerover", activateHover);
+    hitTarget.on("pointerout", deactivateHover);
+    hitTarget.on("pointerdown", cb);
+    content.add([shadow, bg, text, hitTarget]);
+    return content;
+  }
+
   // Creates the info panel that appears when the player is near a country landmark
   createInfoPanel() {
     this.infoPanel = this.add.container(0, 0);
@@ -791,6 +771,7 @@ class MapScene extends Phaser.Scene {
 
     const startCountryGame = () => {
       if (this.currentCountry) {
+        this.saveMapPosition();
         playButtonClickSfx(this);
         stopBackgroundMusic();
         this.scene.start(this.getCountrySceneName(this.currentCountry));
@@ -892,7 +873,6 @@ class MapScene extends Phaser.Scene {
   update() {
     const speed = 125;
 
-    // Handle player movement (Arrow keys and WASD)
     this.player.body.setVelocity(0);
     if (this.cursors.left.isDown || this.keys.A.isDown) {
       this.player.body.setVelocityX(-speed);
