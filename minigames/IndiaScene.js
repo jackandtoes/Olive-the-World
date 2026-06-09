@@ -218,7 +218,7 @@ class IndiaScene extends Phaser.Scene {
 
     preload() {
         this.load.audio("india_music", "assets/india/cutscene/india_music.mp3");
-        this.load.image('chile', 'assets/mexico/mexico_minigame_chile.png');
+        this.load.image('pot', 'assets/india/clayPot.png');
 
         this.load.spritesheet('biryaniIngredients', 'assets/india/biryaniIngredients.png', {
             frameWidth: 200,
@@ -249,7 +249,8 @@ class IndiaScene extends Phaser.Scene {
         this.add.rectangle(this.scale.width / 2, this.scale.height / 2, this.scale.width, this.scale.height, 0xf7d6b4).setDepth(0);
 
         // add player basket
-        this.basket = this.physics.add.image(this.scale.width / 2, 550, 'chile');
+        this.basket = this.physics.add.image(this.scale.width / 2, 550, 'pot');
+        this.basket.setScale(0.15);
         this.basket.body.setAllowGravity(false).setCollideWorldBounds(true);
 
         // input
@@ -268,19 +269,19 @@ class IndiaScene extends Phaser.Scene {
             color: '#043D8C',
             stroke: '#ffffff',
             strokeThickness: 6
-        });
+        }).setDepth(20);
         this.scoreText = this.add.text(scorePrefix.x + scorePrefix.width, 10, '0', {
             fontSize: '40px',
             color: '#043D8C',
             stroke: '#ffffff',
             strokeThickness: 6
-        });
+        }).setDepth(20);
         this.timerText = this.add.text(this.scale.width - 80, 10, '30', {
             fontSize: '60px',
             color: '#043D8C',
             stroke: '#ffffff',
             strokeThickness: 6
-        });
+        }).setDepth(20);
 
         // Initialize level parameters
         const level = INDIA_LEVELS[this.currentLevel];
@@ -330,6 +331,11 @@ class IndiaScene extends Phaser.Scene {
             this.timerText.setText(Math.max(0, Math.ceil(this.levelTimer.getRemainingSeconds())).toString(10));
         }
 
+        if (this.gameIsOver) {
+            this.basket.setVelocityX(0);
+            return;
+        }
+
         // Updates basket movement
         if (this.cursorKeys.left.isDown) {
             this.basket.setVelocityX(-350);
@@ -369,6 +375,7 @@ class IndiaScene extends Phaser.Scene {
         );
 
         ingredient.setScale(0.7);
+        ingredient.setDepth(5);
         ingredient.body.setAllowGravity(true);
         ingredient.setAngle(Phaser.Math.Between(0, 359));
         ingredient.spinSpeed = Phaser.Math.Between(0, 1) === 0
@@ -396,6 +403,7 @@ class IndiaScene extends Phaser.Scene {
 
     endLevel(success = false) {
         this.gameIsOver = true;
+        this.basket.setVelocityX(0);
 
         if (this.timedEvent) {
             this.timedEvent.remove(false);
