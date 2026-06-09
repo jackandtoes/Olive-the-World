@@ -1310,15 +1310,17 @@ class Settings extends Phaser.Scene {
       fontStyle: "bold"
     }).setOrigin(0.5);
 
-    const musicText = this.add.text(width / 2, height / 2 - 25, "", {
+    const musicText = this.add.text(width / 2, height / 2 - 65, "Background Music", {
       fontSize: "24px",
       color: "#5a341d"
     }).setOrigin(0.5);
 
-    const refreshMusicLabel = () => {
-      const isMuted = backgroundMusic ? backgroundMusic.mute : false;
-      musicText.setText(`Music: ${isMuted ? "Off" : "On"}`);
-    };
+    const sfxText = this.add.text(width / 2, height / 2 + 10, "Sound Effects", {
+      fontSize: "24px",
+      color: "#5a341d"
+    }).setOrigin(0.5);
+
+    // Background Music Volume Control
 
     const applyMusicVolume = (volume) => {
       const clampedVolume = Phaser.Math.Clamp(volume, 0, 1);
@@ -1329,32 +1331,65 @@ class Settings extends Phaser.Scene {
       return clampedVolume;
     };
 
-    const scrollBar = this.add.rectangle(width / 2, height / 2 + 15, 200, 8, 0xd9b97d)
+    const scrollMusicBar = this.add.rectangle(width / 2, height / 2 - 35, 200, 8, 0xd9b97d)
       .setStrokeStyle(2, 0x000000, 0.6)
       .setOrigin(0.5);
 
-    const scrollHandle = this.add.circle(width / 2, height / 2 + 15, 12, 0xe0bb67)
+    const scrollMusicHandle = this.add.circle(width / 2, height / 2 - 35, 12, 0xe0bb67)
       .setStrokeStyle(2, 0x000000, 0.6)
       .setInteractive({ useHandCursor: true })
       .setOrigin(0.5);
 
-    this.input.setDraggable(scrollHandle);
+    this.input.setDraggable(scrollMusicHandle);
 
-    const minX = scrollBar.x - scrollBar.width / 2;
-    const maxX = scrollBar.x + scrollBar.width / 2;
-    const savedVolume = Phaser.Math.Clamp(this.registry.get("musicVolume") ?? 0.55, 0, 1);
+    const musicMinX = scrollMusicBar.x - scrollMusicBar.width / 2;
+    const musicMaxX = scrollMusicBar.x + scrollMusicBar.width / 2;
+    const musicSavedVolume = Phaser.Math.Clamp(this.registry.get("musicVolume") ?? 0.55, 0, 1);
 
-    applyMusicVolume(savedVolume);
-    scrollHandle.x = Phaser.Math.Linear(minX, maxX, savedVolume);
+    applyMusicVolume(musicSavedVolume);
+    scrollMusicHandle.x = Phaser.Math.Linear(musicMinX, musicMaxX, musicSavedVolume);
 
-    scrollHandle.on("drag", (pointer, dragX) => {
-      const clampedX = Phaser.Math.Clamp(dragX, minX, maxX);
+    scrollMusicHandle.on("drag", (pointer, dragX) => {
+      const clampedX = Phaser.Math.Clamp(dragX, musicMinX, musicMaxX);
 
-      const volume = (clampedX - minX) / scrollBar.width;
+      const volume = (clampedX - musicMinX) / scrollMusicBar.width;
 
       applyMusicVolume(volume);
-      scrollHandle.x = clampedX;
-      refreshMusicLabel();
+      scrollMusicHandle.x = clampedX;
+    });
+
+    // Sound Effects Volume Control
+    const applySfxVolume = (volume) => {
+      const clampedVolume = Phaser.Math.Clamp(volume, 0, 1);
+      this.registry.set("sfxVolume", clampedVolume);
+      return clampedVolume;
+    };
+
+    const scrollSfxBar = this.add.rectangle(width / 2, height / 2 + 40, 200, 8, 0xd9b97d)
+      .setStrokeStyle(2, 0x000000, 0.6)
+      .setOrigin(0.5);
+
+    const scrollSfxHandle = this.add.circle(width / 2, height / 2 + 40, 12, 0xe0bb67)
+      .setStrokeStyle(2, 0x000000, 0.6)
+      .setInteractive({ useHandCursor: true })
+      .setOrigin(0.5);
+
+    this.input.setDraggable(scrollSfxHandle);
+
+    const sfxMinX = scrollSfxBar.x - scrollSfxBar.width / 2;
+    const sfxMaxX = scrollSfxBar.x + scrollSfxBar.width / 2;
+    const sfxSavedVolume = Phaser.Math.Clamp(this.registry.get("sfxVolume") ?? 0.75, 0, 1);
+
+    applySfxVolume(sfxSavedVolume);
+    scrollSfxHandle.x = Phaser.Math.Linear(sfxMinX, sfxMaxX, sfxSavedVolume);
+
+    scrollSfxHandle.on("drag", (pointer, dragX) => {
+      const clampedX = Phaser.Math.Clamp(dragX, sfxMinX, sfxMaxX);
+
+      const volume = (clampedX - sfxMinX) / scrollSfxBar.width;
+
+      applySfxVolume(volume);
+      scrollSfxHandle.x = clampedX;
     });
 
     const backButton = this.add.text(width / 2, height / 2 + 85, this.returnTo === "StartScene" ? "Back to Start" : "Back to Map", {
@@ -1380,8 +1415,7 @@ class Settings extends Phaser.Scene {
 
     this.cameras.main.fadeIn(180, 0, 0, 0);
 
-    refreshMusicLabel();
-    this.add.text(width / 2, height / 2 + 145, "ESC to return", {
+    this.add.text(width / 2, height / 2 + 125, "ESC to return", {
       fontSize: "16px",
       color: "#8a5d34"
     }).setOrigin(0.5);
