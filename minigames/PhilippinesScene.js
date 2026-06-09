@@ -41,12 +41,12 @@ class PhilippinesCutscene extends Phaser.Scene {
       fill: "#fff4dd",
       backgroundColor: "#5a341d",
       padding: { x: 13, y: 8 }
-    }).setOrigin(0.5);
+    }).setOrigin(0.5).setShadow(2, 2, "#000000", 0, false, true);
 
     this.cutsceneProgress = this.add.text(width / 2, 36, `1 / ${this.slides.length}`, {
       fontSize: "24px",
       fill: "#fff4dd"
-    }).setOrigin(0.5);
+    }).setOrigin(0.5).setShadow(2, 2, "#000000", 0, false, true);
 
     this.tweens.add({
       targets: this.cutsceneImage,
@@ -62,9 +62,11 @@ class PhilippinesCutscene extends Phaser.Scene {
 
   startPhilippinesMusic() {
     let philippinesMusic = this.sound.get("filipino_music");
+    const musicVolume = this.registry.get("musicVolume") ?? 0.55;
     if (!philippinesMusic) {
-      philippinesMusic = this.sound.add("filipino_music", { volume: 0.55, loop: true });
+      philippinesMusic = this.sound.add("filipino_music", { volume: musicVolume, loop: true });
     }
+    philippinesMusic.setVolume(musicVolume);
     if (!philippinesMusic.isPlaying) {
       philippinesMusic.play();
     }
@@ -88,7 +90,7 @@ class PhilippinesCutscene extends Phaser.Scene {
           align: "center",
           wordWrap: { width: this.scale.width - 80 }
         }
-      ).setOrigin(0.5);
+      ).setOrigin(0.5).setShadow(2, 2, "#000000", 0, false, true);
     }
     this.animateText(this.dialogueText, dialogueText, 20);
   }
@@ -319,9 +321,11 @@ class PhilippinesScene extends Phaser.Scene {
 
   startPhilippinesMusic() {
     let philippinesMusic = this.sound.get("filipino_music");
+    const musicVolume = this.registry.get("musicVolume") ?? 0.55;
     if (!philippinesMusic) {
-      philippinesMusic = this.sound.add("filipino_music", { volume: 0.55, loop: true });
+      philippinesMusic = this.sound.add("filipino_music", { volume: musicVolume, loop: true });
     }
+    philippinesMusic.setVolume(musicVolume);
     if (!philippinesMusic.isPlaying) {
       philippinesMusic.play();
     }
@@ -333,7 +337,12 @@ class PhilippinesScene extends Phaser.Scene {
 
   returnToMap() {
     this.stopPhilippinesMusic();
-    this.scene.start("MapScene");
+    if(!this.checkOliveWin()){
+	    this.scene.start("MapScene");
+    }
+    else {
+      this.scene.start("OliveWinScene");
+    }
   }
 
   createBackdrop() {
@@ -1067,19 +1076,14 @@ class PhilippinesScene extends Phaser.Scene {
 
   showLevelComplete() {
     const { width, height } = this._overlay();
-    this.add.text(width / 2, height / 2 - 112, "Level Complete", {
+    this.add.text(width / 2, height / 2 - 90, "Level Complete", {
       fontSize: "44px",
       color: this.palette.win,
       fontStyle: "bold",
     }).setOrigin(0.5);
-    this.add.text(width / 2, height / 2 - 46, `${this.config.ingredient} collected!`, {
-      fontSize: "28px",
+    this.add.text(width / 2, height / 2 - 20, `${this.config.ingredient} collected!`, {
+      fontSize: "24px",
       color: "#6b3b21",
-      fontStyle: "bold",
-    }).setOrigin(0.5);
-    this.add.text(width / 2, height / 2 + 2, "Olive is ready for the next stop.", {
-      fontSize: "21px",
-      color: "#82553a",
     }).setOrigin(0.5);
     this._button(width / 2, height / 2 + 78, "Next Level", () => this.scene.restart({ level: this.currentLevel + 1 }));
     this._button(width / 2, height / 2 + 132, "Back to Map", () => this.returnToMap());
@@ -1090,20 +1094,23 @@ class PhilippinesScene extends Phaser.Scene {
     wins.philippines = true;
     this.registry.set('wins', wins);
     const { width, height } = this._overlay();
-    this.add.text(width / 2, height / 2 - 108, "Victory!", {
-      fontSize: "46px",
+    this.add.text(width / 2, height / 2 - 90, "Victory!", {
+      fontSize: "44px",
       color: this.palette.win,
       fontStyle: "bold",
     }).setOrigin(0.5);
-    this.add.text(width / 2, height / 2 - 48, "All ingredients collected!", {
+    this.add.text(width / 2, height / 2 - 30, "All ingredients collected!", {
       fontSize: "24px",
       color: "#6b3b21",
     }).setOrigin(0.5);
-    this.add.text(width / 2, height / 2 + 4, "You completed all 5 Philippines levels.", {
-      fontSize: "22px",
-      color: "#82553a",
-    }).setOrigin(0.5);
     this._button(width / 2, height / 2 + 78, "Play Again", () => this.scene.restart({ level: 1 }));
     this._button(width / 2, height / 2 + 132, "Back to Map", () => this.returnToMap());
+  }
+  checkOliveWin() {
+    const wins = this.registry.get('wins') || {};
+    if (wins.italy && wins.philippines && wins.egypt && wins.mexico && wins.india && wins.brazil) {
+      return true;
+    }
+    return false;
   }
 }

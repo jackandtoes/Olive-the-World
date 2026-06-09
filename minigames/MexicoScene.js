@@ -41,12 +41,12 @@ class MexicoCutscene extends Phaser.Scene {
       fill: "#ffbd3a",
       backgroundColor: "#5a341d",
       padding: { x: 14, y: 8 }
-    }).setOrigin(0.5);
+    }).setOrigin(0.5).setShadow(2, 2, "#000000", 0, false, true);
 
     this.cutsceneProgress = this.add.text(width / 2, 36, `1 / ${this.slides.length}`, {
       fontSize: "24px",
       fill: "#fff4dd"
-    }).setOrigin(0.5);
+    }).setOrigin(0.5).setShadow(2, 2, "#000000", 0, false, true);
 
     this.tweens.add({
       targets: this.cutsceneImage,
@@ -61,13 +61,15 @@ class MexicoCutscene extends Phaser.Scene {
 
   }
    startMexicanMusic() {
-     let mexicanMusic = this.sound.get("mexican_music");
-     if (!mexicanMusic) {
-       mexicanMusic = this.sound.add("mexican_music", { volume: 0.55, loop: true });
-     }
-     if (!mexicanMusic.isPlaying) {
-       mexicanMusic.play();
-     }
+    let mexicanMusic = this.sound.get("mexican_music");
+    const musicVolume = this.registry.get("musicVolume") ?? 0.55;
+    if (!mexicanMusic) {
+      mexicanMusic = this.sound.add("mexican_music", { volume: musicVolume, loop: true });
+    }
+    mexicanMusic.setVolume(musicVolume);
+    if (!mexicanMusic.isPlaying) {
+      mexicanMusic.play();
+    }
    }
 
    stopMexicanMusic() {
@@ -88,7 +90,7 @@ class MexicoCutscene extends Phaser.Scene {
           align: "center",
           wordWrap: { width: this.scale.width - 80 }
         }
-      ).setOrigin(0.5);
+      ).setOrigin(0.5).setShadow(2, 2, "#000000", 0, false, true);
     }
 
     this.animateText(this.dialogueText, dialogueText, 20);
@@ -255,10 +257,7 @@ class MexicoScene extends Phaser.Scene {
             .setOrigin(1, 0);
 
         // Listen for ESC key to return to map
-        this.input.keyboard.on('keydown-ESC', () => {
-            this.stopMexicanMusic();
-            this.scene.start('MapScene');
-        });
+        this.input.keyboard.on('keydown-ESC', () => this.returnToMap());
 
         // Initialize dynamic spawn tracking (spawn rate increases as game progresses)
         this.lastPinataSpawnTime = 0;
@@ -326,16 +325,27 @@ class MexicoScene extends Phaser.Scene {
     }
     startMexicanMusic() {
     let mexicanMusic = this.sound.get("mexican_music");
+    const musicVolume = this.registry.get("musicVolume") ?? 0.55;
     if (!mexicanMusic) {
-      mexicanMusic = this.sound.add("mexican_music", { volume: 0.55, loop: true });
+      mexicanMusic = this.sound.add("mexican_music", { volume: musicVolume, loop: true });
     }
+    mexicanMusic.setVolume(musicVolume);
     if (!mexicanMusic.isPlaying) {
       mexicanMusic.play();
     }
    }
 
-    stopMexicanMusic() {
+   stopMexicanMusic() {
      this.sound.stopByKey("mexican_music");
+   }
+
+   returnToMap() {
+     this.stopMexicanMusic();
+     if (!this.checkOliveWin()) {
+       this.scene.start("MapScene");
+     } else {
+       this.scene.start("OliveWinScene");
+     }
    }
 
     initConfettiPool(poolSize = 24) {
@@ -873,8 +883,7 @@ class MexicoScene extends Phaser.Scene {
                     .setOrigin(0.5)
                     .setInteractive();
                 backButton.on('pointerdown', () => {
-                    this.scene.start('MapScene');
-                    this.stopMexicanMusic();
+                    this.returnToMap();
                 });
                 const playButton = this.add.text(width/2, height/2 + 120, 'Play Again', 
                     { fontSize: '24px', fill: '#00ff00' })
@@ -884,7 +893,7 @@ class MexicoScene extends Phaser.Scene {
                     playButtonClickSfx(this);
                     this.scene.start('MexicoScene');
                 });
-                const wins = this.registry.get('wins');
+                const wins = this.registry.get('wins') || {};
                 wins.mexico = true;
                 this.registry.set('wins', wins);
             }
@@ -899,8 +908,7 @@ class MexicoScene extends Phaser.Scene {
                     .setOrigin(0.5)
                     .setInteractive();
                 backButton.on('pointerdown', () => {
-                    this.scene.start('MapScene');
-                    this.stopMexicanMusic();
+                    this.returnToMap();
                 });
                 const playButton = this.add.text(width/2, height/2 + 120, 'Play Again', 
                     { fontSize: '24px', fill: '#00ff00' })
@@ -913,4 +921,11 @@ class MexicoScene extends Phaser.Scene {
             }
         
     }
+  checkOliveWin() {
+    const wins = this.registry.get('wins') || {};
+    if (wins.italy && wins.philippines && wins.egypt && wins.mexico && wins.india && wins.brazil) {
+      return true;
+    }
+    return false;
+  }
 }
