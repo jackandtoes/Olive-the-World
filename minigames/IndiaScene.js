@@ -234,6 +234,9 @@ class IndiaScene extends Phaser.Scene {
             frameWidth: 200,
             frameHeight: 200
         });
+        this.load.audio("item_collection_sfx", "assets/sfx/item_collection_sfx.mp3");
+        this.load.audio("victory_sfx", "assets/sfx/victory_sfx.mp3");
+        this.load.audio("lose_sfx", "assets/sfx/lose_sfx.mp3");
     }
 
     create() {
@@ -387,6 +390,7 @@ class IndiaScene extends Phaser.Scene {
     handleBasketIngredientCollision(basket, ingredient) {
         ingredient.disableBody(true, true);
         if (this.gameIsOver) {
+                this.sound.play("item_collection_sfx", { volume: getSfxVolume(this) });
             return;
         }
         this.score += 10;
@@ -522,6 +526,7 @@ class IndiaScene extends Phaser.Scene {
     }
 
     showGameOver() {
+            this.sound.play("lose_sfx", { volume: getSfxVolume(this) });
         const { width, height, depth } = this._overlay();
         this.add.text(width / 2, height / 2 - 108, "Game Over", {
             fontSize: "46px",
@@ -547,6 +552,7 @@ class IndiaScene extends Phaser.Scene {
         const wins = this.registry.get('wins') || {};
         wins.india = true;
         this.registry.set('wins', wins);
+    this.sound.play("victory_sfx", { volume: getSfxVolume(this) });
 
         const { width, height, depth } = this._overlay();
         this.add.text(width / 2, height / 2 - 108, "Victory!", {
