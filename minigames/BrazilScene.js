@@ -19,7 +19,7 @@ class BrazilCutscene extends Phaser.Scene {
     this.registry.set("seenCutscenes", seenCutscenes);
     this.slides = ["olive_hanggliding", "olive_carnaval", "olive_bean_chef"];
     this.dialogueLines = [
-      "What a great view from here!\n I wonder what is going on below?", 
+      "What a great view from here!\n I wonder what is going on below?",
       "Get a taste of Carnival!",
       "No party can start without feijoada!\n Let's find those ingredients!"
     ];
@@ -101,56 +101,56 @@ class BrazilCutscene extends Phaser.Scene {
     image.setScale(scale);
   }
 
-advanceCutscene() {
-  if (this.isTransitioningSlide) return;
+  advanceCutscene() {
+    if (this.isTransitioningSlide) return;
 
-  // 👉 if still typing, finish instantly instead of advancing
-  if (this.isTyping) {
-    if (this.currentTypingTimer) {
-      this.currentTypingTimer.remove(false);
-      this.currentTypingTimer = null;
+    // 👉 if still typing, finish instantly instead of advancing
+    if (this.isTyping) {
+      if (this.currentTypingTimer) {
+        this.currentTypingTimer.remove(false);
+        this.currentTypingTimer = null;
+      }
+      this.dialogueText.setText(this.fullText);
+      this.isTyping = false;
+      return;
     }
-    this.dialogueText.setText(this.fullText);
-    this.isTyping = false;
-    return;
-  }
 
-  const nextIndex = this.cutsceneIndex + 1;
+    const nextIndex = this.cutsceneIndex + 1;
 
-  if (nextIndex >= this.slides.length) {
-    this.isTransitioningSlide = true;
-    this.cameras.main.fadeOut(350, 19, 14, 11);
-    this.time.delayedCall(360, () => {
-      this.scene.start("BrazilScene");
-    });
-    return;
-  }
-
-  this.isTransitioningSlide = true;
-  this.tweens.add({
-    targets: this.cutsceneImage,
-    alpha: 0,
-    duration: 260,
-    ease: "Sine.easeInOut",
-    onComplete: () => {
-      this.cutsceneIndex = nextIndex;
-      this.cutsceneImage.setTexture(this.slides[this.cutsceneIndex]);
-      this._fitCutsceneImage(this.cutsceneImage, this.scale.width, this.scale.height);
-      this.cutsceneProgress.setText(`${this.cutsceneIndex + 1} / ${this.slides.length}`);
-      this.cutsceneDialogue();
-
-      this.tweens.add({
-        targets: this.cutsceneImage,
-        alpha: 1,
-        duration: 320,
-        ease: "Sine.easeInOut",
-        onComplete: () => {
-          this.isTransitioningSlide = false;
-        }
+    if (nextIndex >= this.slides.length) {
+      this.isTransitioningSlide = true;
+      this.cameras.main.fadeOut(350, 19, 14, 11);
+      this.time.delayedCall(360, () => {
+        this.scene.start("BrazilScene");
       });
+      return;
     }
-  });
-}
+
+    this.isTransitioningSlide = true;
+    this.tweens.add({
+      targets: this.cutsceneImage,
+      alpha: 0,
+      duration: 260,
+      ease: "Sine.easeInOut",
+      onComplete: () => {
+        this.cutsceneIndex = nextIndex;
+        this.cutsceneImage.setTexture(this.slides[this.cutsceneIndex]);
+        this._fitCutsceneImage(this.cutsceneImage, this.scale.width, this.scale.height);
+        this.cutsceneProgress.setText(`${this.cutsceneIndex + 1} / ${this.slides.length}`);
+        this.cutsceneDialogue();
+
+        this.tweens.add({
+          targets: this.cutsceneImage,
+          alpha: 1,
+          duration: 320,
+          ease: "Sine.easeInOut",
+          onComplete: () => {
+            this.isTransitioningSlide = false;
+          }
+        });
+      }
+    });
+  }
 
   animateText(target, message, speedInMs = 50) {
     if (this.currentTypingTimer) {
@@ -311,8 +311,8 @@ class BrazilScene extends Phaser.Scene {
 
   returnToMap() {
     this.stopBrazilMusic();
-    if(!this.checkOliveWin()){
-	    this.scene.start("MapScene");
+    if (!this.checkOliveWin()) {
+      this.scene.start("MapScene");
     }
     else {
       this.scene.start("OliveWinScene");
@@ -362,9 +362,9 @@ class BrazilScene extends Phaser.Scene {
     graphics.generateTexture("brazilCoinBlock", 36, 36);
     graphics.clear();
 
-    graphics.fillStyle(0xffffff, 0.95);
-    graphics.fillCircle(6, 6, 6);
-    graphics.generateTexture("brazilParticle", 12, 12);
+    graphics.fillStyle(0xffffff, 1);
+    graphics.fillRect(0, 0, 6, 10);
+    graphics.generateTexture("brazilParticle", 6, 10);
     graphics.clear();
 
     graphics.destroy();
@@ -537,11 +537,29 @@ class BrazilScene extends Phaser.Scene {
       lifespan: 2200,
       speedX: { min: -160, max: -5 },
       speedY: { min: 160, max: 320 },
-      scale: { start: 0.5, end: 0 },
+      scale: { start: 1, end: 0.5 },
       quantity: 8,
-      blendMode: "ADD"
+      rotate: {
+        min: 0,
+        max: 360
+      },
+
+      angularVelocity: {
+        min: -300,
+        max: 300
+      },
+      tint: {
+        onEmit: () => Phaser.Math.RND.pick([
+          0xff4d4d,
+          0xffc94d,
+          0x4dd2ff,
+          0x8aff4d,
+          0xff7ad9
+        ])
+      }
     });
 
+    this.emitter.setFrequency(300);
     this.emitter.setScrollFactor(0);
   }
 
@@ -604,10 +622,10 @@ class BrazilScene extends Phaser.Scene {
 
   applyWeather(weather) {
     const weathers = {
-      morning: {color: 0xecdccc, particles: 2, wind: 20, bgColor: 0xf8c3ac,},
-      afternoon: {color: 0xffffff, particles: 4, wind: 80, bgColor: 0x0571ff,},
-      twilight: {color: 0xccaacc, particles: 9, wind: 180, bgColor: 0x5b4b8a,},
-      night: {color: 0x7f8fa6, particles: 1, wind: 10, bgColor: 0x111827,},
+      morning: { color: 0xecdccc, particles: 1, wind: 80, bgColor: 0xf8c3ac, },
+      afternoon: { color: 0xffffff, particles: 4, wind: 80, bgColor: 0x0571ff, },
+      twilight: { color: 0xccaacc, particles: 9, wind: 80, bgColor: 0x5b4b8a, },
+      night: { color: 0x7f8fa6, particles: 1, wind: 80, bgColor: 0x111827, },
     };
 
     const current = weathers[weather];
@@ -680,7 +698,7 @@ class BrazilScene extends Phaser.Scene {
   }
 
   _button(x, y, label, cb, depth = 30) {
-    const shadow = this.add.rectangle(x + 3, y + 4, 190, 44, 0x7e4a2c, 0.2).setScrollFactor(0).setDepth(depth -1);
+    const shadow = this.add.rectangle(x + 3, y + 4, 190, 44, 0x7e4a2c, 0.2).setScrollFactor(0).setDepth(depth - 1);
     const bg = this.add.rectangle(x, y, 190, 44, this.palette.buttonFill)
       .setStrokeStyle(3, this.palette.buttonBorder, 0.95)
       .setInteractive({ useHandCursor: true })

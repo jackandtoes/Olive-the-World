@@ -849,24 +849,15 @@ class PhilippinesScene extends Phaser.Scene {
   collectCoin() {
     this.coinCollected = true;
     this.tweens.killTweensOf(this.coin);
-    this.tweens.add({
-      targets: this.coin,
-      alpha: 0,
-      scale: 1.3,
-      y: this.coin.y - 18,
-      duration: 200,
-      onComplete: () => this.coin.destroy(),
-    });
+    this.tweens.add({targets: this.coin, alpha: 0,
+      scale: 1.3, y: this.coin.y - 18, duration: 200,
+      onComplete: () => this.coin.destroy()});
 
     const current = this.registry.get("currency") || 0;
     this.registry.set("currency", current + 1);
     this.coinText.setText(`Coins: ${current + 1}`);
-    this.tweens.add({
-      targets: this.coinText,
-      scale: 1.08,
-      yoyo: true,
-      duration: 150,
-    });
+    this.tweens.add({targets: this.coinText, scale: 1.08,
+      yoyo: true, duration: 150});
   }
 
   checkCollisions() {
@@ -902,12 +893,8 @@ class PhilippinesScene extends Phaser.Scene {
     this.ingredients.forEach((ing) => {
       if (ing.collected) return;
 
-      const dist = Phaser.Math.Distance.Between(
-        this.playerGridX,
-        this.playerGridY,
-        ing.gridX,
-        ing.gridY
-      );
+      const dist = Phaser.Math.Distance.Between(this.playerGridX, this.playerGridY,
+        ing.gridX, ing.gridY);
 
       if (dist < 0.6) {
         this.collectIngredient(ing);
@@ -915,12 +902,8 @@ class PhilippinesScene extends Phaser.Scene {
     });
 
     if (!this.coinCollected) {
-      const coinDist = Phaser.Math.Distance.Between(
-        this.playerGridX,
-        this.playerGridY,
-        this.coinGridX,
-        this.coinGridY
-      );
+      const coinDist = Phaser.Math.Distance.Between(this.playerGridX, this.playerGridY,
+        this.coinGridX, this.coinGridY);
 
       if (coinDist < 0.6) {
         this.collectCoin();

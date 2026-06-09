@@ -540,11 +540,11 @@ class MapScene extends Phaser.Scene {
   }
 
   init(data) {
-    if (!this.registry.has('equippedItems')) {
-      this.registry.set('equippedItems', { hat: null });
-    }
     if (!this.registry.has('currency')) {
       this.registry.set('currency', 0);
+    }
+    if (!this.registry.has('equippedItems')) {
+      this.registry.set('equippedItems', { hat: null });
     }
     if (!this.registry.has('ownedItems')) {
       this.registry.set('ownedItems', {});
@@ -984,8 +984,6 @@ class Store extends Phaser.Scene {
     }).setOrigin(0.5);
     this.input.keyboard.on("keydown-ESC", () => this.scene.start("MapScene"));
   }
-
-
 
   _storeItemLabel(owned, key) {
     if (owned[key]) return "Owned";
