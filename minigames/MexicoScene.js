@@ -883,8 +883,7 @@ class MexicoScene extends Phaser.Scene {
                     .setOrigin(0.5)
                     .setInteractive();
                 backButton.on('pointerdown', () => {
-                    this.scene.start('MapScene');
-                    this.stopMexicanMusic();
+                    this.returnToMap();
                 });
                 const playButton = this.add.text(width/2, height/2 + 120, 'Play Again', 
                     { fontSize: '24px', fill: '#00ff00' })
@@ -894,7 +893,7 @@ class MexicoScene extends Phaser.Scene {
                     playButtonClickSfx(this);
                     this.scene.start('MexicoScene');
                 });
-                const wins = this.registry.get('wins');
+                const wins = this.registry.get('wins') || {};
                 wins.mexico = true;
                 this.registry.set('wins', wins);
             }
@@ -909,8 +908,7 @@ class MexicoScene extends Phaser.Scene {
                     .setOrigin(0.5)
                     .setInteractive();
                 backButton.on('pointerdown', () => {
-                    this.scene.start('MapScene');
-                    this.stopMexicanMusic();
+                    this.returnToMap();
                 });
                 const playButton = this.add.text(width/2, height/2 + 120, 'Play Again', 
                     { fontSize: '24px', fill: '#00ff00' })

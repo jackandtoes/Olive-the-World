@@ -1076,19 +1076,14 @@ class PhilippinesScene extends Phaser.Scene {
 
   showLevelComplete() {
     const { width, height } = this._overlay();
-    this.add.text(width / 2, height / 2 - 112, "Level Complete", {
+    this.add.text(width / 2, height / 2 - 90, "Level Complete", {
       fontSize: "44px",
       color: this.palette.win,
       fontStyle: "bold",
     }).setOrigin(0.5);
-    this.add.text(width / 2, height / 2 - 46, `${this.config.ingredient} collected!`, {
-      fontSize: "28px",
+    this.add.text(width / 2, height / 2 - 20, `${this.config.ingredient} collected!`, {
+      fontSize: "24px",
       color: "#6b3b21",
-      fontStyle: "bold",
-    }).setOrigin(0.5);
-    this.add.text(width / 2, height / 2 + 2, "Olive is ready for the next stop.", {
-      fontSize: "21px",
-      color: "#82553a",
     }).setOrigin(0.5);
     this._button(width / 2, height / 2 + 78, "Next Level", () => this.scene.restart({ level: this.currentLevel + 1 }));
     this._button(width / 2, height / 2 + 132, "Back to Map", () => this.returnToMap());
@@ -1099,18 +1094,14 @@ class PhilippinesScene extends Phaser.Scene {
     wins.philippines = true;
     this.registry.set('wins', wins);
     const { width, height } = this._overlay();
-    this.add.text(width / 2, height / 2 - 108, "Victory!", {
-      fontSize: "46px",
+    this.add.text(width / 2, height / 2 - 90, "Victory!", {
+      fontSize: "44px",
       color: this.palette.win,
       fontStyle: "bold",
     }).setOrigin(0.5);
-    this.add.text(width / 2, height / 2 - 48, "All ingredients collected!", {
+    this.add.text(width / 2, height / 2 - 30, "All ingredients collected!", {
       fontSize: "24px",
       color: "#6b3b21",
-    }).setOrigin(0.5);
-    this.add.text(width / 2, height / 2 + 4, "You completed all 5 Philippines levels.", {
-      fontSize: "22px",
-      color: "#82553a",
     }).setOrigin(0.5);
     this._button(width / 2, height / 2 + 78, "Play Again", () => this.scene.restart({ level: 1 }));
     this._button(width / 2, height / 2 + 132, "Back to Map", () => this.returnToMap());

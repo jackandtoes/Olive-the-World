@@ -204,6 +204,16 @@ class IndiaScene extends Phaser.Scene {
     init(data) {
         this.currentLevel = data?.level || 1;
         this.maxLevel = data?.maxLevel || 3;
+        this.palette = {
+            uiBorder: 0x9fad95,
+            overlay: 0x222620,
+            win: "#2f9e44",
+            lose: "#d94841",
+            buttonFill: 0xf1efe4,
+            buttonBorder: 0x97a38b,
+            buttonText: "#5a5143",
+            buttonHover: 0xe3eadb,
+        };
     }
 
     preload() {
@@ -429,139 +439,125 @@ class IndiaScene extends Phaser.Scene {
         }
     }
 
-    showLevelComplete() {
-        this.add.rectangle(
-            this.scale.width / 2,
-            this.scale.height / 2,
-            this.scale.width,
-            this.scale.height,
-            0x000000,
-            0.35
-        );
+    _overlay() {
+        const { width, height } = this.scale;
+        const depth = 1000;
 
-        this.add.rectangle(
-            this.scale.width / 2,
-            this.scale.height / 2,
-            480,
-            260,
-            0xfff8ef,
-            0.98
-        ).setStrokeStyle(3, 0x8d6237);
+        const fade = this.add.rectangle(width / 2, height / 2, width, height, this.palette.overlay, 0.38)
+            .setDepth(depth);
+        const panelShadow = this.add.rectangle(width / 2 + 6, height / 2 + 8, 530, 380, 0x5e685d, 0.14)
+            .setDepth(depth + 1);
+        const panel = this.add.rectangle(width / 2, height / 2, 530, 380, 0xf6f4eb, 0.98)
+            .setStrokeStyle(3, this.palette.uiBorder, 1)
+            .setDepth(depth + 2);
 
-        this.add.text(this.scale.width / 2, this.scale.height / 2 - 70, "Level Complete", {
-            fontSize: "44px",
-            color: "#2f9e44",
-            fontStyle: "bold"
-        }).setOrigin(0.5);
-
-        this.add.text(this.scale.width / 2, this.scale.height / 2 - 10, "Next Level", {
-            fontSize: "24px",
-            color: "#5a341d"
-        }).setOrigin(0.5).setInteractive({ useHandCursor: true }).on('pointerdown', () => {
-            playButtonClickSfx(this);
-            this.scene.restart({ level: this.currentLevel + 1, maxLevel: this.maxLevel });
-        });
-        
-        this.add.text(this.scale.width / 2, this.scale.height / 2 + 30, "Return to Map", {
-            fontSize: "22px",
-            color: "#5a341d"
-        }).setOrigin(0.5).setInteractive({ useHandCursor: true }).on('pointerdown', () => {
-            playButtonClickSfx(this);
-            this.returnToMap();
-        });
+        return { width, height, depth, fade, panelShadow, panel };
     }
 
-    showVictory() {
-        const victoryText = this.add.text(this.scale.width / 2, this.scale.height / 2, 'You Win!', {
-            fontSize: '60px',
-            color: '#043D8C',
-            stroke: '#ffffff',
-            strokeThickness: 6
-        }).setOrigin(0.5);
-        this.time.delayedCall(3000, () => {
-            victoryText.destroy();
-            this.scene.start("MapScene");
-        });
+    _button(x, y, label, cb, depth = 30) {
+        const shadow = this.add.rectangle(x + 3, y + 4, 190, 44, 0x7e4a2c, 0.2).setDepth(depth - 1);
+        const bg = this.add.rectangle(x, y, 190, 44, this.palette.buttonFill)
+            .setStrokeStyle(3, this.palette.buttonBorder, 0.95)
+            .setInteractive({ useHandCursor: true })
+            .setDepth(depth);
+        const text = this.add.text(x, y, label, {
+            fontSize: "24px",
+            color: this.palette.buttonText,
+            fontStyle: "bold",
+        }).setOrigin(0.5).setDepth(depth + 1).setInteractive({ useHandCursor: true });
+
+        const activateHover = () => {
+            bg.setFillStyle(this.palette.buttonHover, 1);
+            text.setScale(1.03);
+        };
+
+        const deactivateHover = () => {
+            bg.setFillStyle(this.palette.buttonFill, 1);
+            text.setScale(1);
+        };
+
+        const handleClick = () => {
+            playButtonClickSfx(this);
+            cb();
+        };
+
+        bg.on("pointerover", activateHover);
+        text.on("pointerover", activateHover);
+        bg.on("pointerout", deactivateHover);
+        text.on("pointerout", deactivateHover);
+        bg.on("pointerdown", handleClick);
+        text.on("pointerdown", handleClick);
+
+        return this.add.container(0, 0, [shadow, bg, text]).setDepth(depth);
+    }
+
+    showLevelComplete() {
+        const { width, height, depth } = this._overlay();
+        this.add.text(width / 2, height / 2 - 112, "Level Complete", {
+            fontSize: "44px",
+            color: this.palette.win,
+            fontStyle: "bold"
+        }).setOrigin(0.5).setDepth(depth + 4);
+        this.add.text(width / 2, height / 2 - 46, `Score: ${this.score}`, {
+            fontSize: "28px",
+            color: "#6b3b21",
+            fontStyle: "bold"
+        }).setOrigin(0.5).setDepth(depth + 4);
+        this.add.text(width / 2, height / 2 + 2, "Olive is ready for the next level.", {
+            fontSize: "21px",
+            color: "#82553a"
+        }).setOrigin(0.5).setDepth(depth + 4);
+        this._button(width / 2, height / 2 + 78, "Next Level", () => {
+            this.scene.restart({ level: this.currentLevel + 1, maxLevel: this.maxLevel });
+        }, depth + 5);
+        this._button(width / 2, height / 2 + 132, "Back to Map", () => this.returnToMap(), depth + 5);
     }
 
     showGameOver() {
-        this.add.rectangle(
-            this.scale.width / 2,
-            this.scale.height / 2,
-            this.scale.width,
-            this.scale.height,
-            0x000000,
-            0.35
-        );
-
-        this.add.rectangle(
-            this.scale.width / 2,
-            this.scale.height / 2,
-            480,
-            260,
-            0xfff8ef,
-            0.98
-        ).setStrokeStyle(3, 0x8d6237);
-
-        this.add.text(this.scale.width / 2, this.scale.height / 2 - 70, "Game Over", {
-            fontSize: "44px",
-            color: "#ff0000",
+        const { width, height, depth } = this._overlay();
+        this.add.text(width / 2, height / 2 - 108, "Game Over", {
+            fontSize: "46px",
+            color: this.palette.lose,
             fontStyle: "bold"
-        }).setOrigin(0.5);
-
-        this.add.text(this.scale.width / 2, this.scale.height / 2 - 10, "Restart", {
+        }).setOrigin(0.5).setDepth(depth + 4);
+        this.add.text(width / 2, height / 2 - 48, `Score: ${this.score}`, {
             fontSize: "24px",
-            color: "#5a341d"
-        }).setOrigin(0.5).setInteractive({ useHandCursor: true }).on('pointerdown', () => {
-            playButtonClickSfx(this);
-            this.scene.restart({ level: this.currentLevel, maxLevel: this.maxLevel });
-        });
-
-        this.add.text(this.scale.width / 2, this.scale.height / 2 + 30, "Return to Map", {
+            color: "#6b3b21",
+            fontStyle: "bold"
+        }).setOrigin(0.5).setDepth(depth + 4);
+        this.add.text(width / 2, height / 2 + 4, "Try catching the ingredients again.", {
             fontSize: "22px",
-            color: "#5a341d"
-        }).setOrigin(0.5).setInteractive({ useHandCursor: true }).on('pointerdown', () => {
-            playButtonClickSfx(this);
-            this.returnToMap();
-        });
+            color: "#82553a"
+        }).setOrigin(0.5).setDepth(depth + 4);
+        this._button(width / 2, height / 2 + 78, "Retry Level", () => {
+            this.scene.restart({ level: this.currentLevel, maxLevel: this.maxLevel });
+        }, depth + 5);
+        this._button(width / 2, height / 2 + 132, "Back to Map", () => this.returnToMap(), depth + 5);
     }
 
     showVictory() {
-        this.add.rectangle(
-            this.scale.width / 2,
-            this.scale.height / 2,
-            this.scale.width,
-            this.scale.height,
-            0x000000,
-            0.35
-        );
-
-        this.add.rectangle(
-            this.scale.width / 2,
-            this.scale.height / 2,
-            480,
-            260,
-            0xfff8ef,
-            0.98
-        ).setStrokeStyle(3, 0x8d6237);
-
-        this.add.text(this.scale.width / 2, this.scale.height / 2 - 70, "You Win!", {
-            fontSize: "44px",
-            color: "#2f9e44",
-            fontStyle: "bold"
-        }).setOrigin(0.5);
-
-        this.add.text(this.scale.width / 2, this.scale.height / 2 + 30, "Return to Map", {
-            fontSize: "22px",
-            color: "#5a341d"
-        }).setOrigin(0.5).setInteractive({ useHandCursor: true }).on('pointerdown', () => {
-            playButtonClickSfx(this);
-            this.returnToMap();
-        });
-
-        const wins = this.registry.get('wins');
+        const wins = this.registry.get('wins') || {};
         wins.india = true;
         this.registry.set('wins', wins);
+
+        const { width, height, depth } = this._overlay();
+        this.add.text(width / 2, height / 2 - 108, "Victory!", {
+            fontSize: "46px",
+            color: this.palette.win,
+            fontStyle: "bold"
+        }).setOrigin(0.5).setDepth(depth + 4);
+        this.add.text(width / 2, height / 2 - 48, "All ingredients collected!", {
+            fontSize: "24px",
+            color: "#6b3b21"
+        }).setOrigin(0.5).setDepth(depth + 4);
+        this.add.text(width / 2, height / 2 + 4, `You completed all ${this.maxLevel} India levels.`, {
+            fontSize: "22px",
+            color: "#5a341d"
+        }).setOrigin(0.5).setDepth(depth + 4);
+        this._button(width / 2, height / 2 + 78, "Play Again", () => {
+            this.scene.restart({ level: 1, maxLevel: this.maxLevel });
+        }, depth + 5);
+        this._button(width / 2, height / 2 + 132, "Back to Map", () => this.returnToMap(), depth + 5);
     }
   checkOliveWin() {
     const wins = this.registry.get('wins') || {};

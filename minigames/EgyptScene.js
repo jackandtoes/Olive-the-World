@@ -243,6 +243,14 @@ class EgyptScene extends Phaser.Scene {
       score:      "#5a3b1d",
       shadow:     0xc79a57,
       highlight:  0xf0cc8b,
+      uiBorder: 0x9fad95,
+      overlay: 0x222620,
+      win: "#2f9e44",
+      lose: "#d94841",
+      buttonFill: 0xf1efe4,
+      buttonBorder: 0x97a38b,
+      buttonText: "#5a5143",
+      buttonHover: 0xe3eadb,
     };
 
     this.GROUND_Y = height - 80;
@@ -332,32 +340,13 @@ class EgyptScene extends Phaser.Scene {
       repeat: -1
     });
 
-    // Game over group (hidden initially)
-    this.gameOverGroup = this.add.container(width / 2, this.GROUND_Y - 60);
-    this.gameOverGroup.setVisible(false);
-
-    const goBox = this.add.rectangle(0, 0, 360, 90, this.palette.bg)
-      .setStrokeStyle(3, this.palette.ground);
-    const goText = this.add.text(0, -18, "GAME OVER", {
-      fontSize: "26px",
-      fontFamily: "monospace",
-      color: this.palette.text,
-      fontStyle: "bold"
-    }).setOrigin(0.5);
-    const restartText = this.add.text(0, 20, "PRESS SPACE OR TAP TO RESTART", {
-      fontSize: "12px",
-      fontFamily: "monospace",
-      color: this.palette.text
-    }).setOrigin(0.5);
-    this.gameOverGroup.add([goBox, goText, restartText]);
-
     this.winBannerShown = false;
     this.winBanner = this.add.container(width / 2, 90);
     this.winBanner.setDepth(12);
     this.winBanner.setVisible(false);
-    const bannerShadow = this.add.rectangle(6, 6, 390, 70, 0x8d622b, 0.22);
-    const bannerPanel = this.add.rectangle(0, 0, 390, 70, 0xffefc8)
-      .setStrokeStyle(3, this.palette.ground);
+    const bannerShadow = this.add.rectangle(6, 6, 390, 70, 0x5e685d, 0.14);
+    const bannerPanel = this.add.rectangle(0, 0, 390, 70, 0xf6f4eb, 0.98)
+      .setStrokeStyle(3, this.palette.uiBorder);
     const bannerText = this.add.text(0, 0, "YOU EARNED YOUR BADGE!", {
       fontSize: "26px",
       fontFamily: "monospace",
@@ -369,7 +358,11 @@ class EgyptScene extends Phaser.Scene {
     // Input
     this.input.keyboard.on("keydown-SPACE", () => this.handleJump());
     this.input.keyboard.on("keydown-UP", () => this.handleJump());
-    this.input.on("pointerdown", () => this.handleJump());
+    this.input.on("pointerdown", () => {
+      if (!this.gameOver) {
+        this.handleJump();
+      }
+    });
 
     // ESC to map
     this.input.keyboard.on("keydown-ESC", () => this.returnToMap());
@@ -427,6 +420,58 @@ class EgyptScene extends Phaser.Scene {
   restartGame() {
     const hiScore = Math.max(this.score, this.hiScore);
     this.scene.restart({ hiScore });
+  }
+
+  _overlay() {
+    const { width, height } = this.scale;
+    const depth = 1000;
+
+    const fade = this.add.rectangle(width / 2, height / 2, width, height, this.palette.overlay, 0.38)
+      .setDepth(depth);
+    const panelShadow = this.add.rectangle(width / 2 + 6, height / 2 + 8, 530, 380, 0x5e685d, 0.14)
+      .setDepth(depth + 1);
+    const panel = this.add.rectangle(width / 2, height / 2, 530, 380, 0xf6f4eb, 0.98)
+      .setStrokeStyle(3, this.palette.uiBorder, 1)
+      .setDepth(depth + 2);
+
+    return { width, height, depth, fade, panelShadow, panel };
+  }
+
+  _button(x, y, label, cb, depth = 30) {
+    const shadow = this.add.rectangle(x + 3, y + 4, 190, 44, 0x7e4a2c, 0.2).setDepth(depth - 1);
+    const bg = this.add.rectangle(x, y, 190, 44, this.palette.buttonFill)
+      .setStrokeStyle(3, this.palette.buttonBorder, 0.95)
+      .setInteractive({ useHandCursor: true })
+      .setDepth(depth);
+    const text = this.add.text(x, y, label, {
+      fontSize: "24px",
+      color: this.palette.buttonText,
+      fontStyle: "bold",
+    }).setOrigin(0.5).setDepth(depth + 1).setInteractive({ useHandCursor: true });
+
+    const activateHover = () => {
+      bg.setFillStyle(this.palette.buttonHover, 1);
+      text.setScale(1.03);
+    };
+
+    const deactivateHover = () => {
+      bg.setFillStyle(this.palette.buttonFill, 1);
+      text.setScale(1);
+    };
+
+    const handleClick = () => {
+      playButtonClickSfx(this);
+      cb();
+    };
+
+    bg.on("pointerover", activateHover);
+    text.on("pointerover", activateHover);
+    bg.on("pointerout", deactivateHover);
+    text.on("pointerout", deactivateHover);
+    bg.on("pointerdown", handleClick);
+    text.on("pointerdown", handleClick);
+
+    return this.add.container(0, 0, [shadow, bg, text]).setDepth(depth);
   }
 
   createBackdropPyramids(width) {
@@ -1209,6 +1254,28 @@ class EgyptScene extends Phaser.Scene {
       this.addCoin(Math.floor(this.score / 200));
     }
   }
+
+  showGameOverPopup() {
+    const { width, height, depth } = this._overlay();
+    this.add.text(width / 2, height / 2 - 108, "Game Over", {
+      fontSize: "46px",
+      color: this.palette.lose,
+      fontStyle: "bold",
+    }).setOrigin(0.5).setDepth(depth + 4);
+    this.add.text(width / 2, height / 2 - 48, `Score: ${this.padScore(this.score)}`, {
+      fontSize: "24px",
+      color: "#6b3b21",
+      fontStyle: "bold",
+    }).setOrigin(0.5).setDepth(depth + 4);
+    this.add.text(width / 2, height / 2 + 4, "Dodge the desert obstacles again.", {
+      fontSize: "22px",
+      color: "#82553a",
+    }).setOrigin(0.5).setDepth(depth + 4);
+
+    this._button(width / 2, height / 2 + 78, "Retry Level", () => this.restartGame(), depth + 5);
+    this._button(width / 2, height / 2 + 132, "Back to Map", () => this.returnToMap(), depth + 5);
+  }
+
   triggerGameOver() {
     this.gameOver = true;
 
@@ -1219,9 +1286,7 @@ class EgyptScene extends Phaser.Scene {
     // Flash red
     this.cameras.main.flash(300, 255, 50, 50, false);
 
-    // Show game over popup
-    this.gameOverGroup.setVisible(true);
-    this.gameOverGroup.setPosition(this.scale.width / 2, this.GROUND_Y - 70);
+    this.showGameOverPopup();
 
     // Update score display
     this.scoreText.setText("HI " + this.padScore(this.hiScore) + "  " + this.padScore(this.score));
