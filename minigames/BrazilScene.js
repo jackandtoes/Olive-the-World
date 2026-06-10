@@ -194,31 +194,32 @@ class BrazilCutscene extends Phaser.Scene {
 
 const BRAZIL_PLATFORM_LEVELS = [
   {
-    heights: [4, 7, 5, null, 5, 4, null, 4, 4], // larger number = lower platform, null = no platform
+    heights: [4, 5, 4, null, 6, 5, null, 6, 5], // larger number = lower platform, null = no platform
     weather: "afternoon",
     ingredient: "Beans",
   },
   {
-    heights: [5, 4, null, 4, 6, 4, 6, 5, 6],
+    heights: [5, 4, null, 4, 6, 4, null, 5, 6],
     weather: "twilight",
     ingredient: "Rice",
   },
   {
-    heights: [6, null, 6, 4, 6, 4, 5, null, 4],
+    heights: [6, null, 6, 4, 6, 4, 5, null, 5],
     weather: "night",
     ingredient: "Sausage",
   },
   {
-    heights: [4, null, 3, 6, null, 6, null, 5, 4],
+    heights: [6, null, 6, 5, 4, null, 5, null, 6],
     weather: "morning",
-    ingredient: "Greens",
+    ingredient: "Pork Ribs",
   },
 ];
 
 class BrazilScene extends Phaser.Scene {
   constructor() {
     super("BrazilScene");
-    this.sceneWidth = 220 * 9;
+    this.platformSpacing = 240;
+    this.sceneWidth = this.platformSpacing * 9;
   }
 
   init(data) {
@@ -251,14 +252,28 @@ class BrazilScene extends Phaser.Scene {
       buttonHover: 0xe3eadb,
     };
 
+    this.TOP_UI_HEIGHT = 96;
   }
 
   preload() {
     this.load.audio("brazil_music", "assets/brazil/cutscene/brazil_music.mp3");
     this.load.image("oliveOverjoyed", "assets/olive_overjoyed.PNG");
-    this.load.image("background", "assets/brazil/brazil_background.PNG");
+    this.load.image("mountain", "assets/brazil/brazil_mountains.PNG");
+    this.load.image("sky", "assets/brazil/brazil_sky.PNG");
     this.load.image("skyline", "assets/brazil/brazil_skyline.PNG");
     this.load.image("buildings", "assets/brazil/brazil_buildings.PNG");
+
+    this.load.image("beans", "assets/brazil/brazil_blackbeansa.png");
+    this.load.image("rice", "assets/brazil/brazil_ricea.png");
+    this.load.image("sausage", "assets/brazil/brazil_sausagea.png");
+    this.load.image("ribs", "assets/brazil/brazil_porkribsa.png");
+
+    this.load.image("float_a_4", "assets/brazil/float_a_4.png");
+    this.load.image("float_b_4", "assets/brazil/float_b_4.png");
+    this.load.image("float_a_5", "assets/brazil/float_a_5.png");
+    this.load.image("float_b_5", "assets/brazil/float_b_5.png");
+    this.load.image("float_a_6", "assets/brazil/float_a_6.png");
+    this.load.image("float_b_6", "assets/brazil/float_b_6.png");
   }
 
   create() {
@@ -292,7 +307,7 @@ class BrazilScene extends Phaser.Scene {
     this.cameras.main.setBounds(0, 0, this.sceneWidth, 600);
     this.cameras.main.startFollow(this.player, true, 0.5, 0.5);
 
-    this.showBanner(`Level ${this.currentLevel}`, `Collect ${this.levelData.ingredient} and reach the goal.`);
+    //this.showBanner(`Level ${this.currentLevel}`, `Collect ${this.levelData.ingredient} and reach the goal.`);
   }
 
   startBrazilMusic() {
@@ -381,7 +396,7 @@ class BrazilScene extends Phaser.Scene {
         0xffffff
       );
       star.setScrollFactor(Math.random() * 0.1);
-      star.setDepth(-24);
+      star.setDepth(-27);
       star.setVisible(false);
       this.stars.push(star);
     }
@@ -391,16 +406,20 @@ class BrazilScene extends Phaser.Scene {
     const viewportWidth = this.scale.width;
     const viewportHeight = this.scale.height;
     const maxCameraScroll = this.sceneWidth - viewportWidth;
-    const backgroundFactor = 0.18;
+    const skyFactor = 0.18;
+    const mountainFactor = 0.28;
     const skylineFactor = 0.38;
     const buildingsFactor = 0.62;
-    const backgroundSource = this.textures.get("background").getSourceImage();
+    const skySource = this.textures.get("sky").getSourceImage();
+    const mountainSource = this.textures.get("mountain").getSourceImage();
     const skylineSource = this.textures.get("skyline").getSourceImage();
     const buildingsSource = this.textures.get("buildings").getSourceImage();
-    const backgroundWidth = viewportWidth + maxCameraScroll * backgroundFactor;
+    const skyWidth = viewportWidth + maxCameraScroll * skyFactor;
+    const mountainWidth = viewportWidth + maxCameraScroll * mountainFactor;
     const skylineWidth = viewportWidth + maxCameraScroll * skylineFactor;
     const buildingsWidth = viewportWidth + maxCameraScroll * buildingsFactor;
-    const backgroundHeight = backgroundWidth * (backgroundSource.height / backgroundSource.width);
+    const skyHeight = skyWidth * (skySource.height / skySource.width);
+    const mountainHeight = mountainWidth * (mountainSource.height / mountainSource.width);
     const skylineHeight = skylineWidth * (skylineSource.height / skylineSource.width);
     const buildingsHeight = buildingsWidth * (buildingsSource.height / buildingsSource.width);
 
@@ -409,19 +428,25 @@ class BrazilScene extends Phaser.Scene {
       .setScrollFactor(0)
       .setDepth(-30);
 
-    this.bg1 = this.add.image(0, 0, "background")
+    this.bg1 = this.add.image(0, 0, "sky")
       .setOrigin(0, 0)
-      .setScrollFactor(backgroundFactor)
+      .setScrollFactor(skyFactor)
       .setDepth(-28)
-      .setDisplaySize(backgroundWidth, backgroundHeight);
+      .setDisplaySize(skyWidth, skyHeight);
 
-    this.bg2 = this.add.image(0, -180, "skyline")
+    this.bg2 = this.add.image(0, 0, "mountain")
+      .setOrigin(0, 0)
+      .setScrollFactor(mountainFactor)
+      .setDepth(-26)
+      .setDisplaySize(mountainWidth, mountainHeight);
+
+    this.bg3 = this.add.image(0, -180, "skyline")
       .setOrigin(0, 0)
       .setScrollFactor(skylineFactor)
       .setDepth(-22)
       .setDisplaySize(skylineWidth, skylineHeight);
 
-    this.bg3 = this.add.image(0, viewportHeight + 28, "buildings")
+    this.bg4 = this.add.image(0, viewportHeight + 28, "buildings")
       .setOrigin(0, 1)
       .setScrollFactor(buildingsFactor)
       .setDepth(-18)
@@ -430,17 +455,46 @@ class BrazilScene extends Phaser.Scene {
 
   createPlatforms() {
     this.platforms = this.physics.add.staticGroup();
+    const platformHitboxWidth = 160;
+    const floatWidthFactor = 0.85;
+    const heightVariantCounters = {};
 
     for (const [xIndex, yIndex] of this.levelData.heights.entries()) {
       if (typeof yIndex !== "number") {
         continue;
       }
 
-      const x = 220 * xIndex + 110;
+      const x = this.platformSpacing * xIndex + this.platformSpacing / 2;
       const y = yIndex * 70;
       const platform = this.platforms.create(x, y, "brazilPlatformBlock");
       platform.refreshBody();
+      platform.setVisible(false);
+      platform.body.setSize(platformHitboxWidth, platform.body.height);
+      platform.body.setOffset((220 - platformHitboxWidth) / 2, 0);
+
+      const occurrence = (heightVariantCounters[yIndex] = (heightVariantCounters[yIndex] || 0) + 1);
+      const floatKey = this.getFloatImageKey(yIndex, occurrence);
+      const floatImage = this.add.image(x, this.scale.height, floatKey)
+        .setOrigin(0.5, 1)
+        .setScrollFactor(1, 0);
+
+      const floatScale = this.scale.height / floatImage.height;
+      floatImage.setDisplaySize(floatImage.width * floatScale * floatWidthFactor, this.scale.height);
     }
+  }
+
+  getFloatImageKey(height, occurrence) {
+    const variant = occurrence % 2 === 1 ? "a" : "b";
+    if (height === 4) {
+      return `float_${variant}_4`;
+    }
+    if (height === 5) {
+      return `float_${variant}_5`;
+    }
+    if (height === 6) {
+      return `float_${variant}_6`;
+    }
+    return "brazilPlatformBlock";
   }
 
   createPlayer() {
@@ -454,19 +508,41 @@ class BrazilScene extends Phaser.Scene {
   }
 
   createIngredient() {
+    const textureMap = {
+      "Beans": "beans",
+      "Rice": "rice",
+      "Sausage": "sausage",
+      "Pork Ribs": "ribs",
+    };
+
     const platformIndexes = this.levelData.heights
       .map((height, index) => ({ height, index }))
       .filter((platform) => Number.isFinite(platform.height));
+
     const goalIndex = platformIndexes[platformIndexes.length - 1].index;
-    const candidatePlatforms = platformIndexes.filter((platform) => platform.index > 0 && platform.index < goalIndex);
-    const spawnPlatforms = candidatePlatforms.length ? candidatePlatforms : platformIndexes;
+
+    const candidatePlatforms = platformIndexes.filter(
+      (platform) => platform.index > 0 && platform.index < goalIndex
+    );
+
+    const spawnPlatforms = candidatePlatforms.length
+      ? candidatePlatforms
+      : platformIndexes;
+
     const targetPlatform = spawnPlatforms[spawnPlatforms.length - 1];
+
     const ingredientIndex = targetPlatform.index;
     const ingredientHeight = this.levelData.heights[ingredientIndex] ?? 4;
-    const x = 220 * ingredientIndex + 110;
+
+    const x = this.platformSpacing * ingredientIndex + this.platformSpacing / 2;
     const y = ingredientHeight * 70 - 55;
 
-    this.ingredient = this.physics.add.sprite(x, y, "brazilIngredientBlock");
+    const texture = textureMap[this.levelData.ingredient] || "beans";
+
+    this.ingredient = this.physics.add.sprite(x, y, texture);
+
+    this.ingredient.setDisplaySize(48, 48);
+
     this.ingredient.body.setAllowGravity(false);
     this.ingredient.setImmovable(true);
 
@@ -485,7 +561,7 @@ class BrazilScene extends Phaser.Scene {
       .map((height, index) => ({ height, index }))
       .filter((platform) => Number.isFinite(platform.height));
     const targetPlatform = platformIndexes[Math.min(this.currentLevel, platformIndexes.length - 2)] || platformIndexes[0];
-    const x = 220 * targetPlatform.index + 110;
+    const x = this.platformSpacing * targetPlatform.index + this.platformSpacing / 2;
     const y = targetPlatform.height * 70 - 58;
 
     this.coin = this.physics.add.sprite(x, y, "brazilCoinBlock");
@@ -563,32 +639,59 @@ class BrazilScene extends Phaser.Scene {
     this.emitter.setScrollFactor(0);
   }
 
+  createPanel(x, y, width, height, alpha = 0.94) {
+    const shadow = this.add.rectangle(x + 3, y + 3, width, height, 0x7f8a78, 0.12);
+    const bg = this.add.rectangle(x, y, width, height, this.palette.uiPanel, alpha)
+      .setStrokeStyle(3, this.palette.uiBorder, 0.9);
+    return this.add.container(0, 0, [shadow, bg]);
+  }
+
   createUi() {
-    this.add.rectangle(this.scale.width / 2, 24, this.scale.width - 24, 42, 0xfff8ef, 0.92)
-      .setStrokeStyle(2, 0x9c6644, 1)
-      .setScrollFactor(0);
+    const width = this.scale.width;
+    const midY = this.TOP_UI_HEIGHT / 2;
 
-    this.levelText = this.add.text(18, 12, `Level ${this.currentLevel}/4`, {
-      fontSize: "20px",
-      color: "#5c3d2e",
+    this.add.rectangle(width / 2, midY, width, this.TOP_UI_HEIGHT, 0xf5f4ec, 0.98)
+      .setScrollFactor(0)
+      .setDepth(100);
+    this.add.rectangle(width / 2, this.TOP_UI_HEIGHT - 2, width, 4, this.palette.uiAccent, 0.95)
+      .setScrollFactor(0)
+      .setDepth(101);
+
+    this.levelPanel = this.createPanel(110, midY, 178, 48);
+    this.levelPanel.setScrollFactor(0).setDepth(102);
+    this.levelText = this.add.text(110, midY, `Level ${this.currentLevel}/4`, {
+      fontSize: "24px",
+      color: this.palette.uiText,
       fontStyle: "bold",
-    }).setScrollFactor(0);
+    }).setOrigin(0.5).setScrollFactor(0).setDepth(102);
 
-    this.ingredientText = this.add.text(this.scale.width / 2, 12, `${this.levelData.ingredient}: missing`, {
-      fontSize: "20px",
-      color: "#5c3d2e",
+    this.ingredientPanel = this.createPanel(width / 2, midY, 340, 50);
+    this.ingredientPanel.setScrollFactor(0).setDepth(102);
+    this.ingredientText = this.add.text(
+      width / 2,
+      midY,
+      `${this.levelData.ingredient}: missing`,
+      {
+        fontSize: "22px",
+        color: this.palette.uiText,
+        fontStyle: "bold",
+      }
+    ).setOrigin(0.5).setScrollFactor(0).setDepth(102);
+
+    this.coinPanel = this.createPanel(width - 108, midY, 182, 48);
+    this.coinPanel.setScrollFactor(0).setDepth(102);
+    this.coinText = this.add.text(width - 108, midY, `Coins: ${this.registry.get("currency") || 0}`, {
+      fontSize: "22px",
+      color: this.palette.uiText,
       fontStyle: "bold",
-    }).setOrigin(0.5, 0).setScrollFactor(0);
+    }).setOrigin(0.5).setScrollFactor(0).setDepth(102);
 
-    this.quitText = this.add.text(this.scale.width - 14, 12, "ESC to map", {
-      fontSize: "16px",
-      color: "#7f5539",
-    }).setOrigin(1, 0).setScrollFactor(0);
-
-    this.coinText = this.add.text(this.scale.width - 14, 30, `Coins: ${this.registry.get("currency") || 0}`, {
+    this.hintText = this.add.text(width / 2, 16, "ESC to return to map", {
       fontSize: "15px",
-      color: "#7f5539",
-    }).setOrigin(1, 0).setScrollFactor(0);
+      color: "#6d4a2e",
+      backgroundColor: "#fff5e800",
+      padding: { x: 10, y: 5 },
+    }).setOrigin(0.5, 0.7).setAlpha(0.88).setScrollFactor(0).setDepth(102);
   }
 
   createAnimations() {
@@ -632,19 +735,21 @@ class BrazilScene extends Phaser.Scene {
     this.bg1.setTint(current.color);
     this.bg2.setTint(current.color);
     this.bg3.setTint(current.color);
+    this.bg4.setTint(current.color);
     this.bgColor.fillColor = current.bgColor;
     this.emitter.setQuantity(current.particles);
     this.emitter.updateConfig({
       speedX: { min: -current.wind - 20, max: -current.wind }
     });
-    this.player.setTint(current.color);
+    //this.player.setTint(current.color);
 
     this.platforms.getChildren().forEach((platform) => {
       platform.setTint(current.color);
     });
-
     this.stars.forEach((star) => {
       star.setVisible(weather === "night");
+      star.setFillStyle(0xffffff);
+      star.setAlpha(0.8);
     });
   }
 
@@ -656,7 +761,13 @@ class BrazilScene extends Phaser.Scene {
     ingredient.disableBody(true, true);
     this.ingredientCollected = true;
     this.ingredientText.setText(`${this.levelData.ingredient}: collected`);
-    this.showToast("Ingredient collected");
+    //this.showToast("Ingredient collected");
+    if (this.ingredientText) {
+      this.tweens.add({
+        targets: this.ingredientText, scale: 1.08,
+        duration: 200, yoyo: true, repeat: 0
+      });
+    }
   }
 
   collectCoin(player, coin) {
@@ -670,7 +781,13 @@ class BrazilScene extends Phaser.Scene {
     if (this.coinText) {
       this.coinText.setText(`Coins: ${current + 1}`);
     }
-    this.showToast("Coin collected");
+    //this.showToast("Coin collected");
+    if (this.coinText) {
+      this.tweens.add({
+        targets: this.coinText, scale: 1.08,
+        duration: 200, yoyo: true, repeat: 0
+      });
+    }
   }
 
   tryFinishLevel() {
