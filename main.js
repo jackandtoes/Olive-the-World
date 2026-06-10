@@ -82,12 +82,8 @@ class StartScene extends Phaser.Scene {
   }
 
   create() {
-
     const width = this.scale.width;
     const height = this.scale.height;
-
-    // Start background music for the start scene
-    startBackgroundMusic(this);
 
     // Adds background 
     this.add.rectangle(width / 2, height / 2, width, height, 0x1a140f).setDepth(-30);
@@ -304,7 +300,7 @@ class IntroCutscene extends Phaser.Scene {
   }
 
   create() {
-    startBackgroundMusic(this);
+    stopBackgroundMusic();
 
     const width = this.scale.width;
     const height = this.scale.height;
@@ -338,19 +334,19 @@ class IntroCutscene extends Phaser.Scene {
       fill: "#fff4dd",
       backgroundColor: "#5a341d",
       padding: { x: 14, y: 8 }
-    }).setOrigin(0.5);
+    }).setOrigin(0.5).setShadow(2, 2, "#000000", 0, false, true);
 
     this.cutsceneProgress = this.add.text(width / 2, 36, `1 / ${this.slides.length}`, {
       fontSize: "24px",
       fill: "#fff4dd"
-    }).setOrigin(0.5);
+    }).setOrigin(0.5).setShadow(2, 2, "#000000", 0, false, true);
 
     this.skipButton = this.add.text(width - 28, 28, "Skip", {
       fontSize: "22px",
       fill: "#fff4dd",
       backgroundColor: "#5a341d",
       padding: { x: 12, y: 8 }
-    }).setOrigin(1, 0).setInteractive({ useHandCursor: true });
+    }).setOrigin(1, 0).setInteractive({ useHandCursor: true }).setShadow(2, 2, "#000000", 0, false, true);
     this.skipButton.on("pointerdown", () => {
       playButtonClickSfx(this);
       this.skipCutscene();
@@ -362,7 +358,7 @@ class IntroCutscene extends Phaser.Scene {
       duration: 450,
       ease: "Sine.easeOut",
       onComplete: () => {
-        //this.playBirthdaySong();
+        this.playBirthdaySong();
       }
     });
 
@@ -387,7 +383,7 @@ class IntroCutscene extends Phaser.Scene {
           align: "center",
           wordWrap: { width: this.scale.width - 80 }
         }
-      ).setOrigin(0.5);
+      ).setOrigin(0.5).setShadow(2, 2, "#000000", 0, false, true);
     }
 
     this.animateText(this.dialogueText, dialogueText, 20);
@@ -526,10 +522,12 @@ class MapScene extends Phaser.Scene {
 
   preload() {
     this.load.image("mapBg", "assets/map (2).png");
-    this.load.image("flagPhilippines", "assets/Philippines_flag.png");
-    this.load.image("flagMexico", "assets/Mexico_flag.png");
-    this.load.image("flagEgypt", "assets/Egypt_flag.png");
-    this.load.image("flagItaly", "assets/Italy_flag.png");
+    this.load.image("philippines_landmark", "assets/landmarks/philippines_landmark.png");
+    this.load.image("mexico_landmark", "assets/landmarks/mexico_landmark.png");
+    this.load.image("egypt_landmark", "assets/landmarks/egypt_landmark.png");
+    this.load.image("italy_landmark", "assets/landmarks/italy_landmark.png");
+    this.load.image("india_landmark", "assets/landmarks/india_landmark.png");
+    this.load.image("brazil_landmark", "assets/landmarks/brazil_landmark.png");
     this.load.image("hatChef", "assets/hats/hat_chef.PNG");
     this.load.image("hatJester", "assets/hats/hat_jester.PNG");
     this.load.image("hatPropeller", "assets/hats/hat_propeller.PNG");
@@ -542,11 +540,11 @@ class MapScene extends Phaser.Scene {
   }
 
   init(data) {
-    if (!this.registry.has('equippedItems')) {
-      this.registry.set('equippedItems', { hat: null });
-    }
     if (!this.registry.has('currency')) {
       this.registry.set('currency', 0);
+    }
+    if (!this.registry.has('equippedItems')) {
+      this.registry.set('equippedItems', { hat: null });
     }
     if (!this.registry.has('ownedItems')) {
       this.registry.set('ownedItems', {});
@@ -556,6 +554,9 @@ class MapScene extends Phaser.Scene {
     }
     if (!this.registry.has('seenCutscenes')) {
       this.registry.set('seenCutscenes', { mexico: false, italy: false, philippines: false, egypt: false, brazil: false, india: false });
+    }
+    if (!this.registry.has('lastMapPosition')) {
+      this.registry.set('lastMapPosition', null);
     }
   }
 
@@ -579,112 +580,19 @@ class MapScene extends Phaser.Scene {
     this.cameras.main.setZoom(2.5);
 
     // Top-left navigation buttons
-    const navButtonStyle = {
-      fontSize: "10px",
-      fill: "#000000",
-      backgroundColor: "#ffc4e3",
-      padding: { x: 10, y: 5 }
-    };
-
-    const returnButton = this.add.text(250, 190, "Return", navButtonStyle)
-      .setOrigin(0, 0)
-      .setInteractive({ useHandCursor: true })
-      .setScrollFactor(0)
-      .setDepth(30);
-
-    returnButton.on("pointerover", () => {
-      this.tweens.add({
-        targets: returnButton,
-        scaleX: 1.05,
-        scaleY: 1.05,
-        duration: 140,
-        ease: "Sine.easeOut"
-      });
-      returnButton.setBackgroundColor("#ef7cac");
-    });
-
-    returnButton.on("pointerout", () => {
-      this.tweens.add({
-        targets: returnButton,
-        scaleX: 1,
-        scaleY: 1,
-        duration: 140,
-        ease: "Sine.easeOut",
-      });
-      returnButton.setBackgroundColor("#ffc4e3");
-    });
-
-    returnButton.on("pointerdown", () => {
+    this.createMapNavButton(280, 202, 60, "Return", () => {
       playButtonClickSfx(this);
       this.scene.start("StartScene");
     });
 
-
-    //Store Button
-    const storeButton = this.add.text(310, 190, "Store", navButtonStyle)
-      .setOrigin(0, 0)
-      .setInteractive({ useHandCursor: true })
-      .setScrollFactor(0)
-      .setDepth(30);
-
-    storeButton.on("pointerover", () => {
-      this.tweens.add({
-        targets: storeButton,
-        scaleX: 1.05,
-        scaleY: 1.05,
-        duration: 140,
-        ease: "Sine.easeOut"
-      });
-      storeButton.setBackgroundColor("#ef7cac");
-    });
-
-    storeButton.on("pointerout", () => {
-      this.tweens.add({
-        targets: storeButton,
-        scaleX: 1,
-        scaleY: 1,
-        duration: 140,
-        ease: "Sine.easeOut",
-      });
-      storeButton.setBackgroundColor("#ffc4e3");
-    });
-
-    storeButton.on("pointerdown", () => {
+    this.createMapNavButton(347, 202, 54, "Store", () => {
       playButtonClickSfx(this);
       this.scene.start("Store");
     });
 
-    //Inventory Button
-    const inventoryButton = this.add.text(365, 190, "Inventory", navButtonStyle)
-      .setOrigin(0, 0)
-      .setInteractive({ useHandCursor: true })
-      .setScrollFactor(0)
-      .setDepth(30);
-    inventoryButton.on("pointerdown", () => {
+    this.createMapNavButton(425, 202, 84, "Inventory", () => {
       playButtonClickSfx(this);
       this.scene.start("Inventory");
-    });
-
-    inventoryButton.on("pointerover", () => {
-      this.tweens.add({
-        targets: inventoryButton,
-        scaleX: 1.05,
-        scaleY: 1.05,
-        duration: 140,
-        ease: "Sine.easeOut"
-      });
-      inventoryButton.setBackgroundColor("#ef7cac");
-    });
-
-    inventoryButton.on("pointerout", () => {
-      this.tweens.add({
-        targets: inventoryButton,
-        scaleX: 1,
-        scaleY: 1,
-        duration: 140,
-        ease: "Sine.easeOut",
-      });
-      inventoryButton.setBackgroundColor("#ffc4e3");
     });
 
     //Settings Button
@@ -726,23 +634,24 @@ class MapScene extends Phaser.Scene {
     this.player.body.setSize(22, 22);
     this.player.body.setOffset(6, 6);
     this.player.setDepth(5);
+    this.restoreMapPosition();
 
     this.cursors = this.input.keyboard.createCursorKeys();
     this.keys = this.input.keyboard.addKeys('W,A,S,D');
     this.countries = [];
 
-    this.createCountry("Mexico", width * 0.3, height * 0.44,
-      "Whack piñatas.\nAvoid spicy chiles!", "MexicoCutscene", "flagMexico");
-    this.createCountry("Italy", width * 0.70, height * 0.35,
-      "Fix pasta pipes.\nServe the perfect plate!", "ItalyCutscene", "flagItaly");
-    this.createCountry("India", width * 0.62, height * 0.27,
-      "A quick visit to India.\nTry the India scene!", "IndiaScene", "flagIndia");
-    this.createCountry("Philippines", width * 1.1, height * 0.5,
-      "Collect lumpia ingredients.\nAvoid traffic!", "PhilippinesCutscene", "flagPhilippines");
-    this.createCountry("Egypt", width * 0.76, height * 0.42,
-      "Run in the desert.\nDodge palm trees and flying falafels!", "EgyptCutscene", "flagEgypt");
-    this.createCountry("Brazil", width * 0.45, height * 0.65,
-      "Collect carnival ingredients.\nJump past floats and hazards!", "BrazilCutscene", "BrazilScene", "flagBrazil");
+    this.createCountry("Mexico", width * 0.29, height * 0.46,
+      "Whack piñatas.\nAvoid spicy chiles!", "MexicoCutscene", "mexico_landmark");
+    this.createCountry("Italy", width * 0.68, height * 0.38,
+      "Fix pasta pipes.\nServe the perfect plate!", "ItalyCutscene", "italy_landmark");
+    this.createCountry("India", width * 0.915, height * 0.50,
+      "A quick visit to India.\nTry the India scene!", "IndiaCutscene", "india_landmark");
+    this.createCountry("Philippines", width * 1.06, height * 0.5,
+      "Collect lumpia ingredients.\nAvoid traffic!", "PhilippinesCutscene", "philippines_landmark");
+    this.createCountry("Egypt", width * 0.73, height * 0.46,
+      "Run in the desert.\nDodge palm trees and flying falafels!", "EgyptCutscene", "egypt_landmark");
+    this.createCountry("Brazil", width * 0.45, height * 0.62,
+      "Collect carnival ingredients.\nJump past floats and hazards!", "BrazilCutscene", "brazil_landmark");
     this.createInfoPanel();
     this.updatePlayerAppearance();
 
@@ -750,7 +659,7 @@ class MapScene extends Phaser.Scene {
   }
 
   createCountry(name, x, y, description, sceneName, flagKey) {
-    const landmark = this.add.image(x, y, flagKey).setScale(0.6).setDepth(1);
+    const landmark = this.add.image(x, y, flagKey).setScale(0.04).setDepth(1);
     this.add.text(x, y - 40, name, {
       fontSize: "18px",
       fill: "#000"
@@ -765,6 +674,75 @@ class MapScene extends Phaser.Scene {
       radius: 60
     });
   }
+
+  saveMapPosition() {
+    if (!this.player) {
+      return;
+    }
+
+    this.registry.set('lastMapPosition', {
+      x: this.player.x,
+      y: this.player.y
+    });
+  }
+
+  restoreMapPosition() {
+    const lastMapPosition = this.registry.get('lastMapPosition');
+
+    if (!lastMapPosition) {
+      return;
+    }
+
+    const bounds = this.physics.world.bounds;
+    this.player.setPosition(
+      Phaser.Math.Clamp(lastMapPosition.x, bounds.x, bounds.right),
+      Phaser.Math.Clamp(lastMapPosition.y, bounds.y, bounds.bottom)
+    );
+  }
+
+  createMapNavButton(x, y, width, label, cb) {
+    const content = this.add.container(x, y).setScrollFactor(0).setDepth(30);
+    const buttonHeight = 24;
+    const shadow = this.add.rectangle(2, 2, width, buttonHeight, 0x7e4a2c, 0.08);
+    const bg = this.add.rectangle(0, 0, width, buttonHeight, 0xf6f4eb, 0.98)
+      .setStrokeStyle(2, 0x97a38b, 0.95);
+    const hitTarget = this.add.rectangle(0, 0, width, buttonHeight, 0xffffff, 0.001)
+      .setInteractive({ useHandCursor: true });
+    const text = this.add.text(0, 0, label, {
+      fontSize: "10px",
+      fill: "#5a5143",
+      fontStyle: "bold"
+    }).setOrigin(0.5);
+
+    const activateHover = () => {
+      bg.setFillStyle(0xe3eadb, 1);
+      this.tweens.add({
+        targets: [shadow, bg, text],
+        scaleX: 1.05,
+        scaleY: 1.05,
+        duration: 140,
+        ease: "Sine.easeOut"
+      });
+    };
+
+    const deactivateHover = () => {
+      bg.setFillStyle(0xf6f4eb, 0.98);
+      this.tweens.add({
+        targets: [shadow, bg, text],
+        scaleX: 1,
+        scaleY: 1,
+        duration: 140,
+        ease: "Sine.easeOut"
+      });
+    };
+
+    hitTarget.on("pointerover", activateHover);
+    hitTarget.on("pointerout", deactivateHover);
+    hitTarget.on("pointerdown", cb);
+    content.add([shadow, bg, text, hitTarget]);
+    return content;
+  }
+
   // Creates the info panel that appears when the player is near a country landmark
   createInfoPanel() {
     this.infoPanel = this.add.container(0, 0);
@@ -793,6 +771,7 @@ class MapScene extends Phaser.Scene {
 
     const startCountryGame = () => {
       if (this.currentCountry) {
+        this.saveMapPosition();
         playButtonClickSfx(this);
         stopBackgroundMusic();
         this.scene.start(this.getCountrySceneName(this.currentCountry));
@@ -847,6 +826,9 @@ class MapScene extends Phaser.Scene {
     if (country.name === "Brazil" && (wins.brazil || seenCutscenes.brazil)) {
       return "BrazilScene";
     }
+    if (country.name === "India" && (wins.india || seenCutscenes.india)) {
+      return "IndiaScene";
+    }
     return country.sceneName;
   }
 
@@ -891,7 +873,6 @@ class MapScene extends Phaser.Scene {
   update() {
     const speed = 125;
 
-    // Handle player movement (Arrow keys and WASD)
     this.player.body.setVelocity(0);
     if (this.cursors.left.isDown || this.keys.A.isDown) {
       this.player.body.setVelocityX(-speed);
@@ -932,9 +913,7 @@ class MapScene extends Phaser.Scene {
 
   checkOliveWin() {
     const wins = this.registry.get('wins') || {};
-    if (wins.italy) {
-      this.scene.start("StartScene");
-    }
+    return wins.italy && wins.philippines && wins.egypt && wins.mexico && wins.india && wins.brazil;
   }
 
 }
@@ -1006,8 +985,6 @@ class Store extends Phaser.Scene {
     this.input.keyboard.on("keydown-ESC", () => this.scene.start("MapScene"));
   }
 
-
-
   _storeItemLabel(owned, key) {
     if (owned[key]) return "Owned";
     return "Click to buy";
@@ -1064,7 +1041,7 @@ class Inventory extends Phaser.Scene {
       fill: "#6b3e1f",
       fontStyle: "bold"
     }).setOrigin(0.5);
-    this.add.text(width / 2, 98, "Collect tokens from each country to fill your passport.", {
+    this.add.text(width / 2, 98, "Collect stamps from each country to fill your passport.", {
       fontSize: "18px",
       fill: "#9a6b3d"
     }).setOrigin(0.5);
@@ -1102,12 +1079,12 @@ class Inventory extends Phaser.Scene {
 
     const cards = [
        { section: "Accessories", label: "No Hat", unlocked: true, texture: "oliveOverjoyed", tokenWidth: 74, tokenHeight: 74, ribbon: equippedItems.hat === null ? "Equipped" : "Click to unequip", accessoryKey: null },
-      { section: "Country Tokens", label: "Mexico", unlocked: wins.mexico, texture: "mexico_token", tokenWidth: 150, tokenHeight: 150, ribbon: "Collected" },
-      { section: "Country Tokens", label: "Italy", unlocked: wins.italy, texture: "italy_token", tokenWidth: 150, tokenHeight: 150, ribbon: "Collected" },
-      { section: "Country Tokens", label: "Philippines", unlocked: wins.philippines, texture: "philip_token", tokenWidth: 150, tokenHeight: 150, ribbon: "Collected" },
-      { section: "Country Tokens", label: "Egypt", unlocked: wins.egypt, texture: "egypt_token", tokenWidth: 150, tokenHeight: 150, ribbon: "Collected" },
-      { section: "Country Tokens", label: "India", unlocked: wins.india, texture: "india_token", tokenWidth: 150, tokenHeight: 150, ribbon: "Collected" },
-      { section: "Country Tokens", label: "Brazil", unlocked: wins.brazil, texture: "brazil_token", tokenWidth: 150, tokenHeight: 150, ribbon: "Collected" },
+      { section: "Country Stamps", label: "Mexico", unlocked: wins.mexico, texture: "mexico_token", tokenWidth: 150, tokenHeight: 150, ribbon: "Collected" },
+      { section: "Country Stamps", label: "Italy", unlocked: wins.italy, texture: "italy_token", tokenWidth: 150, tokenHeight: 150, ribbon: "Collected" },
+      { section: "Country Stamps", label: "Philippines", unlocked: wins.philippines, texture: "philip_token", tokenWidth: 150, tokenHeight: 150, ribbon: "Collected" },
+      { section: "Country Stamps", label: "Egypt", unlocked: wins.egypt, texture: "egypt_token", tokenWidth: 150, tokenHeight: 150, ribbon: "Collected" },
+      { section: "Country Stamps", label: "India", unlocked: wins.india, texture: "india_token", tokenWidth: 150, tokenHeight: 150, ribbon: "Collected" },
+      { section: "Country Stamps", label: "Brazil", unlocked: wins.brazil, texture: "brazil_token", tokenWidth: 150, tokenHeight: 150, ribbon: "Collected" },
 
      
       ...HAT_CATALOG.map((hat) => ({
@@ -1333,15 +1310,17 @@ class Settings extends Phaser.Scene {
       fontStyle: "bold"
     }).setOrigin(0.5);
 
-    const musicText = this.add.text(width / 2, height / 2 - 25, "", {
+    const musicText = this.add.text(width / 2, height / 2 - 65, "Background Music", {
       fontSize: "24px",
       color: "#5a341d"
     }).setOrigin(0.5);
 
-    const refreshMusicLabel = () => {
-      const isMuted = backgroundMusic ? backgroundMusic.mute : false;
-      musicText.setText(`Music: ${isMuted ? "Off" : "On"}`);
-    };
+    const sfxText = this.add.text(width / 2, height / 2 + 10, "Sound Effects", {
+      fontSize: "24px",
+      color: "#5a341d"
+    }).setOrigin(0.5);
+
+    // Background Music Volume Control
 
     const applyMusicVolume = (volume) => {
       const clampedVolume = Phaser.Math.Clamp(volume, 0, 1);
@@ -1352,32 +1331,65 @@ class Settings extends Phaser.Scene {
       return clampedVolume;
     };
 
-    const scrollBar = this.add.rectangle(width / 2, height / 2 + 15, 200, 8, 0xd9b97d)
+    const scrollMusicBar = this.add.rectangle(width / 2, height / 2 - 35, 200, 8, 0xd9b97d)
       .setStrokeStyle(2, 0x000000, 0.6)
       .setOrigin(0.5);
 
-    const scrollHandle = this.add.circle(width / 2, height / 2 + 15, 12, 0xe0bb67)
+    const scrollMusicHandle = this.add.circle(width / 2, height / 2 - 35, 12, 0xe0bb67)
       .setStrokeStyle(2, 0x000000, 0.6)
       .setInteractive({ useHandCursor: true })
       .setOrigin(0.5);
 
-    this.input.setDraggable(scrollHandle);
+    this.input.setDraggable(scrollMusicHandle);
 
-    const minX = scrollBar.x - scrollBar.width / 2;
-    const maxX = scrollBar.x + scrollBar.width / 2;
-    const savedVolume = Phaser.Math.Clamp(this.registry.get("musicVolume") ?? 0.55, 0, 1);
+    const musicMinX = scrollMusicBar.x - scrollMusicBar.width / 2;
+    const musicMaxX = scrollMusicBar.x + scrollMusicBar.width / 2;
+    const musicSavedVolume = Phaser.Math.Clamp(this.registry.get("musicVolume") ?? 0.55, 0, 1);
 
-    applyMusicVolume(savedVolume);
-    scrollHandle.x = Phaser.Math.Linear(minX, maxX, savedVolume);
+    applyMusicVolume(musicSavedVolume);
+    scrollMusicHandle.x = Phaser.Math.Linear(musicMinX, musicMaxX, musicSavedVolume);
 
-    scrollHandle.on("drag", (pointer, dragX) => {
-      const clampedX = Phaser.Math.Clamp(dragX, minX, maxX);
+    scrollMusicHandle.on("drag", (pointer, dragX) => {
+      const clampedX = Phaser.Math.Clamp(dragX, musicMinX, musicMaxX);
 
-      const volume = (clampedX - minX) / scrollBar.width;
+      const volume = (clampedX - musicMinX) / scrollMusicBar.width;
 
       applyMusicVolume(volume);
-      scrollHandle.x = clampedX;
-      refreshMusicLabel();
+      scrollMusicHandle.x = clampedX;
+    });
+
+    // Sound Effects Volume Control
+    const applySfxVolume = (volume) => {
+      const clampedVolume = Phaser.Math.Clamp(volume, 0, 1);
+      this.registry.set("sfxVolume", clampedVolume);
+      return clampedVolume;
+    };
+
+    const scrollSfxBar = this.add.rectangle(width / 2, height / 2 + 40, 200, 8, 0xd9b97d)
+      .setStrokeStyle(2, 0x000000, 0.6)
+      .setOrigin(0.5);
+
+    const scrollSfxHandle = this.add.circle(width / 2, height / 2 + 40, 12, 0xe0bb67)
+      .setStrokeStyle(2, 0x000000, 0.6)
+      .setInteractive({ useHandCursor: true })
+      .setOrigin(0.5);
+
+    this.input.setDraggable(scrollSfxHandle);
+
+    const sfxMinX = scrollSfxBar.x - scrollSfxBar.width / 2;
+    const sfxMaxX = scrollSfxBar.x + scrollSfxBar.width / 2;
+    const sfxSavedVolume = Phaser.Math.Clamp(this.registry.get("sfxVolume") ?? 0.75, 0, 1);
+
+    applySfxVolume(sfxSavedVolume);
+    scrollSfxHandle.x = Phaser.Math.Linear(sfxMinX, sfxMaxX, sfxSavedVolume);
+
+    scrollSfxHandle.on("drag", (pointer, dragX) => {
+      const clampedX = Phaser.Math.Clamp(dragX, sfxMinX, sfxMaxX);
+
+      const volume = (clampedX - sfxMinX) / scrollSfxBar.width;
+
+      applySfxVolume(volume);
+      scrollSfxHandle.x = clampedX;
     });
 
     const backButton = this.add.text(width / 2, height / 2 + 85, this.returnTo === "StartScene" ? "Back to Start" : "Back to Map", {
@@ -1403,8 +1415,7 @@ class Settings extends Phaser.Scene {
 
     this.cameras.main.fadeIn(180, 0, 0, 0);
 
-    refreshMusicLabel();
-    this.add.text(width / 2, height / 2 + 145, "ESC to return", {
+    this.add.text(width / 2, height / 2 + 125, "ESC to return", {
       fontSize: "16px",
       color: "#8a5d34"
     }).setOrigin(0.5);
@@ -1415,20 +1426,15 @@ class OliveWinScene extends Phaser.Scene {
   constructor() {
     super("OliveWinScene");
   }
-
+  preload() {
+    this.load.image("oliveVictory", "assets/cutscene/olive_victory_yay.png");
+  }
   create() {
     const width = this.scale.width;
     const height = this.scale.height;
-    this.slides = ["oliveFarmhouse", "oliveBirthday", "oliveParents", "oliveConfession1", "oliveConfession2", "oliveConfession3", "oliveConcernedParents", "oliveDetermined"];
+    this.slides = ["oliveVictory"];
     this.dialogueLines = [
-      "", 
-      "",
-      "... happy birthday to you ...",
-      "Mama, papa, I want to leave this town",
-      "I want to see the world!\n I'm done with this small lil' town.",
-      "I want to experience what all olives should!\n I want to travel the world as a world class chef",
-      "Oh, baby — that’s a big step to make! But if you are confident then—",
-      "I won’t let you down!"
+      "I won! I won! Mama and papa would be so proud!"
     ];
 
     this.cutsceneIndex = 0;
@@ -1449,36 +1455,19 @@ class OliveWinScene extends Phaser.Scene {
       fill: "#fff4dd",
       backgroundColor: "#5a341d",
       padding: { x: 14, y: 8 }
-    }).setOrigin(0.5);
-
-    this.cutsceneProgress = this.add.text(width / 2, 36, `1 / ${this.slides.length}`, {
-      fontSize: "24px",
-      fill: "#fff4dd"
-    }).setOrigin(0.5);
-
-    this.skipButton = this.add.text(width - 28, 28, "Skip", {
-      fontSize: "22px",
-      fill: "#fff4dd",
-      backgroundColor: "#5a341d",
-      padding: { x: 12, y: 8 }
-    }).setOrigin(1, 0).setInteractive({ useHandCursor: true });
-    this.skipButton.on("pointerdown", () => this.skipCutscene());
+    }).setOrigin(0.5).setShadow(2, 2, "#000000", 0, false, true);
 
     this.tweens.add({
       targets: this.cutsceneImage,
       alpha: 1,
       duration: 450,
       ease: "Sine.easeOut",
-      onComplete: () => {
-        //this.playBirthdaySong();
-      }
     });
 
-    this.input.on("pointerdown", () => this.advanceCutscene());
-    this.input.keyboard.on("keydown-SPACE", () => this.advanceCutscene());
-    this.input.keyboard.on("keydown-ENTER", () => this.advanceCutscene());
-    this.input.keyboard.on("keydown-ESC", () => this.skipCutscene());
-    this.events.once("shutdown", () => this.stopBirthdaySong());
+    this.input.on("pointerdown", () => this.advanceWinCutscene());
+    this.input.keyboard.on("keydown-SPACE", () => this.advanceWinCutscene());
+    this.input.keyboard.on("keydown-ENTER", () => this.advanceWinCutscene());
+    this.input.keyboard.on("keydown-ESC", () => this.skipWinCutscene());
   }
 
   cutsceneDialogue() {
@@ -1495,7 +1484,7 @@ class OliveWinScene extends Phaser.Scene {
           align: "center",
           wordWrap: { width: this.scale.width - 80 }
         }
-      ).setOrigin(0.5);
+      ).setOrigin(0.5).setShadow(2, 2, "#000000", 0, false, true);
     }
 
     this.animateText(this.dialogueText, dialogueText, 20);
@@ -1506,10 +1495,9 @@ class OliveWinScene extends Phaser.Scene {
     image.setScale(scale);
   }
 
-advanceCutscene() {
+advanceWinCutscene() {
   if (this.isTransitioningSlide) return;
 
-  // 👉 if still typing, finish instantly instead of advancing
   if (this.isTyping) {
     if (this.currentTypingTimer) {
       this.currentTypingTimer.remove(false);
@@ -1524,7 +1512,6 @@ advanceCutscene() {
 
   if (nextIndex >= this.slides.length) {
     this.isTransitioningSlide = true;
-    this.stopBirthdaySong();
     this.cameras.main.fadeOut(350, 19, 14, 11);
     this.time.delayedCall(360, () => {
       this.scene.start("MapScene");
@@ -1558,29 +1545,13 @@ advanceCutscene() {
   });
 }
 
-  skipCutscene() {
+  skipWinCutscene() {
     if (this.isTransitioningSlide) return;
     this.isTransitioningSlide = true;
-    this.stopBirthdaySong();
     this.cameras.main.fadeOut(350, 19, 14, 11);
     this.time.delayedCall(360, () => {
       this.scene.start("MapScene");
     });
-  }
-
-  playBirthdaySong() {
-    if (!this.birthdaySong) {
-      this.birthdaySong = this.sound.add("birthday_song", { volume: 0.55 });
-    }
-    if (!this.birthdaySong.isPlaying) {
-      this.birthdaySong.play();
-    }
-  }
-
-  stopBirthdaySong() {
-    if (this.birthdaySong && this.birthdaySong.isPlaying) {
-      this.birthdaySong.stop();
-    }
   }
 
   animateText(target, message, speedInMs = 50) {
@@ -1660,6 +1631,7 @@ const config = {
     MexicoCutscene,
     BrazilCutscene,
     BrazilScene,
+    IndiaCutscene,
     IndiaScene,
     Store,
     Inventory,

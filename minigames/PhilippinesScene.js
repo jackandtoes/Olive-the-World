@@ -41,12 +41,12 @@ class PhilippinesCutscene extends Phaser.Scene {
       fill: "#fff4dd",
       backgroundColor: "#5a341d",
       padding: { x: 13, y: 8 }
-    }).setOrigin(0.5);
+    }).setOrigin(0.5).setShadow(2, 2, "#000000", 0, false, true);
 
     this.cutsceneProgress = this.add.text(width / 2, 36, `1 / ${this.slides.length}`, {
       fontSize: "24px",
       fill: "#fff4dd"
-    }).setOrigin(0.5);
+    }).setOrigin(0.5).setShadow(2, 2, "#000000", 0, false, true);
 
     this.tweens.add({
       targets: this.cutsceneImage,
@@ -90,7 +90,7 @@ class PhilippinesCutscene extends Phaser.Scene {
           align: "center",
           wordWrap: { width: this.scale.width - 80 }
         }
-      ).setOrigin(0.5);
+      ).setOrigin(0.5).setShadow(2, 2, "#000000", 0, false, true);
     }
     this.animateText(this.dialogueText, dialogueText, 20);
   }
@@ -337,7 +337,12 @@ class PhilippinesScene extends Phaser.Scene {
 
   returnToMap() {
     this.stopPhilippinesMusic();
-    this.scene.start("MapScene");
+    if(!this.checkOliveWin()){
+	    this.scene.start("MapScene");
+    }
+    else {
+      this.scene.start("OliveWinScene");
+    }
   }
 
   createBackdrop() {
@@ -446,12 +451,7 @@ class PhilippinesScene extends Phaser.Scene {
     const spriteScale = (this.GRID_SIZE + 4) / sprite.texture.getSourceImage().height;
     sprite.setScale(spriteScale);
     this.playerSprite = sprite;
-
-    this.player = this.add.container(x, y, [
-      shadow,
-      sprite,
-    ]).setDepth(1000);
-
+    this.player = this.add.container(x, y, [shadow, sprite,]).setDepth(1000);
     this.gameContainer.add(this.player);
 
     this.playerGridX = startCol;
@@ -632,14 +632,8 @@ class PhilippinesScene extends Phaser.Scene {
     this.coin = this.add.container(x, y, [glow, outer, inner, shine]).setDepth(600);
     this.gameContainer.add(this.coin);
 
-    this.tweens.add({
-      targets: this.coin,
-      y: y - 6,
-      duration: 900,
-      yoyo: true,
-      repeat: -1,
-      ease: "Sine.InOut",
-    });
+    this.tweens.add({targets: this.coin, y: y - 6, duration: 900, 
+      yoyo: true, repeat: -1, ease: "Sine.InOut"});
 
     this.coinGridX = col;
     this.coinGridY = row;
@@ -664,13 +658,9 @@ class PhilippinesScene extends Phaser.Scene {
 
       this.gameContainer.add(sprite);
 
-      this.tweens.add({
-        targets: sprite,
-        scale: { from: 0.95, to: 1.05 },
-        duration: 800 + spawned * 35,
-        yoyo: true,
-        repeat: -1,
-        ease: "Sine.InOut",
+      this.tweens.add({targets: sprite, scale: { from: 0.95, to: 1.05 },
+        duration: 800 + spawned * 35, yoyo: true,
+        repeat: -1, ease: "Sine.InOut",
       });
 
       this.ingredients.push({ sprite, gridX: col, gridY: row, collected: false });
@@ -859,24 +849,15 @@ class PhilippinesScene extends Phaser.Scene {
   collectCoin() {
     this.coinCollected = true;
     this.tweens.killTweensOf(this.coin);
-    this.tweens.add({
-      targets: this.coin,
-      alpha: 0,
-      scale: 1.3,
-      y: this.coin.y - 18,
-      duration: 200,
-      onComplete: () => this.coin.destroy(),
-    });
+    this.tweens.add({targets: this.coin, alpha: 0,
+      scale: 1.3, y: this.coin.y - 18, duration: 200,
+      onComplete: () => this.coin.destroy()});
 
     const current = this.registry.get("currency") || 0;
     this.registry.set("currency", current + 1);
     this.coinText.setText(`Coins: ${current + 1}`);
-    this.tweens.add({
-      targets: this.coinText,
-      scale: 1.08,
-      yoyo: true,
-      duration: 150,
-    });
+    this.tweens.add({targets: this.coinText, scale: 1.08,
+      yoyo: true, duration: 150});
   }
 
   checkCollisions() {
@@ -912,12 +893,8 @@ class PhilippinesScene extends Phaser.Scene {
     this.ingredients.forEach((ing) => {
       if (ing.collected) return;
 
-      const dist = Phaser.Math.Distance.Between(
-        this.playerGridX,
-        this.playerGridY,
-        ing.gridX,
-        ing.gridY
-      );
+      const dist = Phaser.Math.Distance.Between(this.playerGridX, this.playerGridY,
+        ing.gridX, ing.gridY);
 
       if (dist < 0.6) {
         this.collectIngredient(ing);
@@ -925,12 +902,8 @@ class PhilippinesScene extends Phaser.Scene {
     });
 
     if (!this.coinCollected) {
-      const coinDist = Phaser.Math.Distance.Between(
-        this.playerGridX,
-        this.playerGridY,
-        this.coinGridX,
-        this.coinGridY
-      );
+      const coinDist = Phaser.Math.Distance.Between(this.playerGridX, this.playerGridY,
+        this.coinGridX, this.coinGridY);
 
       if (coinDist < 0.6) {
         this.collectCoin();
@@ -1071,19 +1044,14 @@ class PhilippinesScene extends Phaser.Scene {
 
   showLevelComplete() {
     const { width, height } = this._overlay();
-    this.add.text(width / 2, height / 2 - 112, "Level Complete", {
+    this.add.text(width / 2, height / 2 - 90, "Level Complete", {
       fontSize: "44px",
       color: this.palette.win,
       fontStyle: "bold",
     }).setOrigin(0.5);
-    this.add.text(width / 2, height / 2 - 46, `${this.config.ingredient} collected!`, {
-      fontSize: "28px",
+    this.add.text(width / 2, height / 2 - 20, `${this.config.ingredient} collected!`, {
+      fontSize: "24px",
       color: "#6b3b21",
-      fontStyle: "bold",
-    }).setOrigin(0.5);
-    this.add.text(width / 2, height / 2 + 2, "Olive is ready for the next stop.", {
-      fontSize: "21px",
-      color: "#82553a",
     }).setOrigin(0.5);
     this._button(width / 2, height / 2 + 78, "Next Level", () => this.scene.restart({ level: this.currentLevel + 1 }));
     this._button(width / 2, height / 2 + 132, "Back to Map", () => this.returnToMap());
@@ -1094,20 +1062,23 @@ class PhilippinesScene extends Phaser.Scene {
     wins.philippines = true;
     this.registry.set('wins', wins);
     const { width, height } = this._overlay();
-    this.add.text(width / 2, height / 2 - 108, "Victory!", {
-      fontSize: "46px",
+    this.add.text(width / 2, height / 2 - 90, "Victory!", {
+      fontSize: "44px",
       color: this.palette.win,
       fontStyle: "bold",
     }).setOrigin(0.5);
-    this.add.text(width / 2, height / 2 - 48, "All ingredients collected!", {
+    this.add.text(width / 2, height / 2 - 30, "All ingredients collected!", {
       fontSize: "24px",
       color: "#6b3b21",
     }).setOrigin(0.5);
-    this.add.text(width / 2, height / 2 + 4, "You completed all 5 Philippines levels.", {
-      fontSize: "22px",
-      color: "#82553a",
-    }).setOrigin(0.5);
     this._button(width / 2, height / 2 + 78, "Play Again", () => this.scene.restart({ level: 1 }));
     this._button(width / 2, height / 2 + 132, "Back to Map", () => this.returnToMap());
+  }
+  checkOliveWin() {
+    const wins = this.registry.get('wins') || {};
+    if (wins.italy && wins.philippines && wins.egypt && wins.mexico && wins.india && wins.brazil) {
+      return true;
+    }
+    return false;
   }
 }
