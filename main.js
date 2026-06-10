@@ -579,20 +579,27 @@ class MapScene extends Phaser.Scene {
     this.cameras.main.setBounds(0, 0, worldWidth, worldHeight);
     this.cameras.main.setZoom(2.5);
 
+    this.uiLayer = this.add.container(0, 0).setScrollFactor(0).setDepth(30);
+
+    const goToScene = (sceneName) => {
+      this.saveMapPosition();
+      this.scene.start(sceneName);
+    };
+
     // Top-left navigation buttons
     this.createMapNavButton(280, 202, 60, "Return", () => {
       playButtonClickSfx(this);
-      this.scene.start("StartScene");
+      goToScene("StartScene");
     });
 
     this.createMapNavButton(347, 202, 54, "Store", () => {
       playButtonClickSfx(this);
-      this.scene.start("Store");
+      goToScene("Store");
     });
 
     this.createMapNavButton(425, 202, 84, "Inventory", () => {
       playButtonClickSfx(this);
-      this.scene.start("Inventory");
+      goToScene("Inventory");
     });
 
     //Settings Button
@@ -600,10 +607,11 @@ class MapScene extends Phaser.Scene {
       .setOrigin(0.5)
       .setScale(0.03)
       .setInteractive({ useHandCursor: true })
-      .setScrollFactor(0)
-      .setDepth(30);
+      .setScrollFactor(0);
+    this.uiLayer.add(settingsButton);
     settingsButton.on("pointerdown", () => {
       playButtonClickSfx(this);
+      this.saveMapPosition();
       this.scene.start("Settings", { returnTo: "MapScene" });
     });
 
@@ -660,10 +668,6 @@ class MapScene extends Phaser.Scene {
 
   createCountry(name, x, y, description, sceneName, flagKey) {
     const landmark = this.add.image(x, y, flagKey).setScale(0.04).setDepth(1);
-    this.add.text(x, y - 40, name, {
-      fontSize: "18px",
-      fill: "#000"
-    }).setOrigin(0.5).setDepth(2);
 
     this.countries.push({
       name,
@@ -703,16 +707,18 @@ class MapScene extends Phaser.Scene {
   createMapNavButton(x, y, width, label, cb) {
     const content = this.add.container(x, y).setScrollFactor(0).setDepth(30);
     const buttonHeight = 24;
-    const shadow = this.add.rectangle(2, 2, width, buttonHeight, 0x7e4a2c, 0.08);
+    const shadow = this.add.rectangle(2, 2, width, buttonHeight, 0x7e4a2c, 0.08).setScrollFactor(0);
     const bg = this.add.rectangle(0, 0, width, buttonHeight, 0xf6f4eb, 0.98)
-      .setStrokeStyle(2, 0x97a38b, 0.95);
+      .setStrokeStyle(2, 0x97a38b, 0.95)
+      .setScrollFactor(0);
     const hitTarget = this.add.rectangle(0, 0, width, buttonHeight, 0xffffff, 0.001)
-      .setInteractive({ useHandCursor: true });
+      .setInteractive({ useHandCursor: true })
+      .setScrollFactor(0);
     const text = this.add.text(0, 0, label, {
       fontSize: "10px",
       fill: "#5a5143",
       fontStyle: "bold"
-    }).setOrigin(0.5);
+    }).setOrigin(0.5).setScrollFactor(0);
 
     const activateHover = () => {
       bg.setFillStyle(0xe3eadb, 1);
@@ -740,6 +746,9 @@ class MapScene extends Phaser.Scene {
     hitTarget.on("pointerout", deactivateHover);
     hitTarget.on("pointerdown", cb);
     content.add([shadow, bg, text, hitTarget]);
+    if (this.uiLayer) {
+      this.uiLayer.add(content);
+    }
     return content;
   }
 
@@ -839,7 +848,7 @@ class MapScene extends Phaser.Scene {
     const worldHeight = this.physics.world.bounds.height;
     const bubbleWidth = 290;
     const bubbleHeight = 150;
-    const offsetX = 100;
+    const offsetX = 70;
     const offsetY = -50;
 
     const x = Phaser.Math.Clamp(
