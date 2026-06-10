@@ -190,9 +190,9 @@ class IndiaCutscene extends Phaser.Scene {
 }
 
 const INDIA_LEVELS = {
-  1: { targetScore: 50, spawnDelay: 1000, timeLimit: 10, ingredientKey: "biryaniIngredients", frames: [0, 1, 2, 3, 4, 5, 6, 7] },
-  2: { targetScore: 70, spawnDelay: 850, timeLimit: 25, ingredientKey: "palakPaneerIngredients", frames: [0, 1, 2, 3, 4, 5, 6, 7, 8] },
-  3: { targetScore: 90, spawnDelay: 700, timeLimit: 20, ingredientKey: "samosasIngredients", frames: [0, 1, 2, 3, 4, 5, 6] },
+  1: { targetScore: 25, spawnDelay: 700, timeLimit: 45, ingredientKey: "biryaniIngredients", frames: [0, 1, 2, 3, 4, 5, 6, 7] },
+  2: { targetScore: 30, spawnDelay: 600, timeLimit: 45, ingredientKey: "palakPaneerIngredients", frames: [0, 1, 2, 3, 4, 5, 6, 7, 8] },
+  3: { targetScore: 35, spawnDelay: 500, timeLimit: 45, ingredientKey: "samosasIngredients", frames: [0, 1, 2, 3, 4, 5, 6] },
 };
 
 
@@ -246,7 +246,7 @@ class IndiaScene extends Phaser.Scene {
         this.input.keyboard.enabled = true;
 
         this.score = 0;
-        this.physics.world.gravity.y = 350;
+        this.physics.world.gravity.y = 500;
 
         // create background
         this.add.rectangle(this.scale.width / 2, this.scale.height / 2, this.scale.width, this.scale.height, 0xf7d6b4).setDepth(0);
@@ -255,6 +255,23 @@ class IndiaScene extends Phaser.Scene {
         this.basket = this.physics.add.image(this.scale.width / 2, 550, 'pot');
         this.basket.setScale(0.15);
         this.basket.body.setAllowGravity(false).setCollideWorldBounds(true);
+        this.basket.body.setSize(this.basket.displayWidth * 0.62, this.basket.displayHeight * 0.28);
+        this.basket.body.setOffset(
+            this.basket.displayWidth * 0.19,
+            this.basket.displayHeight * 0.06
+        );
+
+        // create a top-of-pot sensor for reliable ingredient catches
+        this.potTopSensor = this.physics.add.image(this.basket.x, this.basket.y - this.basket.displayHeight * 0.24, 'pot')
+            .setScale(this.basket.scale)
+            .setVisible(false);
+        this.potTopSensor.body.setAllowGravity(false);
+        this.potTopSensor.body.setImmovable(true);
+        const sensorWidth = Math.round(this.basket.body.width * 1.5);
+        const sensorHeight = Math.round(this.basket.body.height * 0.6);
+        this.potTopSensor.body.setSize(sensorWidth, sensorHeight);
+        const offsetX = Math.round((this.potTopSensor.displayWidth - sensorWidth) / 2);
+        this.potTopSensor.body.setOffset(offsetX, 0);
 
         // input
         this.cursorKeys = this.input.keyboard.createCursorKeys();
@@ -263,8 +280,8 @@ class IndiaScene extends Phaser.Scene {
         // Create Ingredient group
         this.ingredientGroup = this.physics.add.group();
 
-        // collision detection
-        this.physics.add.overlap(this.basket, this.ingredientGroup, this.handleBasketIngredientCollision, null, this);
+        // collision detection with the top of the pot only
+        this.physics.add.overlap(this.potTopSensor, this.ingredientGroup, this.handleBasketIngredientCollision, null, this);
 
         // Score and timer display
         const scorePrefix = this.add.text(10, 10, 'Score: ', {
@@ -341,11 +358,18 @@ class IndiaScene extends Phaser.Scene {
 
         // Updates basket movement
         if (this.cursorKeys.left.isDown) {
-            this.basket.setVelocityX(-350);
+            this.basket.setVelocityX(-325);
         } else if (this.cursorKeys.right.isDown) {
-            this.basket.setVelocityX(350);
+            this.basket.setVelocityX(325);
         } else {
             this.basket.setVelocityX(0);
+        }
+
+        if (this.potTopSensor) {
+            this.potTopSensor.setPosition(this.basket.x, this.basket.y - this.basket.displayHeight * 0.24);
+            if (this.potTopSensor.body && this.potTopSensor.body.updateFromGameObject) {
+                this.potTopSensor.body.updateFromGameObject();
+            }
         }
 
         this.ingredientGroup.getChildren().forEach((child) => {
@@ -372,12 +396,12 @@ class IndiaScene extends Phaser.Scene {
 
         const ingredient = this.ingredientGroup.create(
             Phaser.Math.Between(50, this.scale.width - 50),
-            -40,
+            -60,
             level.ingredientKey,
             frame
         );
 
-        ingredient.setScale(0.7);
+        ingredient.setScale(0.6);
         ingredient.setDepth(5);
         ingredient.body.setAllowGravity(true);
         ingredient.setAngle(Phaser.Math.Between(0, 359));
@@ -387,15 +411,19 @@ class IndiaScene extends Phaser.Scene {
     }
 
 
-    handleBasketIngredientCollision(basket, ingredient) {
-        ingredient.disableBody(true, true);
-        if (this.gameIsOver) {
-                this.sound.play("item_collection_sfx", { volume: getSfxVolume(this) });
+    handleBasketIngredientCollision(sensor, ingredient) {
+        if (!ingredient.active) {
             return;
         }
-        this.score += 10;
-        this.scoreText.setText(this.score.toString(10));
-        console.log(this.score);
+
+        ingredient.disableBody(true, true);
+        if (this.gameIsOver) {
+            this.sound.play("item_collection_sfx", { volume: getSfxVolume(this) });
+            return;
+        }
+        this.score += 1;
+        this.scoreText.setText(this.score.toString());
+        this.sound.play("item_collection_sfx", { volume: getSfxVolume(this) });
         this.checkWinCondition();
     }
 
