@@ -63,9 +63,11 @@ class EgyptCutscene extends Phaser.Scene {
   
   startEgyptMusic() {
     let egyptMusic = this.sound.get("egypt_music");
+    const musicVolume = this.registry.get("musicVolume") ?? 0.55;
     if (!egyptMusic) {
-      egyptMusic = this.sound.add("egypt_music", { volume: 0.55, loop: true });
+      egyptMusic = this.sound.add("egypt_music", { volume: musicVolume, loop: true });
     }
+    egyptMusic.setVolume(musicVolume);
     if (!egyptMusic.isPlaying) {
       egyptMusic.play();
     }
@@ -371,9 +373,11 @@ class EgyptScene extends Phaser.Scene {
 
   startEgyptMusic() {
     let egyptMusic = this.sound.get("egypt_music");
+    const musicVolume = this.registry.get("musicVolume") ?? 0.55;
     if (!egyptMusic) {
-      egyptMusic = this.sound.add("egypt_music", { volume: 0.55, loop: true });
+      egyptMusic = this.sound.add("egypt_music", { volume: musicVolume, loop: true });
     }
+    egyptMusic.setVolume(musicVolume);
     if (!egyptMusic.isPlaying) {
       egyptMusic.play();
     }

@@ -63,9 +63,12 @@ class IndiaCutscene extends Phaser.Scene {
 
     startIndiaMusic() {
         let indiaMusic = this.sound.get("india_music");
+        const musicVolume = this.registry.get("musicVolume") ?? 0.55;
+
         if (!indiaMusic) {
-            indiaMusic = this.sound.add("india_music", { volume: 0.55, loop: true });
+            indiaMusic = this.sound.add("india_music", { volume: musicVolume, loop: true });
         }
+        indiaMusic.setVolume(musicVolume);
         if (!indiaMusic.isPlaying) {
             indiaMusic.play();
         }
@@ -323,9 +326,12 @@ class IndiaScene extends Phaser.Scene {
 
     startIndiaMusic() {
         let indiaMusic = this.sound.get("india_music");
+        const musicVolume = this.registry.get("musicVolume") ?? 0.55;
+
         if (!indiaMusic) {
-            indiaMusic = this.sound.add("india_music", { volume: 0.55, loop: true });
+            indiaMusic = this.sound.add("india_music", { volume: musicVolume, loop: true });
         }
+        indiaMusic.setVolume(musicVolume);
         if (!indiaMusic.isPlaying) {
             indiaMusic.play();
         }
