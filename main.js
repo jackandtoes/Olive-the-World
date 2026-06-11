@@ -657,17 +657,17 @@ class MapScene extends Phaser.Scene {
     this.countries = [];
 
     this.createCountry("Mexico", width * 0.29, height * 0.46,
-      "Whack piñatas.\nAvoid spicy chiles!", "MexicoCutscene", "mexico_landmark");
+      "Click on piñatas to whack them open and avoid spicy chiles! Keep an eye out for golden piñatas...", "MexicoCutscene", "mexico_landmark");
     this.createCountry("Italy", width * 0.68, height * 0.38,
-      "Fix pasta pipes.\nServe the perfect plate!", "ItalyCutscene", "italy_landmark");
+      "Click on pasta pipes to fix them and serve up the perfect pasta plate!", "ItalyCutscene", "italy_landmark");
     this.createCountry("India", width * 0.915, height * 0.50,
-      "A quick visit to India.\nTry the India scene!", "IndiaCutscene", "india_landmark");
+      "Catch palak paneer, biryani, and samosa ingredients in a basket using arrow keys!", "IndiaCutscene", "india_landmark");
     this.createCountry("Philippines", width * 1.06, height * 0.5,
-      "Collect lumpia ingredients.\nAvoid traffic!", "PhilippinesCutscene", "philippines_landmark");
+      "Collect lumpia ingredients across the archipelago. Avoid obstacles using arrow keys!", "PhilippinesCutscene", "philippines_landmark");
     this.createCountry("Egypt", width * 0.73, height * 0.46,
-      "Run in the desert.\nDodge palm trees and flying falafels!", "EgyptCutscene", "egypt_landmark");
+      "Run in the desert and avoid obstacles and flying falafels with the spacebar!", "EgyptCutscene", "egypt_landmark");
     this.createCountry("Brazil", width * 0.45, height * 0.62,
-      "Collect carnival ingredients.\nJump past floats and hazards!", "BrazilCutscene", "brazil_landmark");
+      "Collect ingredients for feijoada. Jump across floats using arrow keys and the spacebar!", "BrazilCutscene", "brazil_landmark");
     this.createInfoPanel();
     this.updatePlayerAppearance();
 
@@ -777,7 +777,7 @@ class MapScene extends Phaser.Scene {
       fontStyle: "bold"
     });
     this.panelText = this.add.text(-130, -20, "", {
-      fontSize: "16px",
+      fontSize: "14px",
       fill: "#6b3b21"
     }).setWordWrapWidth(250);
     const playButton = this.add.text(-130, 42, "Click to play", {

@@ -20,7 +20,7 @@ class PhilippinesCutscene extends Phaser.Scene {
     this.dialogueLines = [
       "Beep beep! Get on in!",
       "",
-      "Anak! Let's make some lumpia" // change this later
+      "Anak! Let's make some lumpia." // change this later
     ];
 
     this.cutsceneIndex = 0;

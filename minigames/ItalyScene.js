@@ -462,7 +462,7 @@ this.levelLayouts = {
     chef: 'oliveHatChef',
     jester: 'oliveHatJester',
     propeller: 'oliveHatPropeller',
-    wizard: 'oliveHatWizard'
+    wizard: 'oliveHatWizard',
     shark: 'oliveHatShark',
     viking: 'oliveHatViking'
   };

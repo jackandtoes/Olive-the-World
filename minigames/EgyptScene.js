@@ -503,7 +503,7 @@ class EgyptScene extends Phaser.Scene {
       chef: 'oliveHatChef',
       jester: 'oliveHatJester',
       propeller: 'oliveHatPropeller',
-      wizard: 'oliveHatWizard'
+      wizard: 'oliveHatWizard',
       viking: 'oliveHatViking',
       shark: 'oliveHatShark'
     };
