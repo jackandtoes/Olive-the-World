@@ -215,6 +215,14 @@ const BRAZIL_PLATFORM_LEVELS = [
   },
 ];
 
+const BRAZIL_OLIVE_TEXTURES = {
+  default: "oliveOverjoyed",
+  chef: "oliveHatChef",
+  jester: "oliveHatJester",
+  propeller: "oliveHatPropeller",
+  wizard: "oliveHatWizard",
+};
+
 class BrazilScene extends Phaser.Scene {
   constructor() {
     super("BrazilScene");
@@ -267,6 +275,11 @@ class BrazilScene extends Phaser.Scene {
     this.load.image("rice", "assets/brazil/brazil_ricea.png");
     this.load.image("sausage", "assets/brazil/brazil_sausagea.png");
     this.load.image("ribs", "assets/brazil/brazil_porkribsa.png");
+
+    this.load.image("oliveHatChef", "assets/olivesprites/olive_hat_chef.PNG");
+    this.load.image("oliveHatJester", "assets/olivesprites/olive_hat_jester.PNG");
+    this.load.image("oliveHatPropeller", "assets/olivesprites/olive_hat_propeller.PNG");
+    this.load.image("oliveHatWizard", "assets/olivesprites/olive_hat_wizard.PNG");
 
     this.load.image("float_a_4", "assets/brazil/float_a_4.png");
     this.load.image("float_b_4", "assets/brazil/float_b_4.png");
@@ -498,15 +511,22 @@ class BrazilScene extends Phaser.Scene {
   }
 
   createPlayer() {
-    this.player = this.physics.add.sprite(125, 110, "oliveOverjoyed");
+    const equippedHat = this.registry.get("equippedItems")?.hat;
+
+    const textureKey =
+      BRAZIL_OLIVE_TEXTURES[equippedHat] ||
+      BRAZIL_OLIVE_TEXTURES.default;
+
+    this.player = this.physics.add.sprite(125, 110, textureKey);
+
     const sourceImage = this.player.texture.getSourceImage();
     const scale = 52 / sourceImage.height;
+
     this.player.setScale(scale);
     this.player.setCollideWorldBounds(true);
     this.player.body.setSize(sourceImage.width * 0.56, sourceImage.height * 0.82);
     this.player.body.setOffset(sourceImage.width * 0.22, sourceImage.height * 0.12);
   }
-
   createIngredient() {
     const textureMap = {
       "Beans": "beans",
@@ -962,23 +982,15 @@ class BrazilScene extends Phaser.Scene {
     if (this.cursors.right.isDown) {
       this.player.flipX = false;
       this.player.setVelocityX(240);
-      this.player.anims.play("brazilRun", true);
     } else if (this.cursors.left.isDown) {
       this.player.flipX = true;
       this.player.setVelocityX(-240);
-      this.player.anims.play("brazilRun", true);
     } else {
       this.player.setVelocityX(0);
-      this.player.anims.play("brazilIdle", true);
     }
 
     if (Phaser.Input.Keyboard.JustDown(this.cursors.space) && this.player.body.touching.down) {
-      this.player.anims.play("brazilJump", true);
       this.player.setVelocityY(-500);
-    }
-
-    if (!this.player.body.touching.down) {
-      this.player.anims.play("brazilJump", true);
     }
 
     if (this.player.y > this.scale.height + 120) {
