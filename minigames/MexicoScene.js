@@ -1,195 +1,195 @@
 class MexicoCutscene extends Phaser.Scene {
-  constructor() {
-    super("MexicoCutscene");
-  }
-
-  preload() {
-    this.load.image("oliveBoat", "assets/mexico/cutscene/olive_boat.png");
-    this.load.image("oliveMexicoWalking", "assets/mexico/cutscene/olive_mexico_walking.png");
-    this.load.image("oliveAvocadoChef", "assets/mexico/cutscene/avocado_chef.png");
-    this.load.audio("mexican_music", "assets/mexico/cutscene/mexican_music.mp3");
-  }
-
-  create() {
-    const width = this.scale.width;
-    const height = this.scale.height;
-    const seenCutscenes = this.registry.get("seenCutscenes") || {};
-    seenCutscenes.mexico = true;
-    this.registry.set("seenCutscenes", seenCutscenes);
-    this.slides = ["oliveBoat", "oliveMexicoWalking", "oliveAvocadoChef"];
-    this.dialogueLines = [
-      "", 
-      "",
-      "Mijo! \n GUACK-A-MOLE"
-    ];
-
-    this.cutsceneIndex = 0;
-    this.isTransitioningSlide = false;
-    this.isTyping = false;
-    this.currentTypingTimer = null;
-    this.fullText = "";
-
-    this.add.rectangle(width / 2, height / 2, width, height, 0x130e0b);
-
-    this.cutsceneImage = this.add.image(width / 2, height / 2, this.slides[0]).setAlpha(0);
-    this._fitCutsceneImage(this.cutsceneImage, width, height);
-    this.cutsceneDialogue();
-    this.startMexicanMusic();
-
-    this.cutsceneCaption = this.add.text(width / 2, height - 44, "Click or press SPACE to continue", {
-      fontSize: "22px",
-      fill: "#ffbd3a",
-      backgroundColor: "#5a341d",
-      padding: { x: 14, y: 8 }
-    }).setOrigin(0.5).setShadow(2, 2, "#000000", 0, false, true);
-
-    this.cutsceneProgress = this.add.text(width / 2, 36, `1 / ${this.slides.length}`, {
-      fontSize: "24px",
-      fill: "#fff4dd"
-    }).setOrigin(0.5).setShadow(2, 2, "#000000", 0, false, true);
-
-    this.tweens.add({
-      targets: this.cutsceneImage,
-      alpha: 1,
-      duration: 450,
-      ease: "Sine.easeOut"
-    });
-
-    this.input.on("pointerdown", () => this.advanceCutscene());
-    this.input.keyboard.on("keydown-SPACE", () => this.advanceCutscene());
-    this.input.keyboard.on("keydown-ENTER", () => this.advanceCutscene());
-
-  }
-   startMexicanMusic() {
-    let mexicanMusic = this.sound.get("mexican_music");
-    const musicVolume = this.registry.get("musicVolume") ?? 0.55;
-    if (!mexicanMusic) {
-      mexicanMusic = this.sound.add("mexican_music", { volume: musicVolume, loop: true });
+    constructor() {
+        super("MexicoCutscene");
     }
-    mexicanMusic.setVolume(musicVolume);
-    if (!mexicanMusic.isPlaying) {
-      mexicanMusic.play();
+
+    preload() {
+        this.load.image("oliveBoat", "assets/mexico/cutscene/olive_boat.png");
+        this.load.image("oliveMexicoWalking", "assets/mexico/cutscene/olive_mexico_walking.png");
+        this.load.image("oliveAvocadoChef", "assets/mexico/cutscene/avocado_chef.png");
+        this.load.audio("mexican_music", "assets/mexico/cutscene/mexican_music.mp3");
     }
-   }
 
-   stopMexicanMusic() {
-     this.sound.stopByKey("mexican_music");
-   }
+    create() {
+        const width = this.scale.width;
+        const height = this.scale.height;
+        const seenCutscenes = this.registry.get("seenCutscenes") || {};
+        seenCutscenes.mexico = true;
+        this.registry.set("seenCutscenes", seenCutscenes);
+        this.slides = ["oliveBoat", "oliveMexicoWalking", "oliveAvocadoChef"];
+        this.dialogueLines = [
+            "",
+            "",
+            "Mijo! \n GUACK-A-MOLE"
+        ];
 
-  cutsceneDialogue() {
-    const dialogueText = this.dialogueLines[this.cutsceneIndex] || "";
+        this.cutsceneIndex = 0;
+        this.isTransitioningSlide = false;
+        this.isTyping = false;
+        this.currentTypingTimer = null;
+        this.fullText = "";
 
-    if (!this.dialogueText) {
-      this.dialogueText = this.add.text(
-        this.scale.width / 2,
-        this.scale.height - 100,
-        "",
-        {
-          fontSize: "24px",
-          fill: "#fff4dd",
-          align: "center",
-          wordWrap: { width: this.scale.width - 80 }
+        this.add.rectangle(width / 2, height / 2, width, height, 0x130e0b);
+
+        this.cutsceneImage = this.add.image(width / 2, height / 2, this.slides[0]).setAlpha(0);
+        this._fitCutsceneImage(this.cutsceneImage, width, height);
+        this.cutsceneDialogue();
+        this.startMexicanMusic();
+
+        this.cutsceneCaption = this.add.text(width / 2, height - 44, "Click or press SPACE to continue", {
+            fontSize: "22px",
+            fill: "#ffbd3a",
+            backgroundColor: "#5a341d",
+            padding: { x: 14, y: 8 }
+        }).setOrigin(0.5).setShadow(2, 2, "#000000", 0, false, true);
+
+        this.cutsceneProgress = this.add.text(width / 2, 36, `1 / ${this.slides.length}`, {
+            fontSize: "24px",
+            fill: "#fff4dd"
+        }).setOrigin(0.5).setShadow(2, 2, "#000000", 0, false, true);
+
+        this.tweens.add({
+            targets: this.cutsceneImage,
+            alpha: 1,
+            duration: 450,
+            ease: "Sine.easeOut"
+        });
+
+        this.input.on("pointerdown", () => this.advanceCutscene());
+        this.input.keyboard.on("keydown-SPACE", () => this.advanceCutscene());
+        this.input.keyboard.on("keydown-ENTER", () => this.advanceCutscene());
+
+    }
+    startMexicanMusic() {
+        let mexicanMusic = this.sound.get("mexican_music");
+        const musicVolume = this.registry.get("musicVolume") ?? 0.55;
+        if (!mexicanMusic) {
+            mexicanMusic = this.sound.add("mexican_music", { volume: musicVolume, loop: true });
         }
-      ).setOrigin(0.5).setShadow(2, 2, "#000000", 0, false, true);
-    }
-
-    this.animateText(this.dialogueText, dialogueText, 20);
-  }
-
-  _fitCutsceneImage(image, width, height) {
-    const scale = Math.min((width - 80) / image.width, (height - 120) / image.height);
-    image.setScale(scale);
-  }
-
-advanceCutscene() {
-  if (this.isTransitioningSlide) return;
-
-  // 👉 if still typing, finish instantly instead of advancing
-  if (this.isTyping) {
-    if (this.currentTypingTimer) {
-      this.currentTypingTimer.remove(false);
-      this.currentTypingTimer = null;
-    }
-    this.dialogueText.setText(this.fullText);
-    this.isTyping = false;
-    return;
-  }
-
-  const nextIndex = this.cutsceneIndex + 1;
-
-  if (nextIndex >= this.slides.length) {
-    this.isTransitioningSlide = true;
-    this.cameras.main.fadeOut(350, 19, 14, 11);
-    this.time.delayedCall(360, () => {
-      this.scene.start("MexicoScene");
-    });
-    return;
-  }
-
-  this.isTransitioningSlide = true;
-  this.tweens.add({
-    targets: this.cutsceneImage,
-    alpha: 0,
-    duration: 260,
-    ease: "Sine.easeInOut",
-    onComplete: () => {
-      this.cutsceneIndex = nextIndex;
-      this.cutsceneImage.setTexture(this.slides[this.cutsceneIndex]);
-      this._fitCutsceneImage(this.cutsceneImage, this.scale.width, this.scale.height);
-      this.cutsceneProgress.setText(`${this.cutsceneIndex + 1} / ${this.slides.length}`);
-      this.cutsceneDialogue();
-
-      this.tweens.add({
-        targets: this.cutsceneImage,
-        alpha: 1,
-        duration: 320,
-        ease: "Sine.easeInOut",
-        onComplete: () => {
-          this.isTransitioningSlide = false;
+        mexicanMusic.setVolume(musicVolume);
+        if (!mexicanMusic.isPlaying) {
+            mexicanMusic.play();
         }
-      });
-    }
-  });
-}
-
-  animateText(target, message, speedInMs = 50) {
-    if (this.currentTypingTimer) {
-      this.currentTypingTimer.remove(false);
-      this.currentTypingTimer = null;
     }
 
-    this.fullText = message;
-
-    if (!message) {
-      target.setText("");
-      this.isTyping = false;
-      return;
+    stopMexicanMusic() {
+        this.sound.stopByKey("mexican_music");
     }
 
-    const invisibleMessage = message.replace(/[^\s]/g, " ");
-    target.setText("");
+    cutsceneDialogue() {
+        const dialogueText = this.dialogueLines[this.cutsceneIndex] || "";
 
-    let visibleText = "";
-    this.isTyping = true;
-
-    this.currentTypingTimer = this.time.addEvent({
-      delay: speedInMs,
-      loop: true,
-      callback: () => {
-        if (visibleText.length >= message.length) {
-          target.setText(message);
-          this.currentTypingTimer.remove(false);
-          this.currentTypingTimer = null;
-          this.isTyping = false;
-          return;
+        if (!this.dialogueText) {
+            this.dialogueText = this.add.text(
+                this.scale.width / 2,
+                this.scale.height - 100,
+                "",
+                {
+                    fontSize: "24px",
+                    fill: "#fff4dd",
+                    align: "center",
+                    wordWrap: { width: this.scale.width - 80 }
+                }
+            ).setOrigin(0.5).setShadow(2, 2, "#000000", 0, false, true);
         }
 
-        visibleText += message[visibleText.length];
-        const invisiblePart = invisibleMessage.substring(visibleText.length);
-        target.setText(visibleText + invisiblePart);
-      },
-    });
-  }
+        this.animateText(this.dialogueText, dialogueText, 20);
+    }
+
+    _fitCutsceneImage(image, width, height) {
+        const scale = Math.min((width - 80) / image.width, (height - 120) / image.height);
+        image.setScale(scale);
+    }
+
+    advanceCutscene() {
+        if (this.isTransitioningSlide) return;
+
+        // 👉 if still typing, finish instantly instead of advancing
+        if (this.isTyping) {
+            if (this.currentTypingTimer) {
+                this.currentTypingTimer.remove(false);
+                this.currentTypingTimer = null;
+            }
+            this.dialogueText.setText(this.fullText);
+            this.isTyping = false;
+            return;
+        }
+
+        const nextIndex = this.cutsceneIndex + 1;
+
+        if (nextIndex >= this.slides.length) {
+            this.isTransitioningSlide = true;
+            this.cameras.main.fadeOut(350, 19, 14, 11);
+            this.time.delayedCall(360, () => {
+                this.scene.start("MexicoScene");
+            });
+            return;
+        }
+
+        this.isTransitioningSlide = true;
+        this.tweens.add({
+            targets: this.cutsceneImage,
+            alpha: 0,
+            duration: 260,
+            ease: "Sine.easeInOut",
+            onComplete: () => {
+                this.cutsceneIndex = nextIndex;
+                this.cutsceneImage.setTexture(this.slides[this.cutsceneIndex]);
+                this._fitCutsceneImage(this.cutsceneImage, this.scale.width, this.scale.height);
+                this.cutsceneProgress.setText(`${this.cutsceneIndex + 1} / ${this.slides.length}`);
+                this.cutsceneDialogue();
+
+                this.tweens.add({
+                    targets: this.cutsceneImage,
+                    alpha: 1,
+                    duration: 320,
+                    ease: "Sine.easeInOut",
+                    onComplete: () => {
+                        this.isTransitioningSlide = false;
+                    }
+                });
+            }
+        });
+    }
+
+    animateText(target, message, speedInMs = 50) {
+        if (this.currentTypingTimer) {
+            this.currentTypingTimer.remove(false);
+            this.currentTypingTimer = null;
+        }
+
+        this.fullText = message;
+
+        if (!message) {
+            target.setText("");
+            this.isTyping = false;
+            return;
+        }
+
+        const invisibleMessage = message.replace(/[^\s]/g, " ");
+        target.setText("");
+
+        let visibleText = "";
+        this.isTyping = true;
+
+        this.currentTypingTimer = this.time.addEvent({
+            delay: speedInMs,
+            loop: true,
+            callback: () => {
+                if (visibleText.length >= message.length) {
+                    target.setText(message);
+                    this.currentTypingTimer.remove(false);
+                    this.currentTypingTimer = null;
+                    this.isTyping = false;
+                    return;
+                }
+
+                visibleText += message[visibleText.length];
+                const invisiblePart = invisibleMessage.substring(visibleText.length);
+                target.setText(visibleText + invisiblePart);
+            },
+        });
+    }
 }
 
 class MexicoScene extends Phaser.Scene {
@@ -208,13 +208,22 @@ class MexicoScene extends Phaser.Scene {
         this.backgroundClouds = [];
         this.backgroundBirds = [];
     }
-
+    playSfx(key) {
+        if (!this.cache.audio.exists(key)) return;
+        this.sound.play(key, { volume: getSfxVolume(this) });
+    }
     preload() {
         this.load.image('pinata', 'assets/mexico/mexico_minigame_pinata.png');
         this.load.image('goldenPinata', 'assets/mexico/mexico_minigame_goldenPinata.png');
         this.load.image('chile', 'assets/mexico/mexico_minigame_chile.png');
+
+        this.load.audio("pop_sfx", "assets/sfx/pop_sfx.mp3");
+        this.load.audio("hit_sfx", "assets/sfx/hit_sfx.mp3");
+        this.load.audio("item_collection_sfx", "assets/sfx/item_collection_sfx.mp3");
+        this.load.audio("victory_sfx", "assets/sfx/victory_sfx.mp3");
+        this.load.audio("lose_sfx", "assets/sfx/lose_sfx.mp3");
     }
-    
+
     create() {
         this.startMexicanMusic();
         // RESET STATE: Important because the scene is reused
@@ -324,29 +333,29 @@ class MexicoScene extends Phaser.Scene {
         return bird;
     }
     startMexicanMusic() {
-    let mexicanMusic = this.sound.get("mexican_music");
-    const musicVolume = this.registry.get("musicVolume") ?? 0.55;
-    if (!mexicanMusic) {
-      mexicanMusic = this.sound.add("mexican_music", { volume: musicVolume, loop: true });
+        let mexicanMusic = this.sound.get("mexican_music");
+        const musicVolume = this.registry.get("musicVolume") ?? 0.55;
+        if (!mexicanMusic) {
+            mexicanMusic = this.sound.add("mexican_music", { volume: musicVolume, loop: true });
+        }
+        mexicanMusic.setVolume(musicVolume);
+        if (!mexicanMusic.isPlaying) {
+            mexicanMusic.play();
+        }
     }
-    mexicanMusic.setVolume(musicVolume);
-    if (!mexicanMusic.isPlaying) {
-      mexicanMusic.play();
+
+    stopMexicanMusic() {
+        this.sound.stopByKey("mexican_music");
     }
-   }
 
-   stopMexicanMusic() {
-     this.sound.stopByKey("mexican_music");
-   }
-
-   returnToMap() {
-     this.stopMexicanMusic();
-     if (!this.checkOliveWin()) {
-       this.scene.start("MapScene");
-     } else {
-       this.scene.start("OliveWinScene");
-     }
-   }
+    returnToMap() {
+        this.stopMexicanMusic();
+        if (!this.checkOliveWin()) {
+            this.scene.start("MapScene");
+        } else {
+            this.scene.start("OliveWinScene");
+        }
+    }
 
     initConfettiPool(poolSize = 24) {
         this.confettiPool = [];
@@ -392,7 +401,7 @@ class MexicoScene extends Phaser.Scene {
         const startX = Phaser.Math.Between(40, width - 40);
         const endX = Phaser.Math.Between(width - 40, 40);
         // Adjust peak for 600px height
-        const peakY = Phaser.Math.Between(height * 0.3, height * 0.5); 
+        const peakY = Phaser.Math.Between(height * 0.3, height * 0.5);
         const startY = height + 50; // Start just below screen
 
         const pinata = this.add.image(startX, startY, 'pinata');
@@ -425,7 +434,7 @@ class MexicoScene extends Phaser.Scene {
         const startX = Phaser.Math.Between(40, width - 40);
         const endX = Phaser.Math.Between(width - 40, 40);
         // Adjust peak for 600px height
-        const peakY = Phaser.Math.Between(height * 0.3, height * 0.5); 
+        const peakY = Phaser.Math.Between(height * 0.3, height * 0.5);
         const startY = height + 50; // Start just below screen
 
         const chile = this.add.image(startX, startY, 'chile');
@@ -458,7 +467,7 @@ class MexicoScene extends Phaser.Scene {
         const startX = Phaser.Math.Between(40, width - 40);
         const endX = Phaser.Math.Between(width - 40, 40);
         // Adjust peak for 600px height
-        const peakY = Phaser.Math.Between(height * 0.3, height * 0.5); 
+        const peakY = Phaser.Math.Between(height * 0.3, height * 0.5);
         const startY = height + 50; // Start just below screen
 
         const goldenPinata = this.add.image(startX, startY, 'goldenPinata');
@@ -663,6 +672,7 @@ class MexicoScene extends Phaser.Scene {
 
         const index = this.pinatas.findIndex(p => p.el === pinataEl);
         if (index !== -1 && !this.pinatas[index].clicked) {
+            this.playSfx("pop_sfx");
             this.pinatas[index].clicked = true;
             this.score += 10;
             this.scoreText.setText('Score: ' + this.score);
@@ -688,6 +698,7 @@ class MexicoScene extends Phaser.Scene {
 
         const index = this.chiles.findIndex(p => p.el === chileEl);
         if (index !== -1 && !this.chiles[index].clicked) {
+            this.playSfx("hit_sfx");
             this.chiles[index].clicked = true;
             this.score -= 20;
             this.scoreText.setText('Score: ' + this.score);
@@ -712,8 +723,9 @@ class MexicoScene extends Phaser.Scene {
 
         const index = this.goldenPinatas.findIndex(p => p.el === goldenPinataEl);
         if (index !== -1 && !this.goldenPinatas[index].clicked) {
+            this.playSfx("item_collection_sfx");
             this.goldenPinatas[index].clicked = true;
-            this.score += 50; 
+            this.score += 50;
             this.scoreText.setText('Score: ' + this.score);
 
             this.createCoinBurst(goldenPinataEl.x, goldenPinataEl.y);
@@ -765,7 +777,7 @@ class MexicoScene extends Phaser.Scene {
 
         for (let i = this.pinatas.length - 1; i >= 0; i--) {
             const pinataData = this.pinatas[i];
-            
+
             pinataData.el.angle += pinataData.angle; // Rotate the pinata for visual effect
 
             if (pinataData.clicked) continue;
@@ -827,7 +839,7 @@ class MexicoScene extends Phaser.Scene {
                 const y = goldenPinataData.startY - (4 * t * (1 - t)) * (goldenPinataData.startY - goldenPinataData.peakY);
                 goldenPinataData.el.setPosition(x, y);
             }
-        } 
+        }
 
     }
 
@@ -865,7 +877,7 @@ class MexicoScene extends Phaser.Scene {
             this.endGame();
         }
     }
-    
+
     _overlay() {
         const { width, height } = this.scale;
         const depth = 1000;
@@ -923,6 +935,11 @@ class MexicoScene extends Phaser.Scene {
         if (this.countdownEvent) this.countdownEvent.remove();
 
         const won = this.score >= 1500;
+        if (won) {
+            this.playSfx("victory_sfx");
+        } else {
+            this.playSfx("lose_sfx");
+        }
         const { width, height, depth } = this._overlay();
 
         this.add.text(width / 2, height / 2 - 108, won ? "Victory!" : "Game Over", {
@@ -954,11 +971,11 @@ class MexicoScene extends Phaser.Scene {
             this.registry.set('wins', wins);
         }
     }
-  checkOliveWin() {
-    const wins = this.registry.get('wins') || {};
-    if (wins.italy && wins.philippines && wins.egypt && wins.mexico && wins.india && wins.brazil) {
-      return true;
+    checkOliveWin() {
+        const wins = this.registry.get('wins') || {};
+        if (wins.italy && wins.philippines && wins.egypt && wins.mexico && wins.india && wins.brazil) {
+            return true;
+        }
+        return false;
     }
-    return false;
-  }
 }

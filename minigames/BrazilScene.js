@@ -262,6 +262,11 @@ class BrazilScene extends Phaser.Scene {
 
     this.TOP_UI_HEIGHT = 96;
   }
+  
+  playSfx(key) {
+    if (!this.cache.audio.exists(key)) return;
+    this.sound.play(key, { volume: getSfxVolume(this) });
+  }
 
   preload() {
     this.load.audio("brazil_music", "assets/brazil/cutscene/brazil_music.mp3");
@@ -271,10 +276,10 @@ class BrazilScene extends Phaser.Scene {
     this.load.image("skyline", "assets/brazil/brazil_skyline.PNG");
     this.load.image("buildings", "assets/brazil/brazil_buildings.PNG");
 
-    this.load.image("beans", "assets/brazil/brazil_blackbeansa.png");
-    this.load.image("rice", "assets/brazil/brazil_ricea.png");
-    this.load.image("sausage", "assets/brazil/brazil_sausagea.png");
-    this.load.image("ribs", "assets/brazil/brazil_porkribsa.png");
+    this.load.image("beans", "assets/brazil/brazil_blackbeansb.png");
+    this.load.image("rice", "assets/brazil/brazil_riceb.png");
+    this.load.image("sausage", "assets/brazil/brazil_sausageb.png");
+    this.load.image("ribs", "assets/brazil/brazil_porkribsb.png");
 
     this.load.image("oliveHatChef", "assets/olivesprites/olive_hat_chef.PNG");
     this.load.image("oliveHatJester", "assets/olivesprites/olive_hat_jester.PNG");
@@ -287,6 +292,10 @@ class BrazilScene extends Phaser.Scene {
     this.load.image("float_b_5", "assets/brazil/float_b_5.png");
     this.load.image("float_a_6", "assets/brazil/float_a_6.png");
     this.load.image("float_b_6", "assets/brazil/float_b_6.png");
+
+    this.load.audio("item_collection_sfx", "assets/sfx/item_collection_sfx.mp3");
+    this.load.audio("hit_sfx", "assets/sfx/hit_sfx.mp3");
+    this.load.audio("victory_sfx", "assets/sfx/victory_sfx.mp3");
   }
 
   create() {
@@ -778,6 +787,7 @@ class BrazilScene extends Phaser.Scene {
       return;
     }
 
+    this.playSfx("item_collection_sfx");
     ingredient.disableBody(true, true);
     this.ingredientCollected = true;
     this.ingredientText.setText(`${this.levelData.ingredient}: collected`);
@@ -794,7 +804,7 @@ class BrazilScene extends Phaser.Scene {
     if (!coin.active) {
       return;
     }
-
+    this.playSfx("item_collection_sfx");
     coin.disableBody(true, true);
     const current = this.registry.get("currency") || 0;
     this.registry.set("currency", current + 1);
@@ -814,7 +824,7 @@ class BrazilScene extends Phaser.Scene {
     if (this.goalReached) {
       return;
     }
-
+    this.playSfx("victory_sfx");
     if (!this.ingredientCollected) {
       this.showToast("Collect the ingredient first");
       return;
@@ -891,6 +901,7 @@ class BrazilScene extends Phaser.Scene {
   showVictory() {
     const wins = this.registry.get("wins") || {};
     wins.brazil = true;
+    this.playSfx("victory_sfx");
     this.registry.set("wins", wins);
 
     this.active = false;
@@ -995,6 +1006,7 @@ class BrazilScene extends Phaser.Scene {
 
     if (this.player.y > this.scale.height + 120) {
       this.active = false;
+      this.playSfx("hit_sfx");
       this.cameras.main.shake(240, 0.01, false, (camera, progress) => {
         if (progress > 0.9) {
           this.scene.restart({ level: this.currentLevel });

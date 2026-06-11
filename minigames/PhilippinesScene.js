@@ -190,42 +190,42 @@ class PhilippinesCutscene extends Phaser.Scene {
   }
 }
 
-  const LEVEL_LAYOUTS = {
-    1: ["G", "G", "R", "G", "R", "R", "G", "R", "G", "G"],
-    2: ["G", "G", "W", "G", "W", "W", "G", "W", "G", "G"],
-    3: ["G", "W", "R", "G", "R", "W", "G", "W", "R", "G"],
-    4: ["G", "W", "R", "W", "G", "G", "R", "W", "R", "G"],
-    5: ["G", "W", "R", "R", "W", "W", "R", "R", "W", "G"],
-  };
+const LEVEL_LAYOUTS = {
+  1: ["G", "G", "R", "G", "R", "R", "G", "R", "G", "G"],
+  2: ["G", "G", "W", "G", "W", "W", "G", "W", "G", "G"],
+  3: ["G", "W", "R", "G", "R", "W", "G", "W", "R", "G"],
+  4: ["G", "W", "R", "W", "G", "G", "R", "W", "R", "G"],
+  5: ["G", "W", "R", "R", "W", "W", "R", "R", "W", "G"],
+};
 
-  const LANE_STYLES = {
-    G: {
-      base: 0x8fd694,
-      alt: 0x77c87e,
-      accent: 0xb7e4a6,
-      border: 0x5da565,
-    },
-    W: {
-      base: 0x2f8fcb,
-      alt: 0x2277ac,
-      accent: 0x7ad7f0,
-      border: 0x14557f,
-    },
-    R: {
-      base: 0x505861,
-      alt: 0x3f4650,
-      accent: 0xbcc2c9,
-      border: 0x292e35,
-    },
-  };
+const LANE_STYLES = {
+  G: {
+    base: 0x8fd694,
+    alt: 0x77c87e,
+    accent: 0xb7e4a6,
+    border: 0x5da565,
+  },
+  W: {
+    base: 0x2f8fcb,
+    alt: 0x2277ac,
+    accent: 0x7ad7f0,
+    border: 0x14557f,
+  },
+  R: {
+    base: 0x505861,
+    alt: 0x3f4650,
+    accent: 0xbcc2c9,
+    border: 0x292e35,
+  },
+};
 
-  const PHILIPPINES_OLIVE_TEXTURES = {
-    default: "oliveOverjoyed",
-    chef: "oliveHatChef",
-    jester: "oliveHatJester",
-    propeller: "oliveHatPropeller",
-    wizard: "oliveHatWizard",
-  };
+const PHILIPPINES_OLIVE_TEXTURES = {
+  default: "oliveOverjoyed",
+  chef: "oliveHatChef",
+  jester: "oliveHatJester",
+  propeller: "oliveHatPropeller",
+  wizard: "oliveHatWizard",
+};
 
 class PhilippinesScene extends Phaser.Scene {
   constructor() {
@@ -266,6 +266,11 @@ class PhilippinesScene extends Phaser.Scene {
     };
   }
 
+  playSfx(key) {
+    if (!this.cache.audio.exists(key)) return;
+    this.sound.play(key, { volume: getSfxVolume(this) });
+  }
+
   preload() {
     this.load.audio("filipino_music", "assets/philippines/cutscene/filipino_music.mp3");
     this.load.image("oliveOverjoyed", "assets/olivesprites/olive_overjoyed.PNG");
@@ -281,6 +286,10 @@ class PhilippinesScene extends Phaser.Scene {
     this.load.image("vehcar", "assets/philippines/car.PNG");
     this.load.image("vehtricycle", "assets/philippines/tricycle.PNG");
     this.load.image("vehjeepney", "assets/philippines/jeepney.PNG");
+
+    this.load.audio("item_collection_sfx", "assets/sfx/item_collection_sfx.mp3");
+    this.load.audio("victory_sfx", "assets/sfx/victory_sfx.mp3");
+    this.load.audio("lose_sfx", "assets/sfx/lose_sfx.mp3");
   }
 
   create() {
@@ -337,8 +346,8 @@ class PhilippinesScene extends Phaser.Scene {
 
   returnToMap() {
     this.stopPhilippinesMusic();
-    if(!this.checkOliveWin()){
-	    this.scene.start("MapScene");
+    if (!this.checkOliveWin()) {
+      this.scene.start("MapScene");
     }
     else {
       this.scene.start("OliveWinScene");
@@ -632,8 +641,10 @@ class PhilippinesScene extends Phaser.Scene {
     this.coin = this.add.container(x, y, [glow, outer, inner, shine]).setDepth(600);
     this.gameContainer.add(this.coin);
 
-    this.tweens.add({targets: this.coin, y: y - 6, duration: 900, 
-      yoyo: true, repeat: -1, ease: "Sine.InOut"});
+    this.tweens.add({
+      targets: this.coin, y: y - 6, duration: 900,
+      yoyo: true, repeat: -1, ease: "Sine.InOut"
+    });
 
     this.coinGridX = col;
     this.coinGridY = row;
@@ -658,7 +669,8 @@ class PhilippinesScene extends Phaser.Scene {
 
       this.gameContainer.add(sprite);
 
-      this.tweens.add({targets: sprite, scale: { from: 0.95, to: 1.05 },
+      this.tweens.add({
+        targets: sprite, scale: { from: 0.95, to: 1.05 },
         duration: 800 + spawned * 35, yoyo: true,
         repeat: -1, ease: "Sine.InOut",
       });
@@ -833,6 +845,7 @@ class PhilippinesScene extends Phaser.Scene {
 
   collectIngredient(ing) {
     ing.collected = true;
+    this.playSfx("item_collection_sfx");
     this.tweens.add({
       targets: ing.sprite,
       y: ing.sprite.y - 16,
@@ -848,16 +861,21 @@ class PhilippinesScene extends Phaser.Scene {
 
   collectCoin() {
     this.coinCollected = true;
+    this.playSfx("item_collection_sfx");
     this.tweens.killTweensOf(this.coin);
-    this.tweens.add({targets: this.coin, alpha: 0,
+    this.tweens.add({
+      targets: this.coin, alpha: 0,
       scale: 1.3, y: this.coin.y - 18, duration: 200,
-      onComplete: () => this.coin.destroy()});
+      onComplete: () => this.coin.destroy()
+    });
 
     const current = this.registry.get("currency") || 0;
     this.registry.set("currency", current + 1);
     this.coinText.setText(`Coins: ${current + 1}`);
-    this.tweens.add({targets: this.coinText, scale: 1.08,
-      yoyo: true, duration: 150});
+    this.tweens.add({
+      targets: this.coinText, scale: 1.08,
+      yoyo: true, duration: 150
+    });
   }
 
   checkCollisions() {
@@ -924,6 +942,7 @@ class PhilippinesScene extends Phaser.Scene {
   die(message) {
     if (this.isEnding) return;
     this.isEnding = true;
+    this.playSfx("lose_sfx");
     this.canMove = false;
     this.isMoving = false;
     this.playerOnLog = null;
@@ -944,6 +963,7 @@ class PhilippinesScene extends Phaser.Scene {
   levelComplete() {
     if (this.isEnding) return;
     this.isEnding = true;
+    this.playSfx("victory_sfx");
     this.canMove = false;
     this.isMoving = false;
     this.playerOnLog = null;

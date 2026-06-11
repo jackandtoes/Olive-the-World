@@ -216,6 +216,11 @@ class IndiaScene extends Phaser.Scene {
         };
     }
 
+    playSfx(key) {
+        if (!this.cache.audio.exists(key)) return;
+        this.sound.play(key, { volume: getSfxVolume(this) });
+    }
+
     preload() {
         this.load.audio("india_music", "assets/india/cutscene/india_music.mp3");
         this.load.image('pot', 'assets/india/clayPot.png');
@@ -418,12 +423,12 @@ class IndiaScene extends Phaser.Scene {
 
         ingredient.disableBody(true, true);
         if (this.gameIsOver) {
-            this.sound.play("item_collection_sfx", { volume: getSfxVolume(this) });
             return;
         }
+        this.playSfx("item_collection_sfx");
         this.score += 1;
-        this.scoreText.setText(this.score.toString());
-        this.sound.play("item_collection_sfx", { volume: getSfxVolume(this) });
+        this.scoreText.setText(this.score.toString(10));
+        console.log(this.score);
         this.checkWinCondition();
     }
 
@@ -554,7 +559,7 @@ class IndiaScene extends Phaser.Scene {
     }
 
     showGameOver() {
-            this.sound.play("lose_sfx", { volume: getSfxVolume(this) });
+    this.playSfx("lose_sfx");
         const { width, height, depth } = this._overlay();
         this.add.text(width / 2, height / 2 - 108, "Game Over", {
             fontSize: "46px",
@@ -580,7 +585,7 @@ class IndiaScene extends Phaser.Scene {
         const wins = this.registry.get('wins') || {};
         wins.india = true;
         this.registry.set('wins', wins);
-    this.sound.play("victory_sfx", { volume: getSfxVolume(this) });
+    this.playSfx("victory_sfx");
 
         const { width, height, depth } = this._overlay();
         this.add.text(width / 2, height / 2 - 108, "Victory!", {

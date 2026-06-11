@@ -195,6 +195,11 @@ class EgyptScene extends Phaser.Scene {
     super("EgyptScene");
   }
 
+  playSfx(key) {
+    if (!this.cache.audio.exists(key)) return;
+    this.sound.play(key, { volume: getSfxVolume(this) });
+  }
+
   preload() {
     // Generate all assets procedurally using graphics
     this.generateAssets();
@@ -204,6 +209,9 @@ class EgyptScene extends Phaser.Scene {
     this.load.image('oliveHatPropeller', 'assets/olive_hat_propeller.PNG');
     this.load.image('oliveHatWizard', 'assets/olive_hat_wizard.PNG');
     this.load.audio('egypt_music', 'assets/egypt/cutscene/egypt_music.mp3');
+
+    this.load.audio("victory_sfx", "assets/sfx/victory_sfx.mp3");
+    this.load.audio("lose_sfx", "assets/sfx/lose_sfx.mp3");
   }
 
   generateAssets() {
@@ -1278,7 +1286,7 @@ class EgyptScene extends Phaser.Scene {
 
   triggerGameOver() {
     this.gameOver = true;
-
+    this.playSfx("lose_sfx");
     // Draw dead dino
     this.drawDinoDead(this.dino, 0, 0);
     this.dino.setPosition(this.dinoX, this.dinoY);
@@ -1293,6 +1301,7 @@ class EgyptScene extends Phaser.Scene {
     this.rewardCoins();
 
     if (this.score >= 500) {
+      this.playSfx("win_sfx");
       const wins = this.registry.get('wins');
       wins.egypt = true;
       this.registry.set('wins', wins);
