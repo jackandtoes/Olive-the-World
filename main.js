@@ -3,8 +3,8 @@ const HAT_CATALOG = [
   { key: "jester", texture: "hatJester", oliveTexture: "oliveHatJester", label: "Jester Hat", price: 3, displayWidth: 74, displayHeight: 74, storeDisplayWidth: 74, storeDisplayHeight: 74 },
   { key: "propeller", texture: "hatPropeller", oliveTexture: "oliveHatPropeller", label: "Propeller Hat", price: 4, displayWidth: 78, displayHeight: 78, storeDisplayWidth: 92, storeDisplayHeight: 92 },
   { key: "wizard", texture: "hatWizard", oliveTexture: "oliveHatWizard", label: "Wizard Hat", price: 5, displayWidth: 74, displayHeight: 74, storeDisplayWidth: 74, storeDisplayHeight: 74 },
-  { key: "viking", texture: "hatViking", oliveTexture: "oliveHatViking", label: "Viking Hat", price: 4, displayWidth: 78, displayHeight: 78, storeDisplayWidth: 85, storeDisplayHeight: 72 },
-  { key: "shark", texture: "hatShark", oliveTexture: "oliveHatShark", label: "Shark Hat", price: 5, displayWidth: 74, displayHeight: 74, storeDisplayWidth: 74, storeDisplayHeight: 74 }
+  { key: "viking", texture: "hatViking", oliveTexture: "oliveHatViking", label: "Viking Hat", price: 6, displayWidth: 78, displayHeight: 78, storeDisplayWidth: 85, storeDisplayHeight: 72 },
+  { key: "shark", texture: "hatShark", oliveTexture: "oliveHatShark", label: "Shark Hat", price: 7, displayWidth: 74, displayHeight: 74, storeDisplayWidth: 74, storeDisplayHeight: 74 }
 ];
 
 const MAP_OLIVE_TARGET_HEIGHT = 38;

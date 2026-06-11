@@ -208,6 +208,8 @@ class EgyptScene extends Phaser.Scene {
     this.load.image('oliveHatJester', 'assets/olive_hat_jester.PNG');
     this.load.image('oliveHatPropeller', 'assets/olive_hat_propeller.PNG');
     this.load.image('oliveHatWizard', 'assets/olive_hat_wizard.PNG');
+    this.load.image('oliveHatViking', 'assets/olive_hat_viking.PNG');
+    this.load.image('oliveHatShark', 'assets/olive_hat_shark.PNG');
     this.load.audio('egypt_music', 'assets/egypt/cutscene/egypt_music.mp3');
 
     this.load.audio("victory_sfx", "assets/sfx/victory_sfx.mp3");
@@ -502,6 +504,8 @@ class EgyptScene extends Phaser.Scene {
       jester: 'oliveHatJester',
       propeller: 'oliveHatPropeller',
       wizard: 'oliveHatWizard'
+      viking: 'oliveHatViking',
+      shark: 'oliveHatShark'
     };
     const oliveTexture = oliveTextureByHat[equippedHat] || 'oliveOverjoyed';
     const olive = this.add.image(0, 0, oliveTexture);

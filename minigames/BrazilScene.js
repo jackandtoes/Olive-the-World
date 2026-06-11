@@ -221,6 +221,8 @@ const BRAZIL_OLIVE_TEXTURES = {
   jester: "oliveHatJester",
   propeller: "oliveHatPropeller",
   wizard: "oliveHatWizard",
+  viking: "oliveHatViking",
+  shark: "oliveHatShark"
 };
 
 class BrazilScene extends Phaser.Scene {
@@ -285,6 +287,9 @@ class BrazilScene extends Phaser.Scene {
     this.load.image("oliveHatJester", "assets/olivesprites/olive_hat_jester.PNG");
     this.load.image("oliveHatPropeller", "assets/olivesprites/olive_hat_propeller.PNG");
     this.load.image("oliveHatWizard", "assets/olivesprites/olive_hat_wizard.PNG");
+    this.load.image("oliveHatViking", "assets/olivesprites/olive_hat_viking.PNG");
+    this.load.image("oliveHatShark", "assets/olivesprites/olive_hat_shark.PNG");
+
 
     this.load.image("float_a_4", "assets/brazil/float_a_4.png");
     this.load.image("float_b_4", "assets/brazil/float_b_4.png");
