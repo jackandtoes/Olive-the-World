@@ -334,9 +334,11 @@ class BrazilScene extends Phaser.Scene {
 
   startBrazilMusic() {
     let brazilMusic = this.sound.get("brazil_music");
+    const musicVolume = this.registry.get("musicVolume") ?? 0.55;
     if (!brazilMusic) {
-      brazilMusic = this.sound.add("brazil_music", { volume: 0.55, loop: true });
+      brazilMusic = this.sound.add("brazil_music", { volume: musicVolume, loop: true });
     }
+    brazilMusic.setVolume(musicVolume);
     if (!brazilMusic.isPlaying) {
       brazilMusic.play();
     }
