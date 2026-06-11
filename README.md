@@ -34,9 +34,12 @@ Coming soon!
 - [x] Italy minigame
 - [x] Mexico minigame
 - [x] Philippines minigame
-- [ ] Story transitions between countries
+- [x] Egypt minigame
+- [x] India minigame
+- [x] Brazil minigame
+- [x] Story transitions between countries
 - [ ] Improved artwork
-- [ ] Additional countries/minigames (China, Brazil, United States, etc)
+- [ ] Additional countries/minigames (Australia, Ethiopia, Nigeria, China, United States, etc)
 
 See the [open issues](https://github.com/jackandtoes/Olive-the-World/issues) for a full list of proposed features (and known issues).
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
