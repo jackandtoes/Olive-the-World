@@ -18,9 +18,9 @@ class PhilippinesCutscene extends Phaser.Scene {
     this.registry.set("seenCutscenes", seenCutscenes);
     this.slides = ["oliveManila", "oliveRest", "oliveMangoChef"];
     this.dialogueLines = [
+      "Beep beep! Get on in!",
       "",
-      "",
-      "Philippines" // change this later
+      "Anak! Let's make some lumpia" // change this later
     ];
 
     this.cutsceneIndex = 0;
