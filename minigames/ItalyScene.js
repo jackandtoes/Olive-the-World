@@ -213,6 +213,8 @@ class ItalyScene extends Phaser.Scene {
    this.load.image('oliveHatJester', 'assets/olivesprites/olive_hat_jester.PNG');
    this.load.image('oliveHatPropeller', 'assets/olivesprites/olive_hat_propeller.PNG');
    this.load.image('oliveHatWizard', 'assets/olivesprites/olive_hat_wizard.PNG');
+   this.load.image('oliveHatViking', 'assets/olivesprites/olive_hat_viking.PNG');
+   this.load.image('oliveHatShark', 'assets/olivesprites/olive_hat_shark.PNG');
    this.load.audio("italian_music", "assets/italy/cutscene/italian_music.mp3");
 
    this.load.audio("slurp_sfx", "assets/sfx/slurp_sfx.mp3");
@@ -460,7 +462,9 @@ this.levelLayouts = {
     chef: 'oliveHatChef',
     jester: 'oliveHatJester',
     propeller: 'oliveHatPropeller',
-    wizard: 'oliveHatWizard'
+    wizard: 'oliveHatWizard',
+    shark: 'oliveHatShark',
+    viking: 'oliveHatViking'
   };
   const oliveTexture = oliveTextureByHat[equippedHat] || 'oliveOverjoyed';
   const olive = this.add.image(mascotX, mascotY, oliveTexture).setDepth(3);

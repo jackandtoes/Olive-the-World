@@ -20,7 +20,7 @@ class PhilippinesCutscene extends Phaser.Scene {
     this.dialogueLines = [
       "Beep beep! Get on in!",
       "",
-      "Anak! Let's make some lumpia" // change this later
+      "Anak! Let's make some lumpia." // change this later
     ];
 
     this.cutsceneIndex = 0;
@@ -225,6 +225,8 @@ const PHILIPPINES_OLIVE_TEXTURES = {
   jester: "oliveHatJester",
   propeller: "oliveHatPropeller",
   wizard: "oliveHatWizard",
+  viking: "oliveHatViking",
+  shark: "oliveHatShark"
 };
 
 class PhilippinesScene extends Phaser.Scene {
@@ -278,6 +280,8 @@ class PhilippinesScene extends Phaser.Scene {
     this.load.image("oliveHatJester", "assets/olivesprites/olive_hat_jester.PNG");
     this.load.image("oliveHatPropeller", "assets/olivesprites/olive_hat_propeller.PNG");
     this.load.image("oliveHatWizard", "assets/olivesprites/olive_hat_wizard.PNG");
+    this.load.image("oliveHatViking", "assets/olivesprites/olive_hat_viking.PNG");
+    this.load.image("oliveHatShark", "assets/olivesprites/olive_hat_shark.PNG");
     this.load.image("itemcabbage", "assets/philippines/philippines_cabbage.PNG");
     this.load.image("itemcarrots", "assets/philippines/philippines_carrots.PNG");
     this.load.image("itemonion", "assets/philippines/philippines_onion.PNG");
