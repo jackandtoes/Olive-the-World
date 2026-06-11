@@ -219,7 +219,7 @@ class PhilippinesCutscene extends Phaser.Scene {
     },
   };
 
-  const OLIVE_TEXTURES = {
+  const PHILIPPINES_OLIVE_TEXTURES = {
     default: "oliveOverjoyed",
     chef: "oliveHatChef",
     jester: "oliveHatJester",
@@ -444,7 +444,7 @@ class PhilippinesScene extends Phaser.Scene {
     const x = startCol * this.GRID_SIZE + this.GRID_SIZE / 2;
     const y = startRow * this.GRID_SIZE + this.GRID_SIZE / 2;
     const equippedHat = this.registry.get("equippedItems")?.hat;
-    const textureKey = OLIVE_TEXTURES[equippedHat] || OLIVE_TEXTURES.default;
+    const textureKey = PHILIPPINES_OLIVE_TEXTURES[equippedHat] || PHILIPPINES_OLIVE_TEXTURES.default;
 
     const shadow = this.add.ellipse(0, 12, this.GRID_SIZE * 0.65, 14, this.palette.shadow, 0.16);
     const sprite = this.add.image(0, -2, textureKey);
