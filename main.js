@@ -2,7 +2,9 @@ const HAT_CATALOG = [
   { key: "chef", texture: "hatChef", oliveTexture: "oliveHatChef", label: "Chef Hat", price: 2, displayWidth: 74, displayHeight: 74, storeDisplayWidth: 90, storeDisplayHeight: 90 },
   { key: "jester", texture: "hatJester", oliveTexture: "oliveHatJester", label: "Jester Hat", price: 3, displayWidth: 74, displayHeight: 74, storeDisplayWidth: 74, storeDisplayHeight: 74 },
   { key: "propeller", texture: "hatPropeller", oliveTexture: "oliveHatPropeller", label: "Propeller Hat", price: 4, displayWidth: 78, displayHeight: 78, storeDisplayWidth: 92, storeDisplayHeight: 92 },
-  { key: "wizard", texture: "hatWizard", oliveTexture: "oliveHatWizard", label: "Wizard Hat", price: 5, displayWidth: 74, displayHeight: 74, storeDisplayWidth: 74, storeDisplayHeight: 74 }
+  { key: "wizard", texture: "hatWizard", oliveTexture: "oliveHatWizard", label: "Wizard Hat", price: 5, displayWidth: 74, displayHeight: 74, storeDisplayWidth: 74, storeDisplayHeight: 74 },
+  { key: "viking", texture: "hatViking", oliveTexture: "oliveHatViking", label: "Viking Hat", price: 4, displayWidth: 78, displayHeight: 78, storeDisplayWidth: 85, storeDisplayHeight: 72 },
+  { key: "shark", texture: "hatShark", oliveTexture: "oliveHatShark", label: "Shark Hat", price: 5, displayWidth: 74, displayHeight: 74, storeDisplayWidth: 74, storeDisplayHeight: 74 }
 ];
 
 const MAP_OLIVE_TARGET_HEIGHT = 38;
@@ -70,6 +72,8 @@ class StartScene extends Phaser.Scene {
     this.load.image("hatJester", "assets/hats/hat_jester.PNG");
     this.load.image("hatPropeller", "assets/hats/hat_propeller.PNG");
     this.load.image("hatWizard", "assets/hats/hat_wizard.PNG");
+    this.load.image("hatViking", "assets/hats/hat_viking.png");
+    this.load.image("hatShark", "assets/hats/hat_shark.png");
     this.load.audio("birthday_song", "assets/cutscene/olive_birthday_song.MP3");
     this.load.image("oliveParents", "assets/cutscene/olive_parents.png");
     this.load.image("oliveConfession1", "assets/cutscene/olive_confession1.png");
@@ -532,11 +536,15 @@ class MapScene extends Phaser.Scene {
     this.load.image("hatJester", "assets/hats/hat_jester.PNG");
     this.load.image("hatPropeller", "assets/hats/hat_propeller.PNG");
     this.load.image("hatWizard", "assets/hats/hat_wizard.PNG");
+    this.load.image("hatViking", "assets/hats/hat_viking.png");
+    this.load.image("hatShark", "assets/hats/hat_shark.png");
     this.load.image("oliveOverjoyed", "assets/olivesprites/olive_overjoyed.PNG");
     this.load.image("oliveHatChef", "assets/olivesprites/olive_hat_chef.PNG");
     this.load.image("oliveHatJester", "assets/olivesprites/olive_hat_jester.PNG");
     this.load.image("oliveHatPropeller", "assets/olivesprites/olive_hat_propeller.PNG");
     this.load.image("oliveHatWizard", "assets/olivesprites/olive_hat_wizard.PNG");
+    this.load.image("oliveHatViking", "assets/olivesprites/olive_hat_viking.png");
+    this.load.image("oliveHatShark", "assets/olivesprites/olive_hat_shark.png");
   }
 
   init(data) {
@@ -951,41 +959,94 @@ class Store extends Phaser.Scene {
     }).setOrigin(1, 0);
 
     this.hatStatusTexts = {};
-    const positions = [
-      { x: width * 0.28, y: height * 0.36 },
-      { x: width * 0.72, y: height * 0.36 },
-      { x: width * 0.28, y: height * 0.67 },
-      { x: width * 0.72, y: height * 0.67 }
-    ];
-
     const ownedItems = this.registry.get('ownedItems') || {};
 
+    // Create a scrollable area for the hats
+    const scrollArea = {
+      x: 60,
+      y: 90,
+      width: width - 120,
+      height: height - 160
+    };
+    this.storeScrollArea = scrollArea;
+
+    // Background for scroll area
+    this.add.rectangle(scrollArea.x + scrollArea.width / 2, scrollArea.y + scrollArea.height / 2, scrollArea.width, scrollArea.height, 0xfff8e5)
+      .setStrokeStyle(2, 0xcaa24f);
+
+    this.scrollContent = this.add.container(scrollArea.x, scrollArea.y);
+    const maskShape = this.make.graphics({ x: 0, y: 0, add: false });
+    maskShape.fillStyle(0xffffff);
+    maskShape.fillRect(scrollArea.x, scrollArea.y, scrollArea.width, scrollArea.height);
+    this.scrollContent.setMask(maskShape.createGeometryMask());
+
+    // Layout items into the scroll content
+    const columns = 2;
+    const panelW = 180;
+    const panelH = 180;
+    const leftPadding = 100;
+    const topPadding = 40;
+    const columnGap = (scrollArea.width - leftPadding * 2 - columns * panelW) / (columns - 1 || 1);
+    const rowGap = 40;
+
     HAT_CATALOG.forEach((hat, index) => {
-      const pos = positions[index];
-      const panel = this.add.rectangle(pos.x, pos.y, 180, 180, 0xfff8e5)
+      const col = index % columns;
+      const row = Math.floor(index / columns);
+      const x = leftPadding + col * (panelW + columnGap) + panelW / 2;
+      const y = topPadding + row * (panelH + rowGap) + panelH / 2;
+
+      const panel = this.add.rectangle(x, y, panelW, panelH, 0xfff8e5)
         .setStrokeStyle(4, 0xcaa24f)
         .setInteractive({ useHandCursor: true });
-      const image = this.add.image(pos.x, pos.y - 20, hat.texture)
+
+      const image = this.add.image(x, y - 20, hat.texture)
         .setDisplaySize(hat.storeDisplayWidth || hat.displayWidth, hat.storeDisplayHeight || hat.displayHeight)
         .setInteractive({ useHandCursor: true });
 
-      this.add.text(pos.x, pos.y + 55, hat.label, {
-        fontSize: "18px",
-        fill: "#000"
-      }).setOrigin(0.5);
-      this.add.text(pos.x, pos.y - 75, `Coins: ${hat.price}`, {
-        fontSize: "18px",
-        fill: "#b8860b"
-      }).setOrigin(0.5);
+      const label = this.add.text(x, y + 40, hat.label, { fontSize: "18px", fill: "#000" }).setOrigin(0.5);
+      const priceText = this.add.text(x, y - 75, `Coins: ${hat.price}`, { fontSize: "18px", fill: "#b8860b" }).setOrigin(0.5);
 
-      this.hatStatusTexts[hat.key] = this.add.text(pos.x, pos.y + 85, this._storeItemLabel(ownedItems, hat.key), {
-        fontSize: "16px",
-        fill: this._storeItemColor(ownedItems, hat.key)
-      }).setOrigin(0.5);
+      const statusText = this.add.text(x, y + 65, this._storeItemLabel(ownedItems, hat.key), { fontSize: "16px", fill: this._storeItemColor(ownedItems, hat.key) }).setOrigin(0.5);
+      this.hatStatusTexts[hat.key] = statusText;
 
       const buyHat = () => this._handlePurchase(hat.key, hat.price);
       panel.on("pointerdown", buyHat);
       image.on("pointerdown", buyHat);
+
+      this.scrollContent.add([panel, image, label, priceText, statusText]);
+    });
+
+    // compute content height and enable scrolling
+    const rowsUsed = Math.ceil(HAT_CATALOG.length / columns);
+    const contentHeight = topPadding * 2 + rowsUsed * panelH + Math.max(0, rowsUsed - 1) * rowGap;
+    this.maxStoreScroll = Math.max(0, contentHeight - scrollArea.height);
+    this.storeScrollY = 0;
+    this.isDraggingStore = false;
+
+    this.setStoreScroll = (nextY) => {
+      this.storeScrollY = Phaser.Math.Clamp(nextY, -this.maxStoreScroll, 0);
+      this.scrollContent.y = this.storeScrollY + scrollArea.y;
+    };
+
+    // mouse wheel scrolling
+    this.input.on("wheel", (pointer, gameObjects, deltaX, deltaY) => {
+      if (!Phaser.Geom.Rectangle.Contains(new Phaser.Geom.Rectangle(scrollArea.x, scrollArea.y, scrollArea.width, scrollArea.height), pointer.x, pointer.y)) return;
+      this.setStoreScroll(this.storeScrollY - deltaY * 0.6);
+    });
+
+    // drag to scroll
+    this.input.on("pointerdown", (pointer) => {
+      if (Phaser.Geom.Rectangle.Contains(new Phaser.Geom.Rectangle(scrollArea.x, scrollArea.y, scrollArea.width, scrollArea.height), pointer.x, pointer.y)) {
+        this.isDraggingStore = true;
+        this._lastPointerY = pointer.y;
+      }
+    });
+    this.input.on("pointerup", () => { this.isDraggingStore = false; this._lastPointerY = null; });
+    this.input.on("pointermove", (pointer) => {
+      if (!this.isDraggingStore || !pointer.isDown) return;
+      const dy = pointer.y - this._lastPointerY;
+      this._lastPointerY = pointer.y;
+      this.setStoreScroll(this.storeScrollY + dy);
     });
 
     this.add.text(width / 2, height - 50, "Press ESC to return to map", {
