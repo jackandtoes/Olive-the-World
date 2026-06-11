@@ -197,6 +197,10 @@ class ItalyScene extends Phaser.Scene {
    super("ItalyScene");
  }
 
+   playSfx(key) {
+    if (!this.cache.audio.exists(key)) return;
+    this.sound.play(key, { volume: getSfxVolume(this) });
+  }
 
  preload() {
    this.load.image('bent', 'assets/italy/pasta_corner_new.png');
@@ -210,6 +214,10 @@ class ItalyScene extends Phaser.Scene {
    this.load.image('oliveHatPropeller', 'assets/olivesprites/olive_hat_propeller.PNG');
    this.load.image('oliveHatWizard', 'assets/olivesprites/olive_hat_wizard.PNG');
    this.load.audio("italian_music", "assets/italy/cutscene/italian_music.mp3");
+
+   this.load.audio("slurp_sfx", "assets/sfx/slurp_sfx.mp3");
+   this.load.audio("victory_sfx", "assets/sfx/victory_sfx.mp3");
+   this.load.audio("lose_sfx", "assets/sfx/lose_sfx.mp3");
  }
 
 
@@ -594,6 +602,7 @@ for (let i = 0; i < level.tX.length; i++) {
 pipe.rotation = Phaser.Math.DegToRad(tile.rotationIndex * 90);
 pipe.on("pointerdown", () => {
   if(this.pointerCountAll > 0){
+    this.playSfx("slurp_sfx");
     tile.rotationIndex = (tile.rotationIndex + 1) % 4;
     this.pointerCountAll -= 1;
     this.pointerText.setText("Clicks: " + this.pointerCountAll);
@@ -621,6 +630,7 @@ pipe.on("pointerdown", () => {
   } 
   else if (this.pointerCountAll == 0){
     if(this.outOfClicksShown) return;
+    this.playSfx("lose_sfx");
     this.outOfClicksShown = true;
     const { width, height, depth } = this._overlay();
     this.add.text(width / 2, height / 2 - 108, "Out of Clicks", {
@@ -720,6 +730,7 @@ pipe.tileData = tile;
  }
 
  showWinPopup() {
+  this.playSfx("victory_sfx");
   this.pointerText.setText("YOU WIN!");
 
   const { width, height, depth } = this._overlay();
@@ -746,6 +757,7 @@ pipe.tileData = tile;
  }
 
  showTotalWinPopup() {
+  this.playSfx("victory_sfx");
   this.pointerText.setText("YOU WIN!");
 
   const restart_button = this.add.rectangle(400, 332, 300, 64, 0x7c2d12, 0.98)
