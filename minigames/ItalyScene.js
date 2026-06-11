@@ -208,13 +208,13 @@ class ItalyScene extends Phaser.Scene {
    this.load.image('crossed', 'assets/italy/crossed_pasta.png');
    this.load.image('t_shape', 'assets/italy/t-shaped_pasta.png');
    this.load.image('olive_mascot', 'assets/olive_favicon.png');
-   this.load.image('oliveOverjoyed', 'assets/olivesprites/olive_overjoyed.PNG');
-   this.load.image('oliveHatChef', 'assets/olivesprites/olive_hat_chef.PNG');
-   this.load.image('oliveHatJester', 'assets/olivesprites/olive_hat_jester.PNG');
-   this.load.image('oliveHatPropeller', 'assets/olivesprites/olive_hat_propeller.PNG');
-   this.load.image('oliveHatWizard', 'assets/olivesprites/olive_hat_wizard.PNG');
-   this.load.image('oliveHatViking', 'assets/olivesprites/olive_hat_viking.PNG');
-   this.load.image('oliveHatShark', 'assets/olivesprites/olive_hat_shark.PNG');
+   this.load.image('oliveOverjoyed', 'assets/olivesprites/olive_overjoyed.png');
+   this.load.image('oliveHatChef', 'assets/olivesprites/olive_hat_chef.png');
+   this.load.image('oliveHatJester', 'assets/olivesprites/olive_hat_jester.png');
+   this.load.image('oliveHatPropeller', 'assets/olivesprites/olive_hat_propeller.png');
+   this.load.image('oliveHatWizard', 'assets/olivesprites/olive_hat_wizard.png');
+   this.load.image('oliveHatViking', 'assets/olivesprites/olive_hat_viking.png');
+   this.load.image('oliveHatShark', 'assets/olivesprites/olive_hat_shark.png');
    this.load.audio("italian_music", "assets/italy/cutscene/italian_music.mp3");
 
    this.load.audio("slurp_sfx", "assets/sfx/slurp_sfx.mp3");

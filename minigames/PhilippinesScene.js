@@ -275,21 +275,21 @@ class PhilippinesScene extends Phaser.Scene {
 
   preload() {
     this.load.audio("filipino_music", "assets/philippines/cutscene/filipino_music.mp3");
-    this.load.image("oliveOverjoyed", "assets/olivesprites/olive_overjoyed.PNG");
-    this.load.image("oliveHatChef", "assets/olivesprites/olive_hat_chef.PNG");
-    this.load.image("oliveHatJester", "assets/olivesprites/olive_hat_jester.PNG");
-    this.load.image("oliveHatPropeller", "assets/olivesprites/olive_hat_propeller.PNG");
-    this.load.image("oliveHatWizard", "assets/olivesprites/olive_hat_wizard.PNG");
-    this.load.image("oliveHatViking", "assets/olivesprites/olive_hat_viking.PNG");
-    this.load.image("oliveHatShark", "assets/olivesprites/olive_hat_shark.PNG");
-    this.load.image("itemcabbage", "assets/philippines/philippines_cabbage.PNG");
-    this.load.image("itemcarrots", "assets/philippines/philippines_carrots.PNG");
-    this.load.image("itemonion", "assets/philippines/philippines_onion.PNG");
-    this.load.image("itempork", "assets/philippines/philippines_pork.PNG");
-    this.load.image("itemwrappers", "assets/philippines/philippines_wrappers.PNG");
-    this.load.image("vehcar", "assets/philippines/car.PNG");
-    this.load.image("vehtricycle", "assets/philippines/tricycle.PNG");
-    this.load.image("vehjeepney", "assets/philippines/jeepney.PNG");
+    this.load.image("oliveOverjoyed", "assets/olivesprites/olive_overjoyed.png");
+    this.load.image("oliveHatChef", "assets/olivesprites/olive_hat_chef.png");
+    this.load.image("oliveHatJester", "assets/olivesprites/olive_hat_jester.png");
+    this.load.image("oliveHatPropeller", "assets/olivesprites/olive_hat_propeller.png");
+    this.load.image("oliveHatWizard", "assets/olivesprites/olive_hat_wizard.png");
+    this.load.image("oliveHatViking", "assets/olivesprites/olive_hat_viking.png");
+    this.load.image("oliveHatShark", "assets/olivesprites/olive_hat_shark.png");
+    this.load.image("itemcabbage", "assets/philippines/philippines_cabbage.png");
+    this.load.image("itemcarrots", "assets/philippines/philippines_carrots.png");
+    this.load.image("itemonion", "assets/philippines/philippines_onion.png");
+    this.load.image("itempork", "assets/philippines/philippines_pork.png");
+    this.load.image("itemwrappers", "assets/philippines/philippines_wrappers.png");
+    this.load.image("vehcar", "assets/philippines/car.png");
+    this.load.image("vehtricycle", "assets/philippines/tricycle.png");
+    this.load.image("vehjeepney", "assets/philippines/jeepney.png");
 
     this.load.audio("item_collection_sfx", "assets/sfx/item_collection_sfx.mp3");
     this.load.audio("victory_sfx", "assets/sfx/victory_sfx.mp3");
